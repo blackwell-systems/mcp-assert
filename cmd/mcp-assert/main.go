@@ -46,9 +46,9 @@ func printUsage() {
 	fmt.Print(`mcp-assert - Deterministic correctness testing for MCP servers
 
 Usage:
-  mcp-assert run    --suite <dir> [--fixture <dir>] [--trials N]
+  mcp-assert run    --suite <dir> [--server <cmd>] [--fixture <dir>] [--trials N]
   mcp-assert matrix --suite <dir> --languages <lang:server,...>
-  mcp-assert ci     --suite <dir> [--threshold N] [--fail-on-regression]
+  mcp-assert ci     --suite <dir> [--server <cmd>] [--threshold N] [--fail-on-regression]
 
 Commands:
   run       Run assertions against an MCP server
@@ -57,6 +57,7 @@ Commands:
 
 Flags:
   --suite <dir>          Directory containing assertion YAML files
+  --server <cmd>         Override server command for all assertions (e.g. "agent-lsp go:gopls")
   --fixture <dir>        Fixture directory (substituted for {{fixture}} in assertions)
   --trials N             Number of trials per assertion (default: 1)
   --languages <spec>     Comma-separated lang:server pairs for matrix mode

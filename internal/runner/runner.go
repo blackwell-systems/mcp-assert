@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -19,6 +20,7 @@ func Run(args []string) error {
 	fs := flag.NewFlagSet("run", flag.ExitOnError)
 	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")
 	fixture := fs.String("fixture", "", "Fixture directory (substituted for {{fixture}})")
+	server := fs.String("server", "", "Override server command (e.g. 'agent-lsp go:gopls')")
 	trials := fs.Int("trials", 1, "Number of trials per assertion")
 	timeout := fs.Duration("timeout", 30*time.Second, "Per-assertion timeout")
 	jsonOut := fs.Bool("json", false, "Output results as JSON")
@@ -37,6 +39,9 @@ func Run(args []string) error {
 
 	var allResults []assertion.Result
 	for _, a := range suite.Assertions {
+		if *server != "" {
+			applyServerOverride(&a, *server)
+		}
 		for trial := 1; trial <= *trials; trial++ {
 			r := runAssertion(a, *fixture, *timeout)
 			r.Trial = trial
@@ -106,6 +111,7 @@ func CI(args []string) error {
 	fs := flag.NewFlagSet("ci", flag.ExitOnError)
 	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")
 	fixture := fs.String("fixture", "", "Fixture directory")
+	server := fs.String("server", "", "Override server command (e.g. 'agent-lsp go:gopls')")
 	threshold := fs.Int("threshold", 100, "Minimum pass percentage")
 	timeout := fs.Duration("timeout", 30*time.Second, "Per-assertion timeout")
 	if err := fs.Parse(args); err != nil {
@@ -123,6 +129,9 @@ func CI(args []string) error {
 
 	var allResults []assertion.Result
 	for _, a := range suite.Assertions {
+		if *server != "" {
+			applyServerOverride(&a, *server)
+		}
 		r := runAssertion(a, *fixture, *timeout)
 		allResults = append(allResults, r)
 	}
@@ -204,6 +213,15 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration) 
 		}
 	}
 
+	// Snapshot files for file_unchanged assertions.
+	snapshots := make(map[string]string)
+	for _, path := range a.Assert.Expect.FileUnchanged {
+		p := strings.ReplaceAll(path, "{{fixture}}", fixture)
+		if data, err := os.ReadFile(p); err == nil {
+			snapshots[p] = string(data)
+		}
+	}
+
 	// Run the assertion tool call.
 	assertArgs := substituteFixture(a.Assert.Args, fixture)
 	req := mcp.CallToolRequest{}
@@ -223,8 +241,8 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration) 
 	resultText := extractText(result)
 	isError := result.IsError
 
-	// Check assertions.
-	if err := assertion.Check(a.Assert.Expect, resultText, isError); err != nil {
+	// Check assertions (with file snapshots for file_unchanged).
+	if err := assertion.CheckWithSnapshots(a.Assert.Expect, resultText, isError, snapshots); err != nil {
 		return assertion.Result{
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
@@ -283,4 +301,15 @@ func countPasses(results []assertion.Result) int {
 		}
 	}
 	return n
+}
+
+// applyServerOverride parses a "--server" string like "agent-lsp go:gopls"
+// and replaces the assertion's server config.
+func applyServerOverride(a *assertion.Assertion, serverSpec string) {
+	parts := strings.Fields(serverSpec)
+	if len(parts) == 0 {
+		return
+	}
+	a.Server.Command = parts[0]
+	a.Server.Args = parts[1:]
 }

@@ -45,12 +45,14 @@ type Expect struct {
 	JSONPath     map[string]any    `yaml:"json_path"`
 	MinResults   *int              `yaml:"min_results"`
 	MaxResults   *int              `yaml:"max_results"`
-	NotEmpty     *bool             `yaml:"not_empty"`
-	NotError     *bool             `yaml:"not_error"`
-	FileContains map[string]string `yaml:"file_contains"`
-	FileUnchanged []string         `yaml:"file_unchanged"`
-	NetDelta     *int              `yaml:"net_delta"`
-	InOrder      []string          `yaml:"in_order"`
+	NotEmpty      *bool             `yaml:"not_empty"`
+	NotError      *bool             `yaml:"not_error"`
+	IsError       *bool             `yaml:"is_error"`
+	MatchesRegex  []string          `yaml:"matches_regex"`
+	FileContains  map[string]string `yaml:"file_contains"`
+	FileUnchanged []string          `yaml:"file_unchanged"`
+	NetDelta      *int              `yaml:"net_delta"`
+	InOrder       []string          `yaml:"in_order"`
 }
 
 // Result is the outcome of running a single assertion.

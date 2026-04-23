@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -13,6 +14,11 @@ func Check(expect Expect, resultText string, isError bool) error {
 	// not_error
 	if expect.NotError != nil && *expect.NotError && isError {
 		return fmt.Errorf("expected no error but tool returned isError=true")
+	}
+
+	// is_error
+	if expect.IsError != nil && *expect.IsError && !isError {
+		return fmt.Errorf("expected error but tool returned isError=false")
 	}
 
 	// not_empty
@@ -41,6 +47,17 @@ func Check(expect Expect, resultText string, isError bool) error {
 	for _, s := range expect.NotContains {
 		if strings.Contains(resultText, s) {
 			return fmt.Errorf("expected result NOT to contain %q", s)
+		}
+	}
+
+	// matches_regex
+	for _, pattern := range expect.MatchesRegex {
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			return fmt.Errorf("matches_regex: invalid pattern %q: %w", pattern, err)
+		}
+		if !re.MatchString(resultText) {
+			return fmt.Errorf("expected result to match regex %q, got: %.200s", pattern, resultText)
 		}
 	}
 
@@ -115,10 +132,42 @@ func Check(expect Expect, resultText string, isError bool) error {
 		}
 	}
 
-	// file_unchanged
-	// Note: caller must snapshot files before tool execution and compare after.
-	// This is a placeholder for the runner to implement.
+	// file_unchanged — caller passes snapshots via CheckWithSnapshots; standalone Check skips this.
 
+	// in_order — verify substrings appear in the given order within the result.
+	if len(expect.InOrder) > 0 {
+		searchFrom := 0
+		for _, s := range expect.InOrder {
+			idx := strings.Index(resultText[searchFrom:], s)
+			if idx < 0 {
+				return fmt.Errorf("in_order: %q not found after position %d in result", s, searchFrom)
+			}
+			searchFrom += idx + len(s)
+		}
+	}
+
+	return nil
+}
+
+// CheckWithSnapshots evaluates all expectations including file_unchanged.
+// snapshots maps file paths to their content before the tool was called.
+func CheckWithSnapshots(expect Expect, resultText string, isError bool, snapshots map[string]string) error {
+	if err := Check(expect, resultText, isError); err != nil {
+		return err
+	}
+	for _, path := range expect.FileUnchanged {
+		before, ok := snapshots[path]
+		if !ok {
+			return fmt.Errorf("file_unchanged: no snapshot for %s", path)
+		}
+		after, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("file_unchanged: cannot read %s: %w", path, err)
+		}
+		if string(after) != before {
+			return fmt.Errorf("file_unchanged: %s was modified", path)
+		}
+	}
 	return nil
 }
 
