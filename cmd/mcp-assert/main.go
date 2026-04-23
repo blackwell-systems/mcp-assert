@@ -31,6 +31,11 @@ func main() {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
+	case "init":
+		if err := runner.Init(os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
 	case "coverage":
 		if err := runner.Coverage(os.Args[2:]); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -38,6 +43,11 @@ func main() {
 		}
 	case "snapshot":
 		if err := runner.Snapshot(os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+	case "generate":
+		if err := runner.Generate(os.Args[2:]); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
@@ -61,18 +71,22 @@ func printUsage() {
 	fmt.Print(`mcp-assert - Deterministic correctness testing for MCP servers
 
 Usage:
+  mcp-assert init   [dir]
   mcp-assert run    --suite <dir> [--server <cmd>] [--fixture <dir>] [--trials N]
   mcp-assert matrix --suite <dir> --languages <lang:server,...>
   mcp-assert ci     --suite <dir> [--server <cmd>] [--threshold N] [--fail-on-regression]
   mcp-assert coverage  --suite <dir> --server <cmd> [--coverage-json <path>]
-  mcp-assert snapshot  --suite <dir> [--update] [--server <cmd>]
+  mcp-assert generate  --server <cmd> --output <dir> [--fixture <dir>]
+  mcp-assert snapshot  --suite <dir> [--update] [--server <cmd>] [--fixture <dir>]
   mcp-assert watch     --suite <dir> [--server <cmd>] [--interval <duration>]
 
 Commands:
+  init      Scaffold an assertion template and fixture directory
   run       Run assertions against an MCP server
   matrix    Run assertions across multiple language servers
   ci        Run assertions with CI-specific output and exit codes
   coverage  Show which server tools have assertions and which don't
+  generate  Auto-generate stub assertions from a server's tools/list
   snapshot  Capture/compare tool response snapshots (like jest --updateSnapshot)
   watch     Rerun assertions when YAML files change (polling, no dependencies)
 
