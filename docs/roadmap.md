@@ -28,7 +28,56 @@ The GitHub Action is the single highest-leverage distribution move. If adding mc
 | **--watch mode** | **Shipped** | Medium | `mcp-assert watch` reruns assertions on YAML file change. Polls every 2s, clears terminal between runs. |
 | **pass@k in reports** | **Shipped** | Medium | Reliability metrics in JUnit XML (`<properties>`) and markdown (reliability table) when `--trials > 1`. |
 | **--coverage-json** | **Shipped** | Medium | `--coverage-json <path>` on `coverage` command writes machine-readable coverage data. |
+| **Setup output capture** | Planned | **High** | Capture values from setup step responses and inject them into subsequent steps. Unlocks real session lifecycle testing. |
 | **Trajectory assertions** | Planned | Low | Assert on the sequence of tool calls in a multi-step workflow, not just single tool responses. Requires capturing the full call trace, not just the final result. |
+
+### Setup output capture detail
+
+The root limitation: mcp-assert can't chain outputs between setup steps and the assertion. `create_simulation_session` returns a `session_id`, but there's no way to pass that into the next step's args.
+
+**Current workaround:** Session tools that require `session_id` (simulate_edit, evaluate_session, commit_session, discard_session, destroy_session) are tested as negative tests with invalid IDs (`is_error: true`). This proves the tools exist and validate input, but doesn't test the happy path.
+
+**Proposed syntax:**
+
+```yaml
+setup:
+  - tool: create_simulation_session
+    args:
+      workspace_root: "{{fixture}}"
+      language: go
+    capture:
+      session_id: "$.session_id"    # jsonpath into response
+
+  - tool: simulate_edit
+    args:
+      session_id: "{{session_id}}"  # use captured value
+      file_path: "{{fixture}}/main.go"
+      start_line: 13
+      end_line: 13
+      new_text: "return 42"
+
+assert:
+  tool: evaluate_session
+  args:
+    session_id: "{{session_id}}"    # same captured value
+  expect:
+    not_error: true
+    contains: ["net_delta"]
+```
+
+**Implementation:**
+1. Add `Capture map[string]string` field to `ToolCall` struct (jsonpath → variable name)
+2. After each setup step, run jsonpath lookups on the response text and store results in a `variables map[string]string`
+3. Before executing args, substitute `{{variable_name}}` alongside `{{fixture}}`
+4. The existing `substituteValue` recursive function handles the injection — just add the variables to the substitution pass
+
+**What this unlocks:**
+- Full session lifecycle: create → edit → evaluate → commit/discard → destroy
+- Any multi-step workflow where step N depends on step N-1's output
+- Database tests: INSERT returns an ID, SELECT uses that ID
+- Auth flows: login returns a token, subsequent calls use it
+
+**Why it's high priority:** 7 of agent-lsp's 50 tools (14%) are currently tested only as negative tests because of this limitation. Fixing it would make the 100% coverage claim genuinely meaningful — every tool tested on its happy path.
 
 ### Snapshot testing detail
 
