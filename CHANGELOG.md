@@ -11,7 +11,7 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **`--watch` mode** — `mcp-assert watch --suite <dir>` reruns assertions on YAML file change. Polls every 2s, clears terminal between runs. Assertion development loop.
 - **`--coverage-json`** — machine-readable coverage data for dashboards and badges on the `coverage` command.
 - **pass@k / pass^k in structured reports** — reliability metrics now included in JUnit XML (`<properties>`) and markdown (table section) when `--trials > 1`. Previously terminal-only.
-- **52 unit tests** (up from 49).
+- **81 unit tests** (up from 49). Runner package went from 0 to 23 tests covering recursive fixture substitution, server override, timeout behavior, bad binary handling, Docker flag construction, and all CLI error paths. Race-detector clean.
 
 ## [0.1.1] - 2026-04-23
 
