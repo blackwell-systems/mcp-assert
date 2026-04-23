@@ -19,8 +19,8 @@ go install github.com/blackwell-systems/mcp-assert@latest
 Define an assertion:
 
 ```yaml
-# evals/get_references.yaml
-name: get_references returns cross-file callers
+# evals/hover.yaml
+name: hover returns type info for Person
 server:
   command: agent-lsp
   args: ["go:gopls"]
@@ -28,16 +28,17 @@ setup:
   - tool: start_lsp
     args: { root_dir: "{{fixture}}" }
   - tool: open_document
-    args: { file_path: "{{fixture}}/greeter.go", language_id: go }
+    args: { file_path: "{{fixture}}/main.go", language_id: go }
 assert:
-  tool: get_references
+  tool: get_info_on_location
   args:
     file_path: "{{fixture}}/main.go"
     line: 6
     column: 6
   expect:
-    contains: ["greeter.go"]
-    min_results: 2
+    not_error: true
+    not_empty: true
+    contains: ["Person"]
 ```
 
 Run it:
@@ -49,12 +50,23 @@ mcp-assert run --suite evals/ --fixture test/fixtures/go
 Output:
 
 ```
-PASS  get_references returns cross-file callers (go)        142ms
-PASS  go_to_definition resolves to correct file (go)         38ms
-FAIL  rename_symbol updates all call sites (go)             412ms
-      expected 7 changed files, got 5
+PASS  hover returns type info for Person                              690ms
+PASS  go_to_definition resolves Person to main.go                     652ms
+PASS  get_diagnostics returns clean for valid file                  25097ms
+PASS  get_references finds cross-file callers of Person             27358ms
+PASS  speculative edit detects type error with net_delta > 0        28676ms
+PASS  completions suggest methods after Person dot                    699ms
+PASS  get_document_symbols lists Person type and methods              415ms
 
-3 assertions, 2 passed, 1 failed
+7 assertions, 7 passed, 0 failed, 0 skipped
+```
+
+## Server Override
+
+Override the server config from CLI instead of repeating it in every YAML file:
+
+```bash
+mcp-assert run --suite evals/ --server "agent-lsp go:gopls" --fixture test/fixtures/go
 ```
 
 ## Cross-Language Matrix
@@ -68,7 +80,7 @@ mcp-assert matrix \
 ```
 
 ```
-                     get_references  go_to_definition  rename_symbol  completions
+                     hover           definition        references     completions
 Go (gopls)           PASS            PASS              PASS           PASS
 TypeScript (tsserver) PASS            PASS              PASS           PASS
 Python (pyright)     PASS            PASS              SKIP           PASS
@@ -82,6 +94,9 @@ mcp-assert ci --suite evals/ --fail-on-regression
 
 # Set a minimum pass threshold
 mcp-assert ci --suite evals/ --threshold 95
+
+# Override server from CLI
+mcp-assert ci --suite evals/ --server "my-mcp-server" --threshold 100
 ```
 
 GitHub Action:
@@ -102,23 +117,25 @@ GitHub Action:
 | CI cost | API calls on every run | Zero external dependencies |
 | Reliability | Varies by model temperature | Deterministic pass/fail |
 | Multi-language | Not supported | Same assertion across N language servers |
-| Docker isolation | Not supported | Per-trial container execution |
 
 ## Assertion Types
 
 | Assertion | What it checks |
 |---|---|
 | `contains` | Response text contains all specified strings |
-| `equals` | Response exactly matches expected value |
-| `json_path` | JSON field at path matches expected value |
-| `min_results` | Array field has at least N items |
-| `max_results` | Array field has at most N items |
+| `not_contains` | Response text does not contain any of the specified strings |
+| `equals` | Response exactly matches expected value (whitespace-trimmed) |
+| `matches_regex` | Response matches all specified regex patterns |
+| `json_path` | JSON field at `$.dot.path` matches expected value |
+| `min_results` | Array result has at least N items |
+| `max_results` | Array result has at most N items |
 | `not_empty` | Response is non-empty and not `null`/`[]`/`{}` |
 | `not_error` | Tool response has `isError: false` |
-| `file_contains` | After tool execution, file on disk contains text |
-| `file_unchanged` | File on disk was not modified |
+| `is_error` | Tool response has `isError: true` (for negative testing) |
+| `file_contains` | After tool execution, file on disk contains expected text |
+| `file_unchanged` | File on disk was not modified by the tool |
 | `net_delta` | Speculative execution diagnostic delta equals N |
-| `in_order` | Tool calls in transcript appear in specified order |
+| `in_order` | Substrings appear in the specified order within the response |
 
 ## Assertion File Format
 
@@ -130,29 +147,25 @@ server:
   env:
     KEY: value
 setup:
-  - tool: tool_name
+  - tool: setup_tool
+    args: { key: value }
+  - tool: another_setup_tool
     args: { key: value }
 assert:
-  tool: tool_name
+  tool: tool_under_test
   args: { key: value }
   expect:
+    not_error: true
     contains: ["expected", "strings"]
+    not_contains: ["unexpected"]
+    matches_regex: ["\\d+ items"]
     json_path:
       "$.locations[0].file": "main.go"
     min_results: 3
-    not_error: true
 timeout: 30s
 ```
 
-## Docker Isolation
-
-Run assertions in isolated containers for reproducibility:
-
-```bash
-mcp-assert run --suite evals/ --docker ghcr.io/blackwell-systems/agent-lsp:go
-```
-
-Each assertion runs in a fresh container. No cross-test contamination. Same environment as CI.
+The `{{fixture}}` placeholder in args is replaced with the `--fixture` directory at runtime.
 
 ## Reliability Metrics
 
@@ -161,8 +174,6 @@ Run multiple trials to measure consistency:
 ```bash
 mcp-assert run --suite evals/ --trials 5
 ```
-
-Reports `pass@k` (capability: passed at least once) and `pass^k` (reliability: passed every time).
 
 ## License
 
