@@ -4,9 +4,17 @@
 [![Go](https://img.shields.io/badge/go-1.23+-blue.svg)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Test any MCP server in any language. No SDK required. No LLM required.
+The testing standard for MCP servers. Works with any language, any transport.
 
 A single Go binary that connects to your MCP server over stdio, SSE, or HTTP, calls your tools, and asserts the results. Define assertions in YAML, run them in CI. Works with servers written in Go, TypeScript, Python, Rust, Java, or anything else that speaks MCP.
+
+Add it to any MCP server project in one line:
+
+```yaml
+- uses: blackwell-systems/mcp-assert-action@v1
+  with:
+    suite: evals/
+```
 
 ## Why
 
@@ -23,6 +31,8 @@ Most MCP tools are deterministic: `read_file` returns file contents, `read_query
 | Creative content (commit messages, code suggestions) | **LLM-as-judge**: many correct answers |
 
 Most MCP servers are heavy on the first three and light on the last two. If your server returns data, mcp-assert covers it. If your server generates prose, you need a different tool.
+
+mcp-assert is designed to be the standard testing layer for the MCP ecosystem, the way pytest is for Python APIs or Jest is for JavaScript. The [scan-and-contribute scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/) tracks real bugs found in real MCP servers.
 
 ## Why not just write tests in Go/Python/etc?
 
@@ -76,13 +86,21 @@ mcp-assert run --suite evals/ --server "my-mcp-server"
 
 ## CI Integration
 
-Add to any GitHub Actions workflow with the [mcp-assert GitHub Action](https://github.com/blackwell-systems/mcp-assert-action):
+Use the [mcp-assert GitHub Action](https://github.com/blackwell-systems/mcp-assert-action) for zero-setup CI:
 
 ```yaml
-- name: Assert MCP server correctness
-  run: |
-    go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
-    mcp-assert ci --suite evals/ --threshold 95 --junit results.xml
+- uses: blackwell-systems/mcp-assert-action@v1
+  with:
+    suite: evals/
+    threshold: 95
+```
+
+Downloads the binary, runs assertions, uploads JUnit XML results, writes GitHub Step Summary. No Go toolchain required on your runners.
+
+Or run directly:
+
+```bash
+mcp-assert ci --suite evals/ --threshold 95 --junit results.xml
 ```
 
 See the [CI Integration guide](https://blackwell-systems.github.io/mcp-assert/ci-integration/) for JUnit XML, markdown summaries, badges, and regression detection.
@@ -98,7 +116,8 @@ Full documentation is available at [blackwell-systems.github.io/mcp-assert](http
 - [CI Integration](https://blackwell-systems.github.io/mcp-assert/ci-integration/): GitHub Action, JUnit XML, regression detection
 - [Architecture](https://blackwell-systems.github.io/mcp-assert/architecture/): internals and design decisions
 - [Roadmap](https://blackwell-systems.github.io/mcp-assert/roadmap/): what's shipped and what's next
-- [Dogfooding](https://blackwell-systems.github.io/mcp-assert/dogfooding/): real bugs found by testing our own servers
+- [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): real bugs found across 6 servers, 2 upstream issues filed
+- [Dogfooding](https://blackwell-systems.github.io/mcp-assert/dogfooding/): findings from testing our own servers
 
 ## License
 
