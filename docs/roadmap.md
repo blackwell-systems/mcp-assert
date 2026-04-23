@@ -31,7 +31,7 @@ The GitHub Action is the single highest-leverage distribution move. If adding mc
 | **--coverage-json** | **Shipped** | Medium | `--coverage-json <path>` on `coverage` command writes machine-readable coverage data. |
 | **Setup output capture** | **Shipped** | **High** | `capture:` field on setup steps extracts values via jsonpath, injects as `{{variable}}` into subsequent steps. Session lifecycle tests now use real session IDs. |
 | **Client capabilities (bidirectional)** | Planned | **High** | Mock client-side capabilities so servers that use sampling, roots, or elicitation can be tested. No other MCP testing tool supports this. |
-| **Trajectory assertions** | Planned | **Critical** | Assert on tool call sequences, not just single tool responses. Essential for validating agent skill protocols (e.g. `/lsp-rename` must call prepare_rename before rename_symbol). Bridges tool correctness (Layer 1) with workflow correctness (Layer 2). |
+| **Trajectory assertions** | **Shipped** | **Critical** | 4 types (order, presence, absence, args_contain). Inline trace or audit log source. 3 example assertions for agent-lsp skill protocols. 21 new tests. Runs in 0ms (no server). |
 
 ### Trajectory assertions detail
 

@@ -19,7 +19,7 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 
 ---
 
-## Assertion Types (14)
+## Assertion Types (14 + 4 trajectory)
 
 | Type | Category | What it checks |
 |------|----------|----------------|
@@ -37,6 +37,17 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 | `file_unchanged` | Side effect | File on disk was not modified (snapshot comparison) |
 | `net_delta` | Speculative | Diagnostic delta equals expected value |
 | `in_order` | Sequence | Substrings appear in specified order within response |
+
+## Trajectory Assertion Types (4)
+
+Used with `trajectory:` field to validate tool call sequences. Source is either `trace:` (inline YAML) or `audit_log:` (JSONL file). Runs without a server.
+
+| Type | What it checks |
+|------|----------------|
+| `order` | Listed tools appear in this sequence (not necessarily adjacent) |
+| `presence` | All listed tools appear at least once |
+| `absence` | None of the listed tools appear |
+| `args_contain` | A tool was called with specific argument values (partial match) |
 
 ---
 
