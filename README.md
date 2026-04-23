@@ -4,9 +4,11 @@
 [![Go](https://img.shields.io/badge/go-1.23+-blue.svg)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-The testing standard for MCP servers. Works with any language, any transport.
+The testing standard for deterministic MCP tools. Works with any language, any transport.
 
 A single Go binary that connects to your MCP server over stdio, SSE, or HTTP, calls your tools, and asserts the results. Define assertions in YAML, run them in CI. Works with servers written in Go, TypeScript, Python, Rust, Java, or anything else that speaks MCP.
+
+**Scope:** mcp-assert is built for tools with knowable correct outputs: data retrieval, state changes, validation, navigation. Tools that generate creative content or natural language prose are better evaluated by LLM-as-judge frameworks. Most MCP servers mix both; mcp-assert covers the deterministic majority.
 
 Add it to any MCP server project in one line:
 
@@ -20,6 +22,8 @@ Add it to any MCP server project in one line:
 
 Most MCP tools are deterministic: `read_file` returns file contents, `read_query` returns rows, `get_references` returns locations. Given the same input, the correct output is knowable in advance. You don't need an LLM to grade it. You need `assert.Equal`.
 
+LLM-as-judge frameworks exist for good reason: tools that generate commit messages, write documentation, or suggest creative content produce outputs where quality is genuinely subjective and many correct answers exist. mcp-assert is not a replacement for those frameworks. It is a complement: handle the deterministic majority with assertions, reserve LLM-as-judge for the subjective minority.
+
 ### When to use what
 
 | Your tool returns... | Use |
@@ -29,10 +33,11 @@ Most MCP tools are deterministic: `read_file` returns file contents, `read_query
 | Error responses for bad input | **mcp-assert**: `is_error` and `contains` |
 | Natural language (summaries, explanations, descriptions) | **LLM-as-judge**: quality is subjective |
 | Creative content (commit messages, code suggestions) | **LLM-as-judge**: many correct answers |
+| Mixed (e.g. `create_project` that returns files + generates a README) | **Both**: assert the files, evaluate the prose separately |
 
-Most MCP servers are heavy on the first three and light on the last two. If your server returns data, mcp-assert covers it. If your server generates prose, you need a different tool.
+Most MCP servers are heavy on the first three and light on the last two. If your server returns data, mcp-assert covers it.
 
-mcp-assert is designed to be the standard testing layer for the MCP ecosystem, the way pytest is for Python APIs or Jest is for JavaScript. The [scan-and-contribute scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/) tracks real bugs found in real MCP servers.
+mcp-assert is designed to be the standard testing layer for the deterministic parts of the MCP ecosystem, the way pytest is for Python APIs or Jest is for JavaScript. The [scan-and-contribute scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/) tracks real bugs found in real MCP servers.
 
 ## Why not just write tests in Go/Python/etc?
 
@@ -72,16 +77,18 @@ mcp-assert snapshot --suite evals/ --server "my-mcp-server" --update
 mcp-assert run --suite evals/ --server "my-mcp-server"
 ```
 
-## How It Differs
+## How It Differs From LLM-as-Judge Frameworks
 
-| Dimension | Existing MCP evals | mcp-assert |
+For deterministic tools, mcp-assert is the better fit. For subjective outputs, LLM-as-judge frameworks remain the right choice. Use both if your server mixes tool types.
+
+| Dimension | LLM-as-judge eval frameworks | mcp-assert |
 |---|---|---|
-| Grading | LLM-as-judge (subjective, costly) | Deterministic assertions (exact, free) |
+| Best for | Subjective outputs (prose, creative content) | Deterministic outputs (data, state, validation) |
+| Grading | Language model scoring (flexible, costly) | Assertion-based (exact, free) |
 | Speed | Seconds per test (LLM round-trip) | Milliseconds per test (no LLM) |
 | CI cost | API calls on every run | Zero external dependencies |
 | Reliability | Not measured | pass@k / pass^k per assertion |
 | Regression | Not supported | Baseline comparison, fail on backslide |
-| Docker | Not supported | Per-assertion container isolation |
 | Multi-language | Not supported | Same assertion across N language servers |
 
 ## CI Integration
