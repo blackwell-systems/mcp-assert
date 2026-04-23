@@ -1,0 +1,12 @@
+name: search returns empty for nonexistent entity
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-memory"]
+assert:
+  tool: search_nodes
+  args:
+    query: "NonexistentEntity12345"
+  expect:
+    not_error: true
+    not_contains: ["NonexistentEntity12345"]
+timeout: 15s

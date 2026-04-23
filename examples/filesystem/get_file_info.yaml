@@ -1,0 +1,13 @@
+name: get_file_info returns metadata
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: get_file_info
+  args:
+    path: "{{fixture}}/hello.txt"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["size"]
+timeout: 15s

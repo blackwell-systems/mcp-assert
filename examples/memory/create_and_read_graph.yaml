@@ -1,0 +1,19 @@
+name: read_graph returns all entities after creation
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-memory"]
+setup:
+  - tool: create_entities
+    args:
+      entities:
+        - name: "ProjectX"
+          entityType: "project"
+          observations: ["started 2026-01"]
+assert:
+  tool: read_graph
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["ProjectX", "project"]
+timeout: 15s

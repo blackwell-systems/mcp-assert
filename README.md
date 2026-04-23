@@ -61,6 +61,36 @@ PASS  get_document_symbols lists Person type and methods              415ms
 7 assertions, 7 passed, 0 failed, 0 skipped
 ```
 
+## Example Suites
+
+mcp-assert ships with example assertions for three MCP servers:
+
+### Filesystem server (`examples/filesystem/`)
+
+Tests the official `@modelcontextprotocol/server-filesystem`. 5 assertions: read file, list directory, get file info, search files, and a **negative test** that verifies path traversal is rejected.
+
+```bash
+npm install -g @modelcontextprotocol/server-filesystem
+mcp-assert run --suite examples/filesystem --fixture examples/filesystem/fixtures
+```
+
+### Memory server (`examples/memory/`)
+
+Tests the official `@modelcontextprotocol/server-memory`. 5 assertions with **stateful setup**: create entities, add observations, create relations, search nodes, and verify empty search returns nothing.
+
+```bash
+npm install -g @modelcontextprotocol/server-memory
+mcp-assert run --suite examples/memory
+```
+
+### agent-lsp (`examples/agent-lsp-go/`)
+
+Tests [agent-lsp](https://github.com/blackwell-systems/agent-lsp) with gopls. 7 assertions: hover, definition, references, diagnostics, symbols, completions, and speculative execution.
+
+```bash
+mcp-assert run --suite examples/agent-lsp-go --fixture /path/to/go/fixtures
+```
+
 ## Server Override
 
 Override the server config from CLI instead of repeating it in every YAML file:
@@ -105,7 +135,28 @@ GitHub Action:
 - name: Assert MCP server correctness
   run: |
     go install github.com/blackwell-systems/mcp-assert@latest
-    mcp-assert ci --suite evals/ --threshold 95
+    mcp-assert ci --suite evals/ --threshold 95 --junit results.xml
+
+- name: Upload test results
+  if: always()
+  uses: actions/upload-artifact@v4
+  with:
+    name: mcp-assert-results
+    path: results.xml
+```
+
+## Structured Reporting
+
+```bash
+# JUnit XML for CI test result tabs (GitHub Actions, Jenkins, CircleCI)
+mcp-assert run --suite evals/ --junit results.xml
+
+# GitHub Step Summary (auto-detects $GITHUB_STEP_SUMMARY in ci mode)
+mcp-assert ci --suite evals/ --markdown summary.md
+
+# shields.io badge endpoint
+mcp-assert run --suite evals/ --badge badge.json
+# Then use: ![mcp-assert](https://img.shields.io/endpoint?url=<badge-url>)
 ```
 
 ## How It Differs

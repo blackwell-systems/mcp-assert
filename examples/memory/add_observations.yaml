@@ -1,0 +1,24 @@
+name: add observations to existing entity
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-memory"]
+setup:
+  - tool: create_entities
+    args:
+      entities:
+        - name: "Alice"
+          entityType: "person"
+          observations: ["engineer"]
+  - tool: add_observations
+    args:
+      observations:
+        - entityName: "Alice"
+          contents: ["promoted to staff", "joined platform team"]
+assert:
+  tool: search_nodes
+  args:
+    query: "Alice"
+  expect:
+    not_error: true
+    contains: ["Alice", "promoted to staff"]
+timeout: 15s

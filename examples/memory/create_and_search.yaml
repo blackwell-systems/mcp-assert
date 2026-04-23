@@ -1,0 +1,23 @@
+name: create entities then search by name
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-memory"]
+setup:
+  - tool: create_entities
+    args:
+      entities:
+        - name: "Alice"
+          entityType: "person"
+          observations: ["software engineer", "likes Rust"]
+        - name: "Bob"
+          entityType: "person"
+          observations: ["data scientist", "likes Python"]
+assert:
+  tool: search_nodes
+  args:
+    query: "Alice"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Alice", "person"]
+timeout: 15s

@@ -1,0 +1,27 @@
+name: create relations between entities
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-memory"]
+setup:
+  - tool: create_entities
+    args:
+      entities:
+        - name: "Alice"
+          entityType: "person"
+          observations: ["engineer"]
+        - name: "ProjectX"
+          entityType: "project"
+          observations: ["internal tool"]
+  - tool: create_relations
+    args:
+      relations:
+        - from: "Alice"
+          to: "ProjectX"
+          relationType: "works_on"
+assert:
+  tool: read_graph
+  args: {}
+  expect:
+    not_error: true
+    contains: ["Alice", "ProjectX", "works_on"]
+timeout: 15s

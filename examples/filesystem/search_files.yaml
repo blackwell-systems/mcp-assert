@@ -1,0 +1,13 @@
+name: search_files finds matching files
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: search_files
+  args:
+    path: "{{fixture}}"
+    pattern: "*.txt"
+  expect:
+    not_error: true
+    contains: ["hello.txt"]
+timeout: 15s

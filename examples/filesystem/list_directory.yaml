@@ -1,0 +1,13 @@
+name: list_directory shows fixture contents
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: list_directory
+  args:
+    path: "{{fixture}}"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["hello.txt", "config.json", "subdir"]
+timeout: 15s
