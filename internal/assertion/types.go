@@ -10,15 +10,30 @@ type Suite struct {
 
 // Assertion defines a single test: call a tool with known inputs, check the output.
 // For trajectory assertions, set Trace and Trajectory instead of Assert.
+// For resource assertions, set AssertResources instead of Assert.
 type Assertion struct {
-	Name       string                `yaml:"name"`
-	Server     ServerConfig          `yaml:"server"`
-	Setup      []ToolCall            `yaml:"setup"`
-	Assert     AssertBlock           `yaml:"assert"`
-	Timeout    string                `yaml:"timeout"`
-	Trace      []TraceEntry          `yaml:"trace,omitempty"`      // inline tool call sequence
-	AuditLog   string                `yaml:"audit_log,omitempty"`  // path to agent-lsp JSONL audit log
-	Trajectory []TrajectoryAssertion `yaml:"trajectory,omitempty"` // sequence checks
+	Name            string                `yaml:"name"`
+	Server          ServerConfig          `yaml:"server"`
+	Setup           []ToolCall            `yaml:"setup"`
+	Assert          AssertBlock           `yaml:"assert"`
+	AssertResources *ResourceAssertBlock  `yaml:"assert_resources,omitempty"`
+	Timeout         string                `yaml:"timeout"`
+	Trace           []TraceEntry          `yaml:"trace,omitempty"`      // inline tool call sequence
+	AuditLog        string                `yaml:"audit_log,omitempty"`  // path to agent-lsp JSONL audit log
+	Trajectory      []TrajectoryAssertion `yaml:"trajectory,omitempty"` // sequence checks
+}
+
+// ResourceAssertBlock tests MCP resources (resources/list or resources/read).
+// Set exactly one of List or Read.
+type ResourceAssertBlock struct {
+	List   *ResourceListArgs  `yaml:"list,omitempty"`   // call resources/list
+	Read   string             `yaml:"read,omitempty"`   // URI to pass to resources/read
+	Expect Expect             `yaml:"expect"`
+}
+
+// ResourceListArgs holds parameters for resources/list (cursor for pagination).
+type ResourceListArgs struct {
+	Cursor string `yaml:"cursor,omitempty"`
 }
 
 // TraceEntry is a single tool call in a recorded sequence.

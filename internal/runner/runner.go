@@ -234,6 +234,11 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 		return runTrajectoryAssertion(a, fixture, start)
 	}
 
+	// Resource assertions call resources/list or resources/read instead of tools/call.
+	if a.AssertResources != nil {
+		return runResourceAssertion(a, fixture, timeout, dockerImage, start)
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -673,6 +678,139 @@ func writeReports(results []assertion.Result, junitPath, markdownPath, badgePath
 		if err := report.WriteBadge(results, badgePath); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: badge: %v\n", err)
 		}
+	}
+}
+
+// runResourceAssertion tests MCP resources (resources/list or resources/read).
+func runResourceAssertion(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string, start time.Time) assertion.Result {
+	// Validate up front — avoids starting the server for a malformed assertion.
+	rb := a.AssertResources
+	if rb.List == nil && rb.Read == "" {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   "assert_resources requires either 'list' or 'read'",
+			Duration: time.Since(start),
+		}
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	mcpClient, err := createMCPClient(a.Server, fixture, dockerImage)
+	if err != nil {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   fmt.Sprintf("failed to start MCP server: %v", err),
+			Duration: time.Since(start),
+		}
+	}
+	defer mcpClient.Close()
+
+	initReq := mcp.InitializeRequest{}
+	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
+	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
+	if _, err := mcpClient.Initialize(ctx, initReq); err != nil {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   fmt.Sprintf("MCP initialize failed: %v", err),
+			Duration: time.Since(start),
+		}
+	}
+
+	// Run setup steps.
+	captured := make(map[string]string)
+	for _, step := range a.Setup {
+		stepArgs := substituteAll(step.Args, fixture, captured)
+		req := mcp.CallToolRequest{}
+		req.Params.Name = step.Tool
+		req.Params.Arguments = stepArgs
+		if _, err := mcpClient.CallTool(ctx, req); err != nil {
+			return assertion.Result{
+				Name:     a.Name,
+				Status:   assertion.StatusFail,
+				Detail:   fmt.Sprintf("setup step %s failed: %v", step.Tool, err),
+				Duration: time.Since(start),
+			}
+		}
+	}
+
+	var resultText string
+	var isError bool
+
+	if rb.List != nil {
+		// resources/list
+		listReq := mcp.ListResourcesRequest{}
+		if rb.List.Cursor != "" {
+			listReq.Params.Cursor = mcp.Cursor(strings.ReplaceAll(rb.List.Cursor, "{{fixture}}", fixture))
+		}
+		result, err := mcpClient.ListResources(ctx, listReq)
+		if err != nil {
+			return assertion.Result{
+				Name:     a.Name,
+				Status:   assertion.StatusFail,
+				Detail:   fmt.Sprintf("resources/list failed: %v", err),
+				Duration: time.Since(start),
+			}
+		}
+		data, _ := json.Marshal(result)
+		resultText = string(data)
+	} else if rb.Read != "" {
+		// resources/read
+		uri := strings.ReplaceAll(rb.Read, "{{fixture}}", fixture)
+		readReq := mcp.ReadResourceRequest{}
+		readReq.Params.URI = uri
+		result, err := mcpClient.ReadResource(ctx, readReq)
+		if err != nil {
+			return assertion.Result{
+				Name:     a.Name,
+				Status:   assertion.StatusFail,
+				Detail:   fmt.Sprintf("resources/read failed for %s: %v", uri, err),
+				Duration: time.Since(start),
+			}
+		}
+		// Combine all content items into result text.
+		var parts []string
+		for _, c := range result.Contents {
+			switch v := c.(type) {
+			case mcp.TextResourceContents:
+				parts = append(parts, v.Text)
+			case mcp.BlobResourceContents:
+				parts = append(parts, fmt.Sprintf("<blob mimeType=%q len=%d>", v.MIMEType, len(v.Blob)))
+			default:
+				data, _ := json.Marshal(v)
+				parts = append(parts, string(data))
+			}
+		}
+		resultText = strings.Join(parts, "\n")
+	} else {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   "assert_resources requires either 'list' or 'read'",
+			Duration: time.Since(start),
+		}
+	}
+
+	if err := assertion.Check(rb.Expect, resultText, isError); err != nil {
+		detail := err.Error()
+		if isError && resultText != "" {
+			detail += "\n      server response: " + resultText
+		}
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   detail,
+			Duration: time.Since(start),
+		}
+	}
+
+	return assertion.Result{
+		Name:     a.Name,
+		Status:   assertion.StatusPass,
+		Duration: time.Since(start),
 	}
 }
 

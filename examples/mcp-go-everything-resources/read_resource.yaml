@@ -1,0 +1,10 @@
+# Test resources/read — read a specific resource by URI and verify content.
+name: resources/read returns static resource content
+server:
+  command: /tmp/mcp-go-everything-server
+assert_resources:
+  read: "test://static/resource"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

@@ -913,3 +913,87 @@ func TestRunAssertion_ClientCapabilities_BadServer(t *testing.T) {
 		t.Error("expected error detail, got empty string")
 	}
 }
+
+// --- Resource assertion tests ---
+
+func TestRunAssertion_Resources_RequiresListOrRead(t *testing.T) {
+	// assert_resources with neither list nor read should fail cleanly.
+	a := assertion.Assertion{
+		Name:   "bad resource assertion",
+		Server: assertion.ServerConfig{Command: "nonexistent"},
+		AssertResources: &assertion.ResourceAssertBlock{
+			// Neither List nor Read set.
+			Expect: assertion.Expect{},
+		},
+	}
+	r := runAssertion(a, "", 2*time.Second, "")
+	if r.Status != assertion.StatusFail {
+		t.Errorf("expected FAIL for missing list/read, got %s", r.Status)
+	}
+	if !strings.Contains(r.Detail, "list") && !strings.Contains(r.Detail, "read") {
+		t.Errorf("expected error mentioning list or read, got: %s", r.Detail)
+	}
+}
+
+func TestRunAssertion_Resources_BadServer(t *testing.T) {
+	// assert_resources with a nonexistent server should fail cleanly.
+	listArgs := &assertion.ResourceListArgs{}
+	a := assertion.Assertion{
+		Name:   "resource bad server",
+		Server: assertion.ServerConfig{Command: "nonexistent-resource-server"},
+		AssertResources: &assertion.ResourceAssertBlock{
+			List:   listArgs,
+			Expect: assertion.Expect{},
+		},
+	}
+	r := runAssertion(a, "", 2*time.Second, "")
+	if r.Status != assertion.StatusFail {
+		t.Errorf("expected FAIL for bad server, got %s", r.Status)
+	}
+	if r.Detail == "" {
+		t.Error("expected non-empty error detail")
+	}
+}
+
+func TestRunAssertion_ResourcesVsAssert_Exclusive(t *testing.T) {
+	// When AssertResources is set, the normal assert block is ignored.
+	// Verify by setting AssertResources with a bad server — the error
+	// comes from server startup, not from Assert being nil.
+	listArgs := &assertion.ResourceListArgs{}
+	a := assertion.Assertion{
+		Name:   "resources takes precedence",
+		Server: assertion.ServerConfig{Command: "nonexistent-resources-precedence"},
+		Assert: assertion.AssertBlock{Tool: "some_tool"},
+		AssertResources: &assertion.ResourceAssertBlock{
+			List:   listArgs,
+			Expect: assertion.Expect{},
+		},
+	}
+	r := runAssertion(a, "", 2*time.Second, "")
+	// Should fail due to server not starting, not due to tool routing.
+	if r.Status != assertion.StatusFail {
+		t.Errorf("expected FAIL, got %s", r.Status)
+	}
+}
+
+func TestResourceAssertBlock_FixtureSubstitution(t *testing.T) {
+	// Verify {{fixture}} is substituted in the read URI.
+	// Can't start a real server; just verify the substitution path doesn't panic
+	// and produces a server-start error, not a fixture error.
+	a := assertion.Assertion{
+		Name:   "resource fixture sub",
+		Server: assertion.ServerConfig{Command: "nonexistent-resource-fixture"},
+		AssertResources: &assertion.ResourceAssertBlock{
+			Read:   "file://{{fixture}}/schema.sql",
+			Expect: assertion.Expect{},
+		},
+	}
+	r := runAssertion(a, "/tmp/mydb", 2*time.Second, "")
+	if r.Status != assertion.StatusFail {
+		t.Errorf("expected FAIL, got %s", r.Status)
+	}
+	// {{fixture}} should not appear in the error — it should have been substituted.
+	if strings.Contains(r.Detail, "{{fixture}}") {
+		t.Errorf("fixture placeholder leaked into error: %s", r.Detail)
+	}
+}

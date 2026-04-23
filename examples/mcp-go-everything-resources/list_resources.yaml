@@ -1,0 +1,11 @@
+# Test resources/list — assert the server exposes expected resources.
+name: resources/list returns server resources
+server:
+  command: /tmp/mcp-go-everything-server
+assert_resources:
+  list: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["test://static/resource"]
+timeout: 15s
