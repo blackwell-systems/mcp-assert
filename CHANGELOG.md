@@ -7,6 +7,12 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ### Added
 
+- **`coverage` command** — `mcp-assert coverage --suite <dir> --server <cmd>` queries the MCP server's `tools/list`, compares against assertion tool names in the suite, and reports coverage percentage with covered/uncovered tool lists. Useful for identifying which server tools lack test coverage.
+- **Color output** — green `✓` pass, red `✗` fail, yellow `○` skip in interactive terminals. Falls back to plain `PASS`/`FAIL`/`SKIP` in pipes and CI. Respects the `NO_COLOR` environment variable.
+- **Progress indicator** — `[1/21]`, `[2/21]`, etc. printed to stderr while assertions run. Summary line only shows non-zero counts.
+
+### Added
+
 - **Core assertion engine** with 13 deterministic assertion types: `contains`, `not_contains`, `equals`, `json_path`, `min_results`, `max_results`, `not_empty`, `not_error`, `is_error`, `matches_regex`, `file_contains`, `file_unchanged`, `net_delta`, `in_order`.
 - **YAML assertion format** with server config, setup steps, and expected outputs. Supports `{{fixture}}` template substitution.
 - **CLI commands**: `run` (execute assertions), `matrix` (cross-language), `ci` (threshold + regression detection).

@@ -304,6 +304,38 @@ error: 1 regression(s) detected
 
 Only flags transitions from PASS to FAIL. Previously-failing tests that still fail are not regressions. New tests that fail are not regressions.
 
+## Coverage
+
+See which server tools have assertions and which don't:
+
+```bash
+mcp-assert coverage --suite evals/ --server "agent-lsp go:gopls"
+```
+
+```
+Server exposes 50 tools, 21 have assertions (42% coverage)
+
+Covered (21):
+  ✓ call_hierarchy (1 assertion)
+  ✓ format_document (1 assertion)
+  ✓ get_references (1 assertion)
+  ...
+
+Not covered (29):
+  ○ add_workspace_folder
+  ○ apply_edit
+  ○ close_document
+  ...
+```
+
+The command queries the server's `tools/list` endpoint, compares against assertion tool names in the suite, and reports coverage percentage with covered/uncovered tool lists.
+
+## Terminal Output
+
+mcp-assert uses color in interactive terminals: green for pass, red for fail, yellow for skip. A progress counter (`[1/21]`, `[2/21]`, ...) prints to stderr while assertions run. The summary line only shows non-zero counts.
+
+Color and progress are automatically disabled in pipes and CI environments. Set `NO_COLOR=1` to force plain `PASS`/`FAIL`/`SKIP` output explicitly.
+
 ## License
 
 MIT
