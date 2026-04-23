@@ -30,7 +30,39 @@ The GitHub Action is the single highest-leverage distribution move. If adding mc
 | **pass@k in reports** | **Shipped** | Medium | Reliability metrics in JUnit XML (`<properties>`) and markdown (reliability table) when `--trials > 1`. |
 | **--coverage-json** | **Shipped** | Medium | `--coverage-json <path>` on `coverage` command writes machine-readable coverage data. |
 | **Setup output capture** | **Shipped** | **High** | `capture:` field on setup steps extracts values via jsonpath, injects as `{{variable}}` into subsequent steps. Session lifecycle tests now use real session IDs. |
+| **Client capabilities (bidirectional)** | Planned | **High** | Mock client-side capabilities so servers that use sampling, roots, or elicitation can be tested. No other MCP testing tool supports this. |
 | **Trajectory assertions** | Planned | Low | Assert on the sequence of tool calls in a multi-step workflow, not just single tool responses. Requires capturing the full call trace, not just the final result. |
+
+### Client capabilities detail
+
+MCP is bidirectional — servers can request things from the client (sampling, roots, elicitation). mcp-assert currently only acts as a tool-calling client. Adding client capability mocks would let it test servers that depend on these features.
+
+**YAML format:**
+
+```yaml
+server:
+  command: sampling-server
+  client_capabilities:
+    roots: ["{{fixture}}"]              # respond to roots/list with these paths
+    sampling:                           # respond to sampling/createMessage
+      response: "mock LLM response"
+    elicitation:                        # respond to elicitation/create
+      response:
+        name: "Alice"
+        confirm: true
+```
+
+**Implementation phases:**
+
+| Phase | Capability | Effort | What it unblocks |
+|-------|-----------|--------|------------------|
+| 1 | **Roots** | Low | Return a list of workspace paths. mcp-go client supports `WithRoots()`. Unblocks mcp-go `roots_server` example. |
+| 2 | **Elicitation** | Medium | Return preset key-value pairs for server-initiated prompts. Unblocks mcp-go `elicitation` example. |
+| 3 | **Sampling** | Medium | Return mock LLM responses with configurable text, model, and stop reason. Unblocks any server that uses MCP sampling for agent behavior. |
+
+**Why this matters:** The mcp-go SDK has 3 example servers (roots_server, sampling_server, elicitation) that are currently untestable by any MCP testing tool. Building this would make mcp-assert the only tool that can fully simulate an MCP client environment — not just "call tools and check responses" but "participate in the full MCP protocol."
+
+**The mock response pattern is key.** The server doesn't care if the LLM response is real. It just needs a response to continue its workflow. Same for roots (just return paths) and elicitation (just return values). The assertion still checks the tool result — client capabilities are setup for the server to function.
 
 ### Setup output capture detail
 
