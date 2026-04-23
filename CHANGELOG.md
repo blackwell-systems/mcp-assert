@@ -18,7 +18,10 @@ The format is based on Keep a Changelog, Semantic Versioning.
   - `--junit <path>`: JUnit XML for GitHub Actions test result tabs, Jenkins, CircleCI
   - `--markdown <path>`: GitHub Step Summary table (auto-detects `$GITHUB_STEP_SUMMARY` in `ci` mode)
   - `--badge <path>`: shields.io endpoint JSON for README badges
-- **36 unit tests** with race detection across checker (14), loader (8), report (14). All assertion types and report formats tested.
+- **Docker isolation** — `--docker <image>` wraps the MCP server in `docker run -i` with fixture volume mounts and environment forwarding. Each assertion runs in a fresh container.
+- **Reliability metrics** — `--trials N` now prints a `pass@k` / `pass^k` table: pass@k (capability: passed at least once), pass^k (reliability: passed every time), per-assertion pass rate.
+- **Regression detection** — `--baseline <path>` compares current results against a saved baseline. `--save-baseline <path>` persists results. `--fail-on-regression` exits 1 when a previously-passing assertion regresses.
+- **49 unit tests** with race detection across checker (14), loader (8), report (27). All assertion types, report formats, reliability metrics, and baseline operations tested.
 - **End-to-end verified in CI** — 17 assertions across 3 MCP servers, all passing:
 - **Example suites for 3 MCP servers** — not just agent-lsp:
   - `examples/filesystem/` — 5 assertions for `@modelcontextprotocol/server-filesystem` (read, list, info, search, path traversal rejection)
