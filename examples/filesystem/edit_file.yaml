@@ -1,0 +1,15 @@
+name: edit_file modifies existing file content
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: edit_file
+  args:
+    path: "{{fixture}}/hello.txt"
+    edits:
+      - oldText: "Hello, world!"
+        newText: "Hello, mcp-assert!"
+    dryRun: true
+  expect:
+    not_error: true
+timeout: 15s

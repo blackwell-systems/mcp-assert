@@ -1,0 +1,12 @@
+name: write_file creates a new file
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: write_file
+  args:
+    path: "{{fixture}}/written.txt"
+    content: "test content"
+  expect:
+    not_error: true
+timeout: 15s

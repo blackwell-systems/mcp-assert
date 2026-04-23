@@ -367,13 +367,30 @@ func substituteFixture(args map[string]any, fixture string) map[string]any {
 	}
 	out := make(map[string]any, len(args))
 	for k, v := range args {
-		if s, ok := v.(string); ok {
-			out[k] = strings.ReplaceAll(s, "{{fixture}}", fixture)
-		} else {
-			out[k] = v
-		}
+		out[k] = substituteValue(v, fixture)
 	}
 	return out
+}
+
+func substituteValue(v any, fixture string) any {
+	switch val := v.(type) {
+	case string:
+		return strings.ReplaceAll(val, "{{fixture}}", fixture)
+	case []any:
+		out := make([]any, len(val))
+		for i, item := range val {
+			out[i] = substituteValue(item, fixture)
+		}
+		return out
+	case map[string]any:
+		out := make(map[string]any, len(val))
+		for k, item := range val {
+			out[k] = substituteValue(item, fixture)
+		}
+		return out
+	default:
+		return v
+	}
 }
 
 func countFails(results []assertion.Result) int {

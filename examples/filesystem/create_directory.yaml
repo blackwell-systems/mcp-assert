@@ -1,0 +1,11 @@
+name: create_directory makes a new directory
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: create_directory
+  args:
+    path: "{{fixture}}/newdir"
+  expect:
+    not_error: true
+timeout: 15s

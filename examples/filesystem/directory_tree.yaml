@@ -1,0 +1,13 @@
+name: directory_tree shows nested structure
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: directory_tree
+  args:
+    path: "{{fixture}}"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["hello.txt", "subdir"]
+timeout: 15s

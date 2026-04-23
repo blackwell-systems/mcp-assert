@@ -1,0 +1,13 @@
+name: list_directory_with_sizes includes file sizes
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: list_directory_with_sizes
+  args:
+    path: "{{fixture}}"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["hello.txt"]
+timeout: 15s

@@ -1,0 +1,14 @@
+name: read_multiple_files reads two files at once
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: read_multiple_files
+  args:
+    paths:
+      - "{{fixture}}/hello.txt"
+      - "{{fixture}}/config.json"
+  expect:
+    not_error: true
+    contains: ["Hello, world!", "test-project"]
+timeout: 15s

@@ -1,0 +1,11 @@
+name: list_allowed_directories shows permitted paths
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: list_allowed_directories
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

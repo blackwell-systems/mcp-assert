@@ -1,0 +1,17 @@
+name: move_file renames a file
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+setup:
+  - tool: write_file
+    args:
+      path: "{{fixture}}/moveme.txt"
+      content: "to be moved"
+assert:
+  tool: move_file
+  args:
+    source: "{{fixture}}/moveme.txt"
+    destination: "{{fixture}}/moved.txt"
+  expect:
+    not_error: true
+timeout: 15s

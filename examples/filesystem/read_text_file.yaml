@@ -1,0 +1,12 @@
+name: read_text_file returns file with line numbers
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: read_text_file
+  args:
+    path: "{{fixture}}/hello.txt"
+  expect:
+    not_error: true
+    contains: ["Hello, world!"]
+timeout: 15s
