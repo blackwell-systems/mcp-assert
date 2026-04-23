@@ -10,7 +10,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server suites | 9 (including HTTP transport variant) |
 | Languages tested | 3 (Go, TypeScript, Python) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 119 |
+| Total assertions | 136 (119 server + 20 trajectory) |
 | Upstream bugs found | 2 |
 | Upstream issues filed | 2 |
 | Clean scans (no bugs) | 3 |
@@ -41,6 +41,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs fixed |
 |--------|----------|-----------|------------|----------|------------|
 | agent-lsp + gopls | Go | stdio | 60 | 100% (50/50 tools) | 5: `character`→`column` param rename, `format_range` 0-indexed docs, undocumented `simulate_edit_atomic` params, missing warmup pattern, shared fixture mutation |
+| agent-lsp skill protocols | N/A (inline trace) | N/A | 20 | 20/20 skills | Trajectory assertions: all 20 skills have required tool call sequences, safety gates, and absence checks verified |
 
 ## Bug Details
 
