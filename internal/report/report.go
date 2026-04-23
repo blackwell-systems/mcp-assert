@@ -12,34 +12,48 @@ func PrintResults(results []assertion.Result) {
 	passed, failed, skipped := 0, 0, 0
 
 	for _, r := range results {
-		icon := "PASS"
+		var icon string
 		switch r.Status {
 		case assertion.StatusPass:
-			icon = "PASS"
+			icon = passIcon()
 			passed++
 		case assertion.StatusFail:
-			icon = "FAIL"
+			icon = failIcon()
 			failed++
 		case assertion.StatusSkip:
-			icon = "SKIP"
+			icon = skipIcon()
 			skipped++
 		}
 
 		suffix := ""
 		if r.Language != "" {
-			suffix = fmt.Sprintf(" (%s)", r.Language)
+			suffix = fmt.Sprintf(" %s", colorize(gray, "("+r.Language+")"))
 		}
 
-		line := fmt.Sprintf("%-4s  %-60s %6dms", icon, r.Name+suffix, r.Duration.Milliseconds())
+		dur := colorize(gray, fmt.Sprintf("%dms", r.Duration.Milliseconds()))
+		line := fmt.Sprintf("%-4s  %-60s %6s", icon, r.Name+suffix, dur)
 		fmt.Println(line)
 
 		if r.Status == assertion.StatusFail && r.Detail != "" {
-			fmt.Printf("      %s\n", r.Detail)
+			fmt.Printf("      %s\n", colorize(red, r.Detail))
 		}
 	}
 
 	fmt.Println()
-	fmt.Printf("%d assertions, %d passed, %d failed, %d skipped\n", len(results), passed, failed, skipped)
+
+	// Summary line.
+	total := len(results)
+	parts := []string{fmt.Sprintf("%d assertions", total)}
+	if passed > 0 {
+		parts = append(parts, colorize(green, fmt.Sprintf("%d passed", passed)))
+	}
+	if failed > 0 {
+		parts = append(parts, colorize(red, fmt.Sprintf("%d failed", failed)))
+	}
+	if skipped > 0 {
+		parts = append(parts, colorize(yellow, fmt.Sprintf("%d skipped", skipped)))
+	}
+	fmt.Println(strings.Join(parts, ", "))
 }
 
 // PrintMatrix prints a cross-language matrix table.
@@ -81,7 +95,16 @@ func PrintMatrix(results []assertion.Result) {
 		row := fmt.Sprintf("%-20s", lang)
 		for _, name := range names {
 			status := resultMap[lang+":"+name]
-			row += fmt.Sprintf("  %-18s", string(status))
+			cell := string(status)
+			switch status {
+			case assertion.StatusPass:
+				cell = colorize(green, "PASS")
+			case assertion.StatusFail:
+				cell = colorize(red, "FAIL")
+			case assertion.StatusSkip:
+				cell = colorize(yellow, "SKIP")
+			}
+			row += fmt.Sprintf("  %-18s", cell)
 		}
 		fmt.Println(row)
 	}

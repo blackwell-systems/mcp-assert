@@ -31,6 +31,11 @@ func main() {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
+	case "coverage":
+		if err := runner.Coverage(os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
 	case "--version", "version":
 		fmt.Printf("mcp-assert %s\n", Version)
 	case "--help", "-h", "help":
@@ -49,11 +54,13 @@ Usage:
   mcp-assert run    --suite <dir> [--server <cmd>] [--fixture <dir>] [--trials N]
   mcp-assert matrix --suite <dir> --languages <lang:server,...>
   mcp-assert ci     --suite <dir> [--server <cmd>] [--threshold N] [--fail-on-regression]
+  mcp-assert coverage --suite <dir> --server <cmd>
 
 Commands:
   run       Run assertions against an MCP server
   matrix    Run assertions across multiple language servers
   ci        Run assertions with CI-specific output and exit codes
+  coverage  Show which server tools have assertions and which don't
 
 Flags:
   --suite <dir>          Directory containing assertion YAML files

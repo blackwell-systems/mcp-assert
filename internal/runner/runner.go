@@ -43,17 +43,22 @@ func Run(args []string) error {
 		return err
 	}
 
+	totalAssertions := len(suite.Assertions) * *trials
+	current := 0
 	var allResults []assertion.Result
 	for _, a := range suite.Assertions {
 		if *server != "" {
 			applyServerOverride(&a, *server)
 		}
 		for trial := 1; trial <= *trials; trial++ {
+			current++
+			report.ProgressLine(current, totalAssertions, a.Name)
 			r := runAssertion(a, *fixture, *timeout, *docker)
 			r.Trial = trial
 			allResults = append(allResults, r)
 		}
 	}
+	report.ClearProgress()
 
 	if *jsonOut {
 		data, _ := json.MarshalIndent(allResults, "", "  ")
@@ -168,13 +173,15 @@ func CI(args []string) error {
 	}
 
 	var allResults []assertion.Result
-	for _, a := range suite.Assertions {
+	for i, a := range suite.Assertions {
 		if *server != "" {
 			applyServerOverride(&a, *server)
 		}
+		report.ProgressLine(i+1, len(suite.Assertions), a.Name)
 		r := runAssertion(a, *fixture, *timeout, *docker)
 		allResults = append(allResults, r)
 	}
+	report.ClearProgress()
 
 	report.PrintResults(allResults)
 

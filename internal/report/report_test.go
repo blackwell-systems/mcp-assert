@@ -36,17 +36,15 @@ func TestPrintResults_AllPass(t *testing.T) {
 
 	out := captureStdout(func() { PrintResults(results) })
 
-	if !strings.Contains(out, "PASS") {
-		t.Error("expected PASS in output")
-	}
 	if !strings.Contains(out, "hover test") {
 		t.Error("expected 'hover test' in output")
 	}
 	if !strings.Contains(out, "2 passed") {
 		t.Error("expected '2 passed' in output")
 	}
-	if !strings.Contains(out, "0 failed") {
-		t.Error("expected '0 failed' in output")
+	// When all pass, summary should not mention failures.
+	if strings.Contains(out, "failed") {
+		t.Error("should not mention 'failed' when all pass")
 	}
 }
 
