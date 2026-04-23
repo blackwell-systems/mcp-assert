@@ -58,6 +58,16 @@ What we found by using mcp-assert to test agent-lsp (our own MCP server) and the
 
 **Status:** Filed as [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). The `type: "blob"` content type violates the MCP 2025-11-25 specification which only allows `text`, `image`, `audio`, `resource_link`, and `resource`.
 
+### 7. Shared fixture mutation causes cascading position failures
+
+**What:** `apply_edit.yaml` runs first (alphabetical order) and inserts a comment line into `main.go`, shifting all line numbers by +1. Every subsequent assertion pointing at `main.go` was hitting the wrong line — landing on comments instead of identifiers.
+
+**How mcp-assert found it:** 12 of 15 assertion failures had the same root cause: "no identifier found" or empty responses at positions that should have worked. The pattern — all failures in the same file, all off by exactly one line — pointed to a shared-state mutation.
+
+**Fix:** Adjusted all position-dependent assertions to account for the inserted line. Long-term fix: either run `apply_edit` last, use a separate fixture copy, or use `--docker` for true isolation.
+
+**Lesson:** Without Docker isolation, assertion ordering matters. Any assertion that writes to disk contaminates the shared fixture for all subsequent assertions.
+
 ---
 
 ## Patterns observed

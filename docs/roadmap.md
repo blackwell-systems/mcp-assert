@@ -4,7 +4,7 @@
 
 | Item | Status | Description |
 |------|--------|-------------|
-| **File upstream bug** | Planned | File issue on `@modelcontextprotocol/server-filesystem` for `read_media_file` returning invalid MCP response on non-media files. "Found by mcp-assert" is social proof. |
+| **File upstream bug** | **Shipped** | Filed [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029) — `read_media_file` returns `type: "blob"`, violating MCP spec. |
 | **Community server suites** | Planned | Add example assertions for 2-3 popular community servers (Brave Search, GitHub, Slack) to demonstrate breadth beyond official Anthropic servers. |
 | **External adoption** | Planned | Get one MCP server author to use mcp-assert and report results. A single "I tested my server with mcp-assert" post is worth more than any feature. |
 
@@ -12,11 +12,11 @@
 
 | Item | Status | Priority | Description |
 |------|--------|----------|-------------|
-| **GitHub Action** | Planned | **Highest** | `uses: blackwell-systems/mcp-assert-action@v1` — one line in any workflow. Downloads the binary, runs assertions, uploads JUnit XML. Frictionless adoption for every MCP server repo. |
+| **GitHub Action** | **Shipped** | **Highest** | [`blackwell-systems/mcp-assert-action@v1`](https://github.com/blackwell-systems/mcp-assert-action) — one line in any workflow. Downloads binary, runs assertions, uploads JUnit XML + badge. |
+| **GoReleaser** | **Shipped** | High | v0.1.1 released. Cross-compiled binaries for linux/darwin/windows × amd64/arm64. `go install ...@v0.1.1`. |
 | **Homebrew formula** | Planned | High | `brew install mcp-assert` |
 | **PyPI wrapper** | Planned | High | `pip install mcp-assert` — downloads the Go binary. Python MCP server authors won't `go install`. |
 | **npm wrapper** | Planned | Medium | `npx mcp-assert` — same pattern, TypeScript audience. |
-| **GoReleaser** | Planned | High | Tagged releases with cross-compiled binaries for `go install ...@v0.1.0` and GitHub Releases download. |
 
 The GitHub Action is the single highest-leverage distribution move. If adding mcp-assert to a CI pipeline is one `uses:` line, adoption is frictionless. Every MCP server repo can add it in 30 seconds.
 
