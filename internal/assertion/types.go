@@ -26,8 +26,9 @@ type ServerConfig struct {
 
 // ToolCall is a single MCP tool invocation.
 type ToolCall struct {
-	Tool string         `yaml:"tool"`
-	Args map[string]any `yaml:"args"`
+	Tool    string            `yaml:"tool"`
+	Args    map[string]any    `yaml:"args"`
+	Capture map[string]string `yaml:"capture,omitempty"` // variable_name -> jsonpath (e.g. "session_id": "$.session_id")
 }
 
 // AssertBlock defines the tool to call and the expected results.

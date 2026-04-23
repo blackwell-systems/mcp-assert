@@ -119,6 +119,146 @@ func TestSubstituteFixture_NoPlaceholders(t *testing.T) {
 	}
 }
 
+// --- substituteAll with captured variables ---
+
+func TestSubstituteAll_CapturedVariables(t *testing.T) {
+	args := map[string]any{
+		"session_id": "{{session_id}}",
+		"file_path":  "{{fixture}}/main.go",
+	}
+	captured := map[string]string{"session_id": "abc-123"}
+	out := substituteAll(args, "/ws", captured)
+
+	if out["session_id"] != "abc-123" {
+		t.Errorf("expected abc-123, got %v", out["session_id"])
+	}
+	if out["file_path"] != "/ws/main.go" {
+		t.Errorf("expected /ws/main.go, got %v", out["file_path"])
+	}
+}
+
+func TestSubstituteAll_MultipleCaptured(t *testing.T) {
+	args := map[string]any{
+		"id":   "{{session_id}}",
+		"name": "{{entity_name}}",
+	}
+	captured := map[string]string{
+		"session_id":  "sess-1",
+		"entity_name": "Alice",
+	}
+	out := substituteAll(args, "", captured)
+
+	if out["id"] != "sess-1" {
+		t.Errorf("expected sess-1, got %v", out["id"])
+	}
+	if out["name"] != "Alice" {
+		t.Errorf("expected Alice, got %v", out["name"])
+	}
+}
+
+func TestSubstituteAll_CapturedInArrays(t *testing.T) {
+	args := map[string]any{
+		"ids": []any{"{{session_id}}", "other"},
+	}
+	captured := map[string]string{"session_id": "xyz"}
+	out := substituteAll(args, "", captured)
+
+	ids := out["ids"].([]any)
+	if ids[0] != "xyz" {
+		t.Errorf("expected xyz in array, got %v", ids[0])
+	}
+	if ids[1] != "other" {
+		t.Errorf("expected other unchanged, got %v", ids[1])
+	}
+}
+
+func TestSubstituteAll_NilCaptured(t *testing.T) {
+	args := map[string]any{"path": "{{fixture}}/test"}
+	out := substituteAll(args, "/ws", nil)
+
+	if out["path"] != "/ws/test" {
+		t.Errorf("nil captured should not break fixture substitution, got %v", out["path"])
+	}
+}
+
+// --- extractJSONPath tests ---
+
+func TestExtractJSONPath_SimpleField(t *testing.T) {
+	json := `{"session_id": "abc-123", "status": "created"}`
+
+	val, err := extractJSONPath(json, "$.session_id")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if val != "abc-123" {
+		t.Errorf("expected abc-123, got %q", val)
+	}
+}
+
+func TestExtractJSONPath_NestedField(t *testing.T) {
+	json := `{"result": {"id": "xyz", "count": 42}}`
+
+	val, err := extractJSONPath(json, "$.result.id")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if val != "xyz" {
+		t.Errorf("expected xyz, got %q", val)
+	}
+}
+
+func TestExtractJSONPath_NumericField(t *testing.T) {
+	json := `{"net_delta": 3}`
+
+	val, err := extractJSONPath(json, "$.net_delta")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if val != "3" {
+		t.Errorf("expected '3', got %q", val)
+	}
+}
+
+func TestExtractJSONPath_ArrayIndex(t *testing.T) {
+	json := `{"items": [{"name": "first"}, {"name": "second"}]}`
+
+	val, err := extractJSONPath(json, "$.items[1].name")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if val != "second" {
+		t.Errorf("expected second, got %q", val)
+	}
+}
+
+func TestExtractJSONPath_MissingField(t *testing.T) {
+	json := `{"a": 1}`
+
+	_, err := extractJSONPath(json, "$.missing")
+	if err == nil {
+		t.Error("expected error for missing field")
+	}
+}
+
+func TestExtractJSONPath_InvalidJSON(t *testing.T) {
+	_, err := extractJSONPath("not json", "$.field")
+	if err == nil {
+		t.Error("expected error for invalid JSON")
+	}
+}
+
+func TestExtractJSONPath_BooleanField(t *testing.T) {
+	json := `{"safe": true}`
+
+	val, err := extractJSONPath(json, "$.safe")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if val != "true" {
+		t.Errorf("expected 'true', got %q", val)
+	}
+}
+
 // --- applyServerOverride tests ---
 
 func TestApplyServerOverride_Simple(t *testing.T) {
