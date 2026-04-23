@@ -124,7 +124,7 @@ Only PASS → non-PASS transitions are flagged. Previously-failing tests that st
 
 | Job | What | Depends on |
 |-----|------|------------|
-| `build-and-test` | Build, vet, 52 unit tests with `-race` | — |
+| `build-and-test` | Build, vet, 81 unit tests with `-race` | — |
 | `e2e-filesystem` | 14 assertions against filesystem server | build-and-test |
 | `e2e-memory` | 5 assertions against memory server | build-and-test |
 | `e2e-sqlite` | 6 assertions against SQLite server (Python/uv) | build-and-test |
@@ -139,8 +139,9 @@ All e2e jobs upload JUnit XML artifacts.
 | Package | Tests | What |
 |---------|-------|------|
 | `internal/assertion` | 22 | All 13 assertion types, loader (YAML parsing, subdirs, errors), snapshot comparison |
-| `internal/report` | 30 | PrintResults, PrintMatrix, JUnit XML, markdown summary, badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare |
-| Total | 52 | Race-detector clean |
+| `internal/report` | 36 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare |
+| `internal/runner` | 23 | Recursive fixture substitution, server override, bad binary, timeout, Docker flag, CLI error paths (missing flags, nonexistent suite, --fail-on-regression without --baseline) |
+| Total | 81 | Race-detector clean |
 
 ---
 
@@ -182,6 +183,7 @@ internal/assertion/
   checker.go                13 assertion type implementations
 internal/runner/
   runner.go                 Run, Matrix, CI commands, MCP client lifecycle
+  runner_test.go            23 tests: substitution, overrides, error paths, timeout, Docker
   coverage.go               Coverage command, tools/list query, --coverage-json
   snapshot.go               Snapshot capture/compare command
   watch.go                  File-watching rerun loop
