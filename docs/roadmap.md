@@ -190,7 +190,8 @@ Tracking coverage of every method defined in the MCP 2025-11-25 specification.
 | Protocol area | Methods | Status | Priority |
 |--------------|---------|--------|----------|
 | **Tools** | `tools/list`, `tools/call`, `notifications/tools/list_changed` | Covered | — |
-| **Resources** | `resources/list`, `resources/read`, `resources/subscribe`, `resources/unsubscribe`, `notifications/resources/updated`, `notifications/resources/list_changed` | Not covered | **High** |
+| **Resources** | `resources/list`, `resources/read` | Covered | — |
+| **Resources (advanced)** | `resources/subscribe`, `resources/unsubscribe`, `notifications/resources/updated`, `notifications/resources/list_changed` | Not covered | Low |
 | **Prompts** | `prompts/list`, `prompts/get`, `notifications/prompts/list_changed` | Not covered | Medium |
 
 ### Client features (server-initiated requests)
@@ -217,10 +218,10 @@ Tracking coverage of every method defined in the MCP 2025-11-25 specification.
 
 | Category | Covered | Total | Notes |
 |----------|---------|-------|-------|
-| Server features | 1/3 | 3 | Tools covered; Resources and Prompts are gaps |
+| Server features | 2/3 | 3 | Tools and Resources (list/read) covered; Prompts gap remains |
 | Client features | 3/3 | 3 | Sampling, roots, elicitation all covered |
 | Utilities | 0/7 | 7 | Progress, cancellation, logging, pagination, completion, ping, tasks |
-| **Total** | **4/13** | **13** | |
+| **Total** | **5/13** | **13** | | |
 
 The biggest gap is server features: Resources and Prompts are whole categories of MCP servers that mcp-assert currently cannot test at all. Every document store, knowledge base, or prompt-template server falls into this gap.
 

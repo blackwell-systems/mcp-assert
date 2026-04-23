@@ -7,6 +7,7 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ### Added
 
+- **Resources assertions**: `assert_resources:` block tests `resources/list` and `resources/read` — whole category of MCP servers (document stores, knowledge bases, file systems) now fully testable. Use `list: {}` to assert what resources the server exposes, `read: "uri"` to assert resource content. `{{fixture}}` substitution works in URIs. Verified against mcp-go `everything` server.
 - **Client capabilities (roots, sampling, elicitation)**: servers that make requests back to the client can now be fully tested via `client_capabilities` in server YAML config. Set `roots: [paths]` to respond to `roots/list`, `sampling: {text, model, stop_reason}` to respond to `sampling/createMessage` with a mock LLM response, or `elicitation: {content: {...}}` to respond to `elicitation/create` with preset values. Verified against mcp-go `roots_server`, `sampling_server`, and `elicitation` example servers. Makes mcp-assert the only MCP testing tool that can fully simulate a bidirectional MCP client environment.
 - **mcp-go sampling_server suite**: 3 assertions for `mark3labs/mcp-go` sampling_server — `ask_llm` with and without a custom system prompt, and `greet` (verifying that non-sampling tools work normally when `client_capabilities.sampling` is set). 100% tool coverage.
 - **mcp-go elicitation suite**: 1 assertion for `mark3labs/mcp-go` elicitation server — `create_project` responding to a form-based elicitation request with preset field values (`projectName`, `framework`, `includeTests`).
