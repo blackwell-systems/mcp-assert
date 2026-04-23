@@ -63,9 +63,11 @@ Flags:
   --languages <spec>     Comma-separated lang:server pairs for matrix mode
   --threshold N          Minimum pass percentage for CI mode (default: 100)
   --fail-on-regression   Exit 1 if any previously-passing assertion fails
-  --docker <image>       Run each assertion in a Docker container
   --timeout <duration>   Per-assertion timeout (default: 30s)
   --json                 Output results as JSON
+  --junit <path>         Write JUnit XML report to path
+  --markdown <path>      Write markdown summary to path (auto-detects $GITHUB_STEP_SUMMARY in ci mode)
+  --badge <path>         Write shields.io endpoint JSON to path
 
 `)
 }

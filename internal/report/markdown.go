@@ -1,0 +1,96 @@
+package report
+
+import (
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/blackwell-systems/mcp-assert/internal/assertion"
+)
+
+// WriteMarkdownSummary writes a GitHub Step Summary compatible markdown table.
+// If path is empty, writes to $GITHUB_STEP_SUMMARY if set.
+func WriteMarkdownSummary(results []assertion.Result, path string) error {
+	if path == "" {
+		path = os.Getenv("GITHUB_STEP_SUMMARY")
+	}
+	if path == "" {
+		return fmt.Errorf("no output path: set --markdown or $GITHUB_STEP_SUMMARY")
+	}
+
+	var b strings.Builder
+
+	passed, failed, skipped := countByStatus(results)
+
+	// Header with pass/fail counts.
+	if failed > 0 {
+		b.WriteString(fmt.Sprintf("### mcp-assert: %d passed, %d failed\n\n", passed, failed))
+	} else {
+		b.WriteString(fmt.Sprintf("### mcp-assert: %d/%d passed\n\n", passed, len(results)))
+	}
+
+	// Results table.
+	b.WriteString("| Status | Assertion | Duration |\n")
+	b.WriteString("|--------|-----------|----------|\n")
+
+	for _, r := range results {
+		icon := statusIcon(r.Status)
+		suffix := ""
+		if r.Language != "" {
+			suffix = fmt.Sprintf(" (%s)", r.Language)
+		}
+		b.WriteString(fmt.Sprintf("| %s | %s%s | %dms |\n", icon, r.Name, suffix, r.Duration.Milliseconds()))
+	}
+
+	// Failure details.
+	if failed > 0 {
+		b.WriteString("\n<details><summary>Failure details</summary>\n\n")
+		for _, r := range results {
+			if r.Status == assertion.StatusFail {
+				b.WriteString(fmt.Sprintf("**%s**\n```\n%s\n```\n\n", r.Name, r.Detail))
+			}
+		}
+		b.WriteString("</details>\n")
+	}
+
+	if skipped > 0 {
+		b.WriteString(fmt.Sprintf("\n_%d assertion(s) skipped_\n", skipped))
+	}
+
+	// Append to file (GitHub Step Summary expects append).
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("writing markdown summary: %w", err)
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(b.String())
+	return err
+}
+
+func statusIcon(s assertion.Status) string {
+	switch s {
+	case assertion.StatusPass:
+		return "PASS"
+	case assertion.StatusFail:
+		return "FAIL"
+	case assertion.StatusSkip:
+		return "SKIP"
+	default:
+		return "?"
+	}
+}
+
+func countByStatus(results []assertion.Result) (passed, failed, skipped int) {
+	for _, r := range results {
+		switch r.Status {
+		case assertion.StatusPass:
+			passed++
+		case assertion.StatusFail:
+			failed++
+		case assertion.StatusSkip:
+			skipped++
+		}
+	}
+	return
+}

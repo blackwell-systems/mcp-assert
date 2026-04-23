@@ -2,7 +2,10 @@ package report
 
 import (
 	"bytes"
+	"encoding/json"
+	"encoding/xml"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -117,5 +120,195 @@ func TestPrintResults_Skip(t *testing.T) {
 	}
 	if !strings.Contains(out, "1 skipped") {
 		t.Error("expected '1 skipped' in output")
+	}
+}
+
+// --- JUnit XML tests ---
+
+func TestWriteJUnit_AllPass(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass, Duration: 150 * time.Millisecond},
+		{Name: "definition", Status: assertion.StatusPass, Duration: 200 * time.Millisecond},
+	}
+	path := filepath.Join(t.TempDir(), "results.xml")
+
+	if err := WriteJUnit(results, path); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	data, _ := os.ReadFile(path)
+	content := string(data)
+
+	if !strings.Contains(content, `<?xml`) {
+		t.Error("expected XML header")
+	}
+	if !strings.Contains(content, `tests="2"`) {
+		t.Error("expected tests=2")
+	}
+	if !strings.Contains(content, `failures="0"`) {
+		t.Error("expected failures=0")
+	}
+	if !strings.Contains(content, `name="hover"`) {
+		t.Error("expected testcase name=hover")
+	}
+
+	// Verify it's valid XML.
+	var suites junitTestSuites
+	if err := xml.Unmarshal(data, &suites); err != nil {
+		t.Fatalf("invalid XML: %v", err)
+	}
+	if len(suites.Suites) != 1 {
+		t.Fatalf("expected 1 suite, got %d", len(suites.Suites))
+	}
+	if len(suites.Suites[0].Cases) != 2 {
+		t.Fatalf("expected 2 cases, got %d", len(suites.Suites[0].Cases))
+	}
+}
+
+func TestWriteJUnit_WithFailure(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "good", Status: assertion.StatusPass, Duration: 100 * time.Millisecond},
+		{Name: "bad", Status: assertion.StatusFail, Detail: "expected foo", Duration: 50 * time.Millisecond},
+	}
+	path := filepath.Join(t.TempDir(), "results.xml")
+
+	WriteJUnit(results, path)
+	data, _ := os.ReadFile(path)
+
+	var suites junitTestSuites
+	xml.Unmarshal(data, &suites)
+
+	if suites.Suites[0].Failures != 1 {
+		t.Errorf("expected 1 failure, got %d", suites.Suites[0].Failures)
+	}
+	if suites.Suites[0].Cases[1].Failure == nil {
+		t.Error("expected failure element on second case")
+	}
+	if suites.Suites[0].Cases[1].Failure.Message != "expected foo" {
+		t.Errorf("expected failure message 'expected foo', got %q", suites.Suites[0].Cases[1].Failure.Message)
+	}
+}
+
+func TestWriteJUnit_WithLanguage(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass, Duration: 100 * time.Millisecond, Language: "go"},
+	}
+	path := filepath.Join(t.TempDir(), "results.xml")
+
+	WriteJUnit(results, path)
+	data, _ := os.ReadFile(path)
+
+	if !strings.Contains(string(data), `classname="go"`) {
+		t.Error("expected classname=go for language-tagged result")
+	}
+}
+
+// --- Markdown tests ---
+
+func TestWriteMarkdownSummary_AllPass(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass, Duration: 150 * time.Millisecond},
+		{Name: "definition", Status: assertion.StatusPass, Duration: 200 * time.Millisecond},
+	}
+	path := filepath.Join(t.TempDir(), "summary.md")
+
+	if err := WriteMarkdownSummary(results, path); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	data, _ := os.ReadFile(path)
+	content := string(data)
+
+	if !strings.Contains(content, "2/2 passed") {
+		t.Error("expected '2/2 passed' in summary")
+	}
+	if !strings.Contains(content, "| PASS | hover") {
+		t.Error("expected PASS hover row")
+	}
+	if strings.Contains(content, "Failure details") {
+		t.Error("should not contain failure details when all pass")
+	}
+}
+
+func TestWriteMarkdownSummary_WithFailure(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "good", Status: assertion.StatusPass, Duration: 100 * time.Millisecond},
+		{Name: "bad", Status: assertion.StatusFail, Detail: "expected foo", Duration: 50 * time.Millisecond},
+	}
+	path := filepath.Join(t.TempDir(), "summary.md")
+
+	WriteMarkdownSummary(results, path)
+	data, _ := os.ReadFile(path)
+	content := string(data)
+
+	if !strings.Contains(content, "1 passed, 1 failed") {
+		t.Error("expected '1 passed, 1 failed' in header")
+	}
+	if !strings.Contains(content, "Failure details") {
+		t.Error("expected failure details section")
+	}
+	if !strings.Contains(content, "expected foo") {
+		t.Error("expected failure detail text")
+	}
+}
+
+func TestWriteMarkdownSummary_NoPath(t *testing.T) {
+	// No path and no $GITHUB_STEP_SUMMARY should error.
+	os.Unsetenv("GITHUB_STEP_SUMMARY")
+	err := WriteMarkdownSummary(nil, "")
+	if err == nil {
+		t.Error("expected error when no path given")
+	}
+}
+
+// --- Badge tests ---
+
+func TestWriteBadge_AllPass(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass},
+		{Name: "definition", Status: assertion.StatusPass},
+	}
+	path := filepath.Join(t.TempDir(), "badge.json")
+
+	if err := WriteBadge(results, path); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	data, _ := os.ReadFile(path)
+	var badge ShieldsEndpoint
+	json.Unmarshal(data, &badge)
+
+	if badge.SchemaVersion != 1 {
+		t.Errorf("expected schemaVersion 1, got %d", badge.SchemaVersion)
+	}
+	if badge.Label != "mcp-assert" {
+		t.Errorf("expected label 'mcp-assert', got %q", badge.Label)
+	}
+	if badge.Message != "2/2" {
+		t.Errorf("expected message '2/2', got %q", badge.Message)
+	}
+	if badge.Color != "brightgreen" {
+		t.Errorf("expected color 'brightgreen', got %q", badge.Color)
+	}
+}
+
+func TestWriteBadge_WithFailure(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "good", Status: assertion.StatusPass},
+		{Name: "bad", Status: assertion.StatusFail},
+	}
+	path := filepath.Join(t.TempDir(), "badge.json")
+
+	WriteBadge(results, path)
+	data, _ := os.ReadFile(path)
+
+	var badge ShieldsEndpoint
+	json.Unmarshal(data, &badge)
+
+	if badge.Message != "1/2" {
+		t.Errorf("expected message '1/2', got %q", badge.Message)
+	}
+	if badge.Color != "red" {
+		t.Errorf("expected color 'red', got %q", badge.Color)
 	}
 }

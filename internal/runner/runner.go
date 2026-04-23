@@ -24,6 +24,9 @@ func Run(args []string) error {
 	trials := fs.Int("trials", 1, "Number of trials per assertion")
 	timeout := fs.Duration("timeout", 30*time.Second, "Per-assertion timeout")
 	jsonOut := fs.Bool("json", false, "Output results as JSON")
+	junitPath := fs.String("junit", "", "Write JUnit XML report to path")
+	markdownPath := fs.String("markdown", "", "Write markdown summary to path (or $GITHUB_STEP_SUMMARY)")
+	badgePath := fs.String("badge", "", "Write shields.io badge JSON to path")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -55,6 +58,8 @@ func Run(args []string) error {
 	} else {
 		report.PrintResults(allResults)
 	}
+
+	writeReports(allResults, *junitPath, *markdownPath, *badgePath)
 
 	for _, r := range allResults {
 		if r.Status == assertion.StatusFail {
@@ -114,6 +119,9 @@ func CI(args []string) error {
 	server := fs.String("server", "", "Override server command (e.g. 'agent-lsp go:gopls')")
 	threshold := fs.Int("threshold", 100, "Minimum pass percentage")
 	timeout := fs.Duration("timeout", 30*time.Second, "Per-assertion timeout")
+	junitPath := fs.String("junit", "", "Write JUnit XML report to path")
+	markdownPath := fs.String("markdown", "", "Write markdown summary to path (or $GITHUB_STEP_SUMMARY)")
+	badgePath := fs.String("badge", "", "Write shields.io badge JSON to path")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -137,6 +145,13 @@ func CI(args []string) error {
 	}
 
 	report.PrintResults(allResults)
+
+	// Auto-write GitHub Step Summary when in CI.
+	mdPath := *markdownPath
+	if mdPath == "" && os.Getenv("GITHUB_STEP_SUMMARY") != "" {
+		mdPath = os.Getenv("GITHUB_STEP_SUMMARY")
+	}
+	writeReports(allResults, *junitPath, mdPath, *badgePath)
 
 	passed := countPasses(allResults)
 	total := len(allResults)
@@ -305,6 +320,26 @@ func countPasses(results []assertion.Result) int {
 		}
 	}
 	return n
+}
+
+// writeReports writes optional structured report files. Errors are printed
+// to stderr but do not fail the run — reporting is best-effort.
+func writeReports(results []assertion.Result, junitPath, markdownPath, badgePath string) {
+	if junitPath != "" {
+		if err := report.WriteJUnit(results, junitPath); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: junit: %v\n", err)
+		}
+	}
+	if markdownPath != "" {
+		if err := report.WriteMarkdownSummary(results, markdownPath); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: markdown: %v\n", err)
+		}
+	}
+	if badgePath != "" {
+		if err := report.WriteBadge(results, badgePath); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: badge: %v\n", err)
+		}
+	}
 }
 
 // applyServerOverride parses a "--server" string like "agent-lsp go:gopls"
