@@ -6,11 +6,23 @@ A single Go binary that starts your MCP server over stdio, calls your tools, and
 
 ## Why
 
-Every existing MCP eval framework uses LLM-as-judge: send a prompt, get a response, ask GPT "was this good?" on a 1-5 scale. This makes sense for subjective outputs. It's the wrong approach for deterministic tools.
+Most MCP tools are deterministic: `read_file` returns file contents, `read_query` returns rows, `get_references` returns locations. Given the same input, the correct output is knowable in advance. You don't need an LLM to grade it — you need `assert.Equal`.
 
-When `read_file` is called with a known path, the correct answer is the file's contents. When `search_nodes` is called after creating an entity, the entity should appear. The tools either return the right results or they don't. No LLM needed. No API costs. No false variance.
+Existing MCP eval frameworks use LLM-as-judge for everything: send a prompt, get a response, ask GPT "was this good?" on a 1-5 scale. This adds cost, latency, and false variance to tests that should be instant and exact.
 
 mcp-assert tests MCP server tools the way you test code: given this input, assert this output.
+
+### When to use what
+
+| Your tool returns... | Use |
+|---|---|
+| Structured data (files, rows, locations, symbols) | **mcp-assert** — deterministic assertions |
+| Predictable state changes (rename, create, delete) | **mcp-assert** — assert the state after |
+| Error responses for bad input | **mcp-assert** — `is_error` and `contains` |
+| Natural language (summaries, explanations, descriptions) | **LLM-as-judge** — quality is subjective |
+| Creative content (commit messages, code suggestions) | **LLM-as-judge** — many correct answers |
+
+Most MCP servers are heavy on the first three and light on the last two. If your server returns data, mcp-assert covers it. If your server generates prose, you need a different tool.
 
 ## Why not just write tests in Go/Python/etc?
 
