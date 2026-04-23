@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- **Snapshot testing** — `mcp-assert snapshot --suite <dir> [--update]` captures tool responses as `.snapshots.json`, compares on subsequent runs. Like `jest --updateSnapshot` for MCP servers. Eliminates manual assertion writing for initial coverage.
+- **`--watch` mode** — `mcp-assert watch --suite <dir>` reruns assertions on YAML file change. Polls every 2s, clears terminal between runs. Assertion development loop.
+- **`--coverage-json`** — machine-readable coverage data for dashboards and badges on the `coverage` command.
+- **pass@k / pass^k in structured reports** — reliability metrics now included in JUnit XML (`<properties>`) and markdown (table section) when `--trials > 1`. Previously terminal-only.
+- **52 unit tests** (up from 49).
+
 ## [0.1.1] - 2026-04-23
 
 ### Fixed

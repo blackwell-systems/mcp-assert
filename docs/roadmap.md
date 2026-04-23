@@ -24,10 +24,10 @@ The GitHub Action is the single highest-leverage distribution move. If adding mc
 
 | Item | Status | Priority | Description |
 |------|--------|----------|-------------|
-| **--watch mode** | Planned | Medium | Rerun assertions on file change. Assertion development loop: edit YAML, save, see result. |
-| **Snapshot testing** | Planned | High | `mcp-assert snapshot --update` auto-generates expected values from first run, saves as baseline, asserts against them on subsequent runs. Eliminates manual assertion writing for initial coverage. |
-| **pass@k in reports** | Planned | Medium | Include reliability metrics in JUnit XML and markdown output, not just terminal. |
-| **--coverage-json** | Planned | Medium | Machine-readable coverage data for dashboards and badges. |
+| **Snapshot testing** | **Shipped** | High | `mcp-assert snapshot --update` captures tool responses as `.snapshots.json`. Subsequent runs compare against saved snapshots. Like `jest --updateSnapshot`. |
+| **--watch mode** | **Shipped** | Medium | `mcp-assert watch` reruns assertions on YAML file change. Polls every 2s, clears terminal between runs. |
+| **pass@k in reports** | **Shipped** | Medium | Reliability metrics in JUnit XML (`<properties>`) and markdown (reliability table) when `--trials > 1`. |
+| **--coverage-json** | **Shipped** | Medium | `--coverage-json <path>` on `coverage` command writes machine-readable coverage data. |
 | **Trajectory assertions** | Planned | Low | Assert on the sequence of tool calls in a multi-step workflow, not just single tool responses. Requires capturing the full call trace, not just the final result. |
 
 ### Snapshot testing detail

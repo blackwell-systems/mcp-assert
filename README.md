@@ -1,5 +1,9 @@
 # mcp-assert
 
+[![Blackwell Systems](https://raw.githubusercontent.com/blackwell-systems/blackwell-docs-theme/main/badge-trademark.svg)](https://github.com/blackwell-systems)
+[![Go](https://img.shields.io/badge/go-1.23+-blue.svg)](https://go.dev/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 Test any MCP server in any language. No SDK required. No LLM required.
 
 A single Go binary that starts your MCP server over stdio, calls your tools, and asserts the results. Define assertions in YAML, run them in CI. Works with servers written in Go, TypeScript, Python, Rust, Java — anything that speaks MCP.

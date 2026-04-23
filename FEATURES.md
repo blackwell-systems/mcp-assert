@@ -4,14 +4,16 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 
 ---
 
-## CLI Commands (4)
+## CLI Commands (6)
 
 | Command | Description | Key flags |
 |---------|-------------|-----------|
 | `run` | Execute assertions against an MCP server | `--suite`, `--server`, `--fixture`, `--trials`, `--docker`, `--json`, `--junit`, `--markdown`, `--badge`, `--baseline`, `--save-baseline` |
 | `ci` | Run with CI-specific exit codes and reporting | All `run` flags + `--threshold`, `--fail-on-regression` |
 | `matrix` | Run assertions across multiple language servers | `--suite`, `--languages`, `--fixture` |
-| `coverage` | Report which server tools have assertions | `--suite`, `--server` |
+| `coverage` | Report which server tools have assertions | `--suite`, `--server`, `--coverage-json` |
+| `snapshot` | Capture/compare tool response snapshots | `--suite`, `--server`, `--fixture`, `--update`, `--docker` |
+| `watch` | Rerun assertions on YAML file change | Same as `run` + polling interval |
 
 ---
 
@@ -36,15 +38,17 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 
 ---
 
-## Output Formats (5)
+## Output Formats (7)
 
 | Format | Flag | Description |
 |--------|------|-------------|
 | Terminal | (default) | Color pass/fail/skip with duration, progress counter on stderr |
 | JSON | `--json` | Full result array as JSON to stdout |
-| JUnit XML | `--junit <path>` | Standard JUnit format for CI test result tabs |
-| Markdown | `--markdown <path>` | GitHub Step Summary table (auto-detects `$GITHUB_STEP_SUMMARY`) |
+| JUnit XML | `--junit <path>` | Standard JUnit format for CI test result tabs. Includes pass@k/pass^k properties when `--trials > 1` |
+| Markdown | `--markdown <path>` | GitHub Step Summary table (auto-detects `$GITHUB_STEP_SUMMARY`). Includes reliability section when `--trials > 1` |
 | Badge | `--badge <path>` | shields.io endpoint JSON (`schemaVersion`, `label`, `message`, `color`) |
+| Coverage JSON | `--coverage-json <path>` | Machine-readable coverage data: total, covered, percentage, covered/uncovered tool lists |
+| Snapshots | `.snapshots.json` | Captured tool responses for regression comparison via `snapshot` command |
 
 ---
 
@@ -109,10 +113,10 @@ Only PASS → non-PASS transitions are flagged. Previously-failing tests that st
 
 | Suite | Server | Language | Assertions | Key patterns |
 |-------|--------|----------|------------|--------------|
-| `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | 5 | Read, list, search, info, path traversal rejection |
+| `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | 14 | Read, list, search, info, write, edit, create dir, move, directory tree, path traversal rejection (92% tool coverage) |
 | `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | 5 | Stateful setup (create → query), relations, observations |
 | `examples/sqlite/` | `mcp-server-sqlite` | Python | 6 | SQL queries, joins, counts, schema introspection, error handling |
-| `examples/agent-lsp-go/` | agent-lsp + gopls | Go | 21 | Navigation, refactoring, analysis, speculative execution, build |
+| `examples/agent-lsp-go/` | agent-lsp + gopls | Go | 51 | All 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, build (100% tool coverage) |
 
 ---
 
@@ -120,11 +124,11 @@ Only PASS → non-PASS transitions are flagged. Previously-failing tests that st
 
 | Job | What | Depends on |
 |-----|------|------------|
-| `build-and-test` | Build, vet, 49 unit tests with `-race` | — |
-| `e2e-filesystem` | 5 assertions against filesystem server | build-and-test |
+| `build-and-test` | Build, vet, 52 unit tests with `-race` | — |
+| `e2e-filesystem` | 14 assertions against filesystem server | build-and-test |
 | `e2e-memory` | 5 assertions against memory server | build-and-test |
 | `e2e-sqlite` | 6 assertions against SQLite server (Python/uv) | build-and-test |
-| `e2e-agent-lsp` | 21 assertions against agent-lsp + gopls | build-and-test |
+| `e2e-agent-lsp` | 51 assertions against agent-lsp + gopls | build-and-test |
 
 All e2e jobs upload JUnit XML artifacts.
 
@@ -135,8 +139,8 @@ All e2e jobs upload JUnit XML artifacts.
 | Package | Tests | What |
 |---------|-------|------|
 | `internal/assertion` | 22 | All 13 assertion types, loader (YAML parsing, subdirs, errors), snapshot comparison |
-| `internal/report` | 27 | PrintResults, PrintMatrix, JUnit XML, markdown summary, badge JSON, reliability metrics, baseline write/load, regression detection |
-| Total | 49 | Race-detector clean |
+| `internal/report` | 30 | PrintResults, PrintMatrix, JUnit XML, markdown summary, badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare |
+| Total | 52 | Race-detector clean |
 
 ---
 
@@ -178,13 +182,17 @@ internal/assertion/
   checker.go                13 assertion type implementations
 internal/runner/
   runner.go                 Run, Matrix, CI commands, MCP client lifecycle
-  coverage.go               Coverage command, tools/list query
+  coverage.go               Coverage command, tools/list query, --coverage-json
+  snapshot.go               Snapshot capture/compare command
+  watch.go                  File-watching rerun loop
 internal/report/
   report.go                 Terminal output (color-aware)
   color.go                  ANSI color, TTY detection, progress
-  junit.go                  JUnit XML generation
-  markdown.go               GitHub Step Summary
+  junit.go                  JUnit XML generation (with pass@k properties)
+  markdown.go               GitHub Step Summary (with reliability table)
   badge.go                  shields.io endpoint JSON
   reliability.go            pass@k / pass^k computation
   baseline.go               Baseline write/load, regression detection
+  coverage.go               Coverage JSON serialization
+  snapshot.go               Snapshot file read/write/compare
 ```
