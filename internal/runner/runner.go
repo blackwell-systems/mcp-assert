@@ -491,7 +491,9 @@ func createStdioClientWithCapabilities(
 	}
 
 	c := client.NewClient(stdioTransport, opts...)
-	// Start the client to register bidirectional request handlers (roots, sampling, elicitation).
+	// Start the client to register bidirectional request handlers.
+	// transport.Start() is idempotent (guarded by c.started mutex),
+	// so calling it again via c.Start() is safe.
 	if err := c.Start(context.Background()); err != nil {
 		return nil, fmt.Errorf("failed to start client: %w", err)
 	}

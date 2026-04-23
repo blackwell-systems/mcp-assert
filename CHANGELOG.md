@@ -19,6 +19,12 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **mcp-go elicitation suite**: 1 assertion for `mark3labs/mcp-go` elicitation server — `create_project` responding to a form-based elicitation request with preset field values (`projectName`, `framework`, `includeTests`).
 - **19 new unit tests** for client capabilities: `TestStaticRootsHandler_ListRoots`, `TestStaticRootsHandler_EmptyRoots`, `TestStaticSamplingHandler_CreateMessage`, `TestStaticSamplingHandler_DefaultModelAndStopReason`, `TestStaticElicitationHandler_ReturnsContentAndAccept`, `TestStaticElicitationHandler_FallsBackToWholeMap`, `TestCreateStdioClientWithCapabilities_FixtureSubstitution`, `TestCreateMCPClient_WithRoots_UsesCapabilityPath`, `TestCreateMCPClient_WithSampling_UsesCapabilityPath`, `TestCreateMCPClient_WithElicitation_UsesCapabilityPath`, `TestCreateMCPClient_EmptyClientCapabilities_UsesSimplePath`, `TestRunAssertion_ClientCapabilities_BadServer`. Total unit tests: 144.
 
+## [0.1.3] - 2026-04-23
+
+### Added
+
+- See [Unreleased] entries above — trajectory assertions, prompts, resources, progress capture, client capabilities, fastmcp expansion, 157 unit tests.
+
 ## [0.1.2] - 2026-04-23
 
 ### Added
