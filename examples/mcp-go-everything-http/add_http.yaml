@@ -1,0 +1,17 @@
+# Same assertion as stdio version, but over HTTP transport.
+# Requires the everything server running: /tmp/mcp-go-everything-server --transport http
+name: add over HTTP transport
+server:
+  transport: http
+  url: "http://localhost:8080/mcp"
+assert:
+  args:
+    a: 3
+    b: 7
+  expect:
+    contains:
+    - '10'
+    not_empty: true
+    not_error: true
+  tool: add
+timeout: 15s

@@ -1,0 +1,16 @@
+# Same assertion as stdio version, but over HTTP transport.
+# Requires the everything server running: /tmp/mcp-go-everything-server --transport http
+name: get_resource_link over HTTP transport
+server:
+  transport: http
+  url: "http://localhost:8080/mcp"
+assert:
+  args:
+    resource_type: report
+  expect:
+    contains:
+    - report
+    not_empty: true
+    not_error: true
+  tool: get_resource_link
+timeout: 15s

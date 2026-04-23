@@ -1,0 +1,15 @@
+# Same assertion as stdio version, but over HTTP transport.
+# Requires the everything server running: /tmp/mcp-go-everything-server --transport http
+name: notify over HTTP transport
+server:
+  transport: http
+  url: "http://localhost:8080/mcp"
+assert:
+  args: {}
+  expect:
+    contains:
+    - notification sent
+    not_empty: true
+    not_error: true
+  tool: notify
+timeout: 15s
