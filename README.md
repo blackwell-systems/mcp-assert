@@ -1,12 +1,14 @@
 # mcp-assert
 
-Deterministic correctness testing for MCP servers. Assert your tools return the right results, not just any results.
+Test any MCP server in any language. No SDK required. No LLM required.
+
+A single Go binary that starts your MCP server over stdio, calls your tools, and asserts the results. Define assertions in YAML, run them in CI. Works with servers written in Go, TypeScript, Python, Rust, Java — anything that speaks MCP.
 
 ## Why
 
 Every existing MCP eval framework uses LLM-as-judge: send a prompt, get a response, ask GPT "was this good?" on a 1-5 scale. This makes sense for subjective outputs. It's the wrong approach for deterministic tools.
 
-When `get_references` is called on line 42 of a Go file, the correct answer is a specific set of locations. The tool either returns them or it doesn't. No LLM needed. No API costs. No false variance.
+When `read_file` is called with a known path, the correct answer is the file's contents. When `search_nodes` is called after creating an entity, the entity should appear. The tools either return the right results or they don't. No LLM needed. No API costs. No false variance.
 
 mcp-assert tests MCP server tools the way you test code: given this input, assert this output.
 
@@ -16,49 +18,42 @@ mcp-assert tests MCP server tools the way you test code: given this input, asser
 go install github.com/blackwell-systems/mcp-assert@latest
 ```
 
-Define an assertion:
+Define an assertion for any MCP server — here's one for the TypeScript filesystem server:
 
 ```yaml
-# evals/hover.yaml
-name: hover returns type info for Person
+# evals/read_file.yaml
+name: read_file returns file contents
 server:
-  command: agent-lsp
-  args: ["go:gopls"]
-setup:
-  - tool: start_lsp
-    args: { root_dir: "{{fixture}}" }
-  - tool: open_document
-    args: { file_path: "{{fixture}}/main.go", language_id: go }
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
 assert:
-  tool: get_info_on_location
+  tool: read_file
   args:
-    file_path: "{{fixture}}/main.go"
-    line: 6
-    column: 6
+    path: "{{fixture}}/hello.txt"
   expect:
     not_error: true
-    not_empty: true
-    contains: ["Person"]
+    contains: ["Hello, world!"]
 ```
 
 Run it:
 
 ```bash
-mcp-assert run --suite evals/ --fixture test/fixtures/go
+mcp-assert run --suite evals/ --fixture ./fixtures
 ```
 
-Output:
+Works the same for a Go server, a Python server, or anything else that speaks MCP:
 
+```yaml
+# Same assertion format, different server
+server:
+  command: python
+  args: ["-m", "my_mcp_server"]
 ```
-PASS  hover returns type info for Person                              690ms
-PASS  go_to_definition resolves Person to main.go                     652ms
-PASS  get_diagnostics returns clean for valid file                  25097ms
-PASS  get_references finds cross-file callers of Person             27358ms
-PASS  speculative edit detects type error with net_delta > 0        28676ms
-PASS  completions suggest methods after Person dot                    699ms
-PASS  get_document_symbols lists Person type and methods              415ms
 
-7 assertions, 7 passed, 0 failed, 0 skipped
+```yaml
+server:
+  command: agent-lsp
+  args: ["go:gopls"]
 ```
 
 ## Example Suites
