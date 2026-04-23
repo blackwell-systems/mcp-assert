@@ -78,9 +78,21 @@ Only PASS → non-PASS transitions are flagged. Previously-failing tests that st
 
 ---
 
+## Transport Support
+
+| Transport | Field | Description |
+|-----------|-------|-------------|
+| `stdio` (default) | `command`, `args`, `env` | Launch MCP server as a subprocess, communicate over stdin/stdout |
+| `sse` | `url` | Connect to an SSE-based MCP server (legacy transport) |
+| `http` | `url` | Connect to a streamable HTTP MCP server (modern transport) |
+
+Transport is configured per-assertion in YAML via the `transport` and `url` fields. When omitted, defaults to stdio. Case-insensitive. Docker isolation is only supported with stdio.
+
+---
+
 ## Docker Isolation
 
-`--docker <image>` wraps the MCP server command in `docker run --rm -i`:
+`--docker <image>` wraps the MCP server command in `docker run --rm -i` (stdio transport only):
 - Fixture directory volume-mounted into the container
 - Environment variables forwarded via `-e` flags
 - Each assertion gets a fresh container (no cross-test contamination)
@@ -142,8 +154,8 @@ All e2e jobs upload JUnit XML artifacts.
 |---------|-------|------|
 | `internal/assertion` | 22 | All 14 assertion types, loader (YAML parsing, subdirs, errors), snapshot comparison |
 | `internal/report` | 36 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare |
-| `internal/runner` | 42 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, generate schema parsing, stub generation, filename sanitization, CLI error paths |
-| Total | 100 | Race-detector clean |
+| `internal/runner` | 53 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, transport selection (stdio/SSE/HTTP), URL validation, generate schema parsing, stub generation, filename sanitization, CLI error paths |
+| Total | 111 | Race-detector clean |
 
 ---
 
@@ -152,10 +164,12 @@ All e2e jobs upload JUnit XML artifacts.
 ```yaml
 name: Human-readable description
 server:
-  command: path/to/mcp-server
+  command: path/to/mcp-server        # stdio transport
   args: ["arg1", "arg2"]
   env:
     KEY: value
+  transport: stdio                   # "stdio" (default), "sse", or "http"
+  url: "http://localhost:8080/sse"   # required for sse/http transport
 setup:
   - tool: setup_tool
     args: { key: value }

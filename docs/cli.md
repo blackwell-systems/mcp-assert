@@ -164,6 +164,20 @@ mcp-assert run --suite evals/ --docker ghcr.io/blackwell-systems/agent-lsp:go --
 
 The fixture directory is mounted into the container. Each assertion gets a clean environment — no cross-test contamination, no "works on my machine."
 
+Docker isolation is only supported with stdio transport (the default). HTTP/SSE transports connect to an already-running server and do not use Docker wrapping.
+
+## HTTP/SSE Transport
+
+Transport is configured per-assertion in YAML, not via CLI flags. Set `transport: sse` or `transport: http` with a `url` field to connect to HTTP-based MCP servers instead of launching a subprocess:
+
+```yaml
+server:
+  transport: sse
+  url: "http://localhost:8080/sse"
+```
+
+See [Writing Assertions](writing-assertions.md#httpsse-transport) for full examples.
+
 ## Reliability Metrics
 
 Run multiple trials to measure consistency:

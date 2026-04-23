@@ -17,11 +17,15 @@ type Assertion struct {
 	Timeout string       `yaml:"timeout"`
 }
 
-// ServerConfig specifies how to start the MCP server under test.
+// ServerConfig specifies how to connect to the MCP server under test.
+// For stdio transport (default), Command/Args/Env launch the server as a subprocess.
+// For HTTP or SSE transport, URL specifies the server endpoint.
 type ServerConfig struct {
-	Command string            `yaml:"command"`
-	Args    []string          `yaml:"args"`
-	Env     map[string]string `yaml:"env"`
+	Command   string            `yaml:"command"`
+	Args      []string          `yaml:"args"`
+	Env       map[string]string `yaml:"env"`
+	Transport string            `yaml:"transport,omitempty"` // "stdio" (default), "sse", "http"
+	URL       string            `yaml:"url,omitempty"`       // Required for sse/http transport
 }
 
 // ToolCall is a single MCP tool invocation.

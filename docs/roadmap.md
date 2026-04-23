@@ -24,6 +24,7 @@ The GitHub Action is the single highest-leverage distribution move. If adding mc
 
 | Item | Status | Priority | Description |
 |------|--------|----------|-------------|
+| **HTTP/SSE transport** | **Shipped** | **High** | Test MCP servers over HTTP (streamable HTTP) and SSE (legacy), not just stdio. Set `transport: sse` or `transport: http` with a `url` field in assertion YAML. Uses mcp-go's `NewSSEMCPClient` and `NewStreamableHttpClient`. Docker isolation remains stdio-only. |
 | **Snapshot testing** | **Shipped** | High | `mcp-assert snapshot --update` captures tool responses as `.snapshots.json`. Subsequent runs compare against saved snapshots. Like `jest --updateSnapshot`. |
 | **--watch mode** | **Shipped** | Medium | `mcp-assert watch` reruns assertions on YAML file change. Polls every 2s, clears terminal between runs. |
 | **pass@k in reports** | **Shipped** | Medium | Reliability metrics in JUnit XML (`<properties>`) and markdown (reliability table) when `--trials > 1`. |

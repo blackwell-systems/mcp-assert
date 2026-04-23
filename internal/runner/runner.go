@@ -230,40 +230,7 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	// Start the MCP server.
-	serverCmd := a.Server.Command
-	serverArgs := a.Server.Args
-
-	// Substitute {{fixture}} in args.
-	if fixture != "" {
-		for i, arg := range serverArgs {
-			serverArgs[i] = strings.ReplaceAll(arg, "{{fixture}}", fixture)
-		}
-	}
-
-	// Convert env map to slice.
-	var envSlice []string
-	for k, v := range a.Server.Env {
-		envSlice = append(envSlice, k+"="+v)
-	}
-
-	// Docker isolation: wrap server command in docker run -i.
-	if dockerImage != "" {
-		dockerArgs := []string{"run", "--rm", "-i"}
-		if fixture != "" {
-			dockerArgs = append(dockerArgs, "-v", fixture+":"+fixture)
-		}
-		for _, e := range envSlice {
-			dockerArgs = append(dockerArgs, "-e", e)
-		}
-		dockerArgs = append(dockerArgs, dockerImage, serverCmd)
-		dockerArgs = append(dockerArgs, serverArgs...)
-		serverCmd = "docker"
-		serverArgs = dockerArgs
-		envSlice = nil // env is passed via -e flags
-	}
-
-	mcpClient, err := client.NewStdioMCPClient(serverCmd, envSlice, serverArgs...)
+	mcpClient, err := createMCPClient(a.Server, fixture, dockerImage)
 	if err != nil {
 		return assertion.Result{
 			Name:     a.Name,
@@ -367,6 +334,62 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 		Name:     a.Name,
 		Status:   assertion.StatusPass,
 		Duration: time.Since(start),
+	}
+}
+
+// createMCPClient creates the appropriate MCP client based on the server config's
+// transport type. For stdio (default), it launches a subprocess. For sse/http, it
+// connects to the specified URL. Docker isolation is only supported with stdio.
+func createMCPClient(server assertion.ServerConfig, fixture string, dockerImage string) (client.MCPClient, error) {
+	transport := strings.ToLower(server.Transport)
+
+	switch transport {
+	case "sse":
+		if server.URL == "" {
+			return nil, fmt.Errorf("transport %q requires a url field", transport)
+		}
+		return client.NewSSEMCPClient(server.URL)
+	case "http":
+		if server.URL == "" {
+			return nil, fmt.Errorf("transport %q requires a url field", transport)
+		}
+		return client.NewStreamableHttpClient(server.URL)
+	case "stdio", "":
+		// Default: launch server as a subprocess via stdio.
+		serverCmd := server.Command
+		serverArgs := make([]string, len(server.Args))
+		copy(serverArgs, server.Args)
+
+		if fixture != "" {
+			for i, arg := range serverArgs {
+				serverArgs[i] = strings.ReplaceAll(arg, "{{fixture}}", fixture)
+			}
+		}
+
+		var envSlice []string
+		for k, v := range server.Env {
+			envSlice = append(envSlice, k+"="+v)
+		}
+
+		// Docker isolation: wrap server command in docker run -i.
+		if dockerImage != "" {
+			dockerArgs := []string{"run", "--rm", "-i"}
+			if fixture != "" {
+				dockerArgs = append(dockerArgs, "-v", fixture+":"+fixture)
+			}
+			for _, e := range envSlice {
+				dockerArgs = append(dockerArgs, "-e", e)
+			}
+			dockerArgs = append(dockerArgs, dockerImage, serverCmd)
+			dockerArgs = append(dockerArgs, serverArgs...)
+			serverCmd = "docker"
+			serverArgs = dockerArgs
+			envSlice = nil // env is passed via -e flags
+		}
+
+		return client.NewStdioMCPClient(serverCmd, envSlice, serverArgs...)
+	default:
+		return nil, fmt.Errorf("unknown transport %q (expected stdio, sse, or http)", transport)
 	}
 }
 

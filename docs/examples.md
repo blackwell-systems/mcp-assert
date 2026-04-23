@@ -1,6 +1,6 @@
 # Examples
 
-mcp-assert ships with example assertions for four MCP servers in three languages.
+mcp-assert ships with example assertions for four MCP servers in three languages. All built-in examples use stdio transport (the default). For HTTP/SSE transport examples, see [Writing Assertions](writing-assertions.md#httpsse-transport).
 
 ## Filesystem server — TypeScript
 

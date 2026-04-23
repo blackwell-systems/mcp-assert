@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -466,5 +467,171 @@ func TestSnapshot_MissingSuite(t *testing.T) {
 	err := Snapshot([]string{})
 	if err == nil {
 		t.Error("expected error for missing --suite")
+	}
+}
+
+// --- createMCPClient transport tests ---
+
+func TestCreateMCPClient_DefaultsToStdio(t *testing.T) {
+	// Empty transport should attempt stdio with the given command.
+	// Using a nonexistent binary to verify it goes through the stdio path.
+	server := assertion.ServerConfig{
+		Command:   "nonexistent-binary-for-transport-test",
+		Transport: "",
+	}
+	_, err := createMCPClient(server, "", "")
+	if err == nil {
+		t.Fatal("expected error for nonexistent binary")
+	}
+	// The error should be about exec/command, not about unknown transport or missing URL.
+	if strings.Contains(err.Error(), "unknown transport") || strings.Contains(err.Error(), "requires a url") {
+		t.Errorf("empty transport should default to stdio, got: %v", err)
+	}
+}
+
+func TestCreateMCPClient_StdioExplicit(t *testing.T) {
+	server := assertion.ServerConfig{
+		Command:   "nonexistent-binary-for-transport-test",
+		Transport: "stdio",
+	}
+	_, err := createMCPClient(server, "", "")
+	if err == nil {
+		t.Fatal("expected error for nonexistent binary")
+	}
+	// Should be a command exec error, not a transport config error.
+	if strings.Contains(err.Error(), "unknown transport") || strings.Contains(err.Error(), "requires a url") {
+		t.Errorf("stdio transport should produce exec error, got: %v", err)
+	}
+}
+
+func TestCreateMCPClient_SSERequiresURL(t *testing.T) {
+	server := assertion.ServerConfig{
+		Transport: "sse",
+		URL:       "",
+	}
+	_, err := createMCPClient(server, "", "")
+	if err == nil {
+		t.Fatal("expected error for SSE without URL")
+	}
+	if !strings.Contains(err.Error(), "requires a url") {
+		t.Errorf("expected 'requires a url' error, got: %v", err)
+	}
+}
+
+func TestCreateMCPClient_HTTPRequiresURL(t *testing.T) {
+	server := assertion.ServerConfig{
+		Transport: "http",
+		URL:       "",
+	}
+	_, err := createMCPClient(server, "", "")
+	if err == nil {
+		t.Fatal("expected error for HTTP without URL")
+	}
+	if !strings.Contains(err.Error(), "requires a url") {
+		t.Errorf("expected 'requires a url' error, got: %v", err)
+	}
+}
+
+func TestCreateMCPClient_UnknownTransport(t *testing.T) {
+	server := assertion.ServerConfig{
+		Transport: "grpc",
+	}
+	_, err := createMCPClient(server, "", "")
+	if err == nil {
+		t.Fatal("expected error for unknown transport")
+	}
+	if !strings.Contains(err.Error(), "unknown transport") {
+		t.Errorf("expected 'unknown transport' error, got: %v", err)
+	}
+}
+
+func TestCreateMCPClient_SSEWithURL(t *testing.T) {
+	// SSE with a valid URL should succeed in creating the client
+	// (it won't connect until Initialize is called).
+	server := assertion.ServerConfig{
+		Transport: "sse",
+		URL:       "http://localhost:99999/sse",
+	}
+	c, err := createMCPClient(server, "", "")
+	if err != nil {
+		t.Fatalf("SSE client creation should succeed with valid URL: %v", err)
+	}
+	defer c.Close()
+}
+
+func TestCreateMCPClient_HTTPWithURL(t *testing.T) {
+	server := assertion.ServerConfig{
+		Transport: "http",
+		URL:       "http://localhost:99999/mcp",
+	}
+	c, err := createMCPClient(server, "", "")
+	if err != nil {
+		t.Fatalf("HTTP client creation should succeed with valid URL: %v", err)
+	}
+	defer c.Close()
+}
+
+func TestCreateMCPClient_TransportCaseInsensitive(t *testing.T) {
+	server := assertion.ServerConfig{
+		Transport: "SSE",
+		URL:       "http://localhost:99999/sse",
+	}
+	c, err := createMCPClient(server, "", "")
+	if err != nil {
+		t.Fatalf("transport should be case-insensitive: %v", err)
+	}
+	defer c.Close()
+}
+
+func TestCreateMCPClient_DockerIgnoredForHTTP(t *testing.T) {
+	// Docker flag is only used for stdio; HTTP/SSE should ignore it.
+	server := assertion.ServerConfig{
+		Transport: "sse",
+		URL:       "http://localhost:99999/sse",
+	}
+	c, err := createMCPClient(server, "", "some-docker-image")
+	if err != nil {
+		t.Fatalf("HTTP transport should succeed even with docker image set: %v", err)
+	}
+	defer c.Close()
+}
+
+func TestRunAssertion_SSEWithoutURL(t *testing.T) {
+	a := assertion.Assertion{
+		Name: "sse no url",
+		Server: assertion.ServerConfig{
+			Transport: "sse",
+		},
+		Assert: assertion.AssertBlock{
+			Tool: "test",
+			Args: map[string]any{},
+		},
+	}
+	r := runAssertion(a, "", 2*time.Second, "")
+	if r.Status != assertion.StatusFail {
+		t.Errorf("expected FAIL, got %s", r.Status)
+	}
+	if !strings.Contains(r.Detail, "requires a url") {
+		t.Errorf("expected url error in detail, got: %s", r.Detail)
+	}
+}
+
+func TestRunAssertion_UnknownTransport(t *testing.T) {
+	a := assertion.Assertion{
+		Name: "bad transport",
+		Server: assertion.ServerConfig{
+			Transport: "websocket",
+		},
+		Assert: assertion.AssertBlock{
+			Tool: "test",
+			Args: map[string]any{},
+		},
+	}
+	r := runAssertion(a, "", 2*time.Second, "")
+	if r.Status != assertion.StatusFail {
+		t.Errorf("expected FAIL, got %s", r.Status)
+	}
+	if !strings.Contains(r.Detail, "unknown transport") {
+		t.Errorf("expected unknown transport error, got: %s", r.Detail)
 	}
 }

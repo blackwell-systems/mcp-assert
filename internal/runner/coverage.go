@@ -10,7 +10,6 @@ import (
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
 	"github.com/blackwell-systems/mcp-assert/internal/report"
-	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
@@ -53,7 +52,11 @@ func Coverage(args []string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
 	defer cancel()
 
-	mcpClient, err := client.NewStdioMCPClient(parts[0], nil, parts[1:]...)
+	serverConfig := assertion.ServerConfig{
+		Command: parts[0],
+		Args:    parts[1:],
+	}
+	mcpClient, err := createMCPClient(serverConfig, "", "")
 	if err != nil {
 		return fmt.Errorf("failed to start server: %w", err)
 	}

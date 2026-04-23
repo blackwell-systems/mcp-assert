@@ -5,15 +5,16 @@
 mcp-assert is a single Go binary that tests MCP servers by starting them as subprocesses, communicating over the MCP stdio transport, and asserting tool responses against YAML-defined expectations.
 
 ```
-┌──────────────────┐     stdio      ┌──────────────────┐
-│   mcp-assert     │ ──────────────>│   MCP Server     │
-│   (Go binary)    │ <──────────────│   (any language)  │
-│                  │   JSON-RPC     │                  │
-│  Load YAML       │                │  Start via cmd   │
-│  Initialize MCP  │                │  Respond to      │
-│  Call tools      │                │  tool calls      │
-│  Assert results  │                │                  │
-└──────────────────┘                └──────────────────┘
+                              stdio (default)
+┌──────────────────┐     ──────────────────>  ┌──────────────────┐
+│   mcp-assert     │     <──────────────────  │   MCP Server     │
+│   (Go binary)    │        JSON-RPC          │   (any language)  │
+│                  │                          │                  │
+│  Load YAML       │     SSE / HTTP           │  stdio: launched │
+│  Initialize MCP  │     ──────────────────>  │   as subprocess  │
+│  Call tools      │     <──────────────────  │  http/sse: remote│
+│  Assert results  │        JSON-RPC          │   via URL        │
+└──────────────────┘                          └──────────────────┘
 ```
 
 ## Data Flow
@@ -34,7 +35,7 @@ The loader reads a directory of YAML files (recursing one level into subdirector
 
 For each assertion:
 
-1. **Start server** — launch the MCP server as a subprocess via `client.NewStdioMCPClient`. If `--docker` is set, the command is wrapped in `docker run --rm -i` with volume mounts.
+1. **Start server** — create the MCP client via `createMCPClient`, which selects the transport based on the `transport` field: stdio (default, launches subprocess via `client.NewStdioMCPClient`), SSE (`client.NewSSEMCPClient`), or streamable HTTP (`client.NewStreamableHttpClient`). If `--docker` is set with stdio, the command is wrapped in `docker run --rm -i` with volume mounts.
 2. **Initialize** — send `initialize` request with MCP protocol version, receive server capabilities.
 3. **Setup** — execute setup tool calls sequentially (e.g., `start_lsp`, `open_document`). These establish the state needed for the assertion. `{{fixture}}` substitution happens here.
 4. **Snapshot** — if `file_unchanged` assertions exist, read the files before the tool call.
@@ -99,7 +100,9 @@ This does not execute any assertions — it only queries the tool catalog.
 
 **Color degrades gracefully.** TTY detection via `os.ModeCharDevice`. `NO_COLOR` env var. `TERM=dumb`. In CI (pipes), output is plain `PASS`/`FAIL`/`SKIP` — no escape codes in JUnit XML or log files.
 
-**Docker is a command wrapper.** `--docker <image>` doesn't use the Docker SDK. It prepends `docker run --rm -i -v fixture:fixture` to the server command. Since MCP uses stdio, Docker's `-i` flag gives bidirectional pipe transport for free. The server process runs inside the container; the assertions run outside.
+**Docker is a command wrapper (stdio only).** `--docker <image>` doesn't use the Docker SDK. It prepends `docker run --rm -i -v fixture:fixture` to the server command. Since MCP uses stdio, Docker's `-i` flag gives bidirectional pipe transport for free. The server process runs inside the container; the assertions run outside. Docker is only supported with stdio transport; HTTP/SSE transports connect to an already-running server.
+
+**Transport is pluggable.** `createMCPClient` is a single helper (in `runner.go`) used by `runAssertion`, `runAndCapture`, and `Coverage`. It reads the `transport` field from `ServerConfig` and creates the appropriate mcp-go client. All three transports (stdio, SSE, streamable HTTP) return the same `MCPClient` interface, so the rest of the runner is transport-agnostic.
 
 **Setup tools are not counted as "tested" by coverage.** `start_lsp` and `open_document` appear in every assertion's setup but aren't the tools under test. The coverage command only counts the `assert.tool` field.
 
@@ -110,7 +113,7 @@ cmd/mcp-assert/main.go
   └── internal/runner
         ├── internal/assertion (types, loader, checker)
         ├── internal/report (all output formats)
-        ├── mark3labs/mcp-go/client (MCP stdio transport)
+        ├── mark3labs/mcp-go/client (MCP transport: stdio, SSE, streamable HTTP)
         └── mark3labs/mcp-go/mcp (MCP protocol types)
 ```
 

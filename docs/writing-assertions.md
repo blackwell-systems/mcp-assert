@@ -153,6 +153,46 @@ assert:
 
 Captured variables work anywhere `{{fixture}}` works — strings, arrays, nested objects. Use this for session IDs, auth tokens, created resource IDs, or any value returned by a setup step.
 
+## HTTP/SSE Transport
+
+By default, mcp-assert connects to servers over stdio (launching a subprocess). For servers that run over HTTP, set the `transport` and `url` fields:
+
+### SSE transport (legacy)
+
+```yaml
+name: echo over SSE
+server:
+  transport: sse
+  url: "http://localhost:8080/sse"
+assert:
+  tool: echo
+  args:
+    message: "hello"
+  expect:
+    not_error: true
+    contains: ["hello"]
+```
+
+### Streamable HTTP transport
+
+```yaml
+name: echo over HTTP
+server:
+  transport: http
+  url: "http://localhost:8080/mcp"
+assert:
+  tool: echo
+  args:
+    message: "hello"
+  expect:
+    not_error: true
+    contains: ["hello"]
+```
+
+Transport values are case-insensitive. When `transport` is omitted or set to `stdio`, the `command`/`args`/`env` fields are used to launch a subprocess. When `transport` is `sse` or `http`, the `url` field is required and `command`/`args` are ignored.
+
+Docker isolation (`--docker`) is only supported with stdio transport.
+
 ## Server environment variables
 
 Pass environment variables to the server process:

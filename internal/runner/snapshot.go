@@ -4,12 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
 	"github.com/blackwell-systems/mcp-assert/internal/report"
-	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
@@ -125,37 +123,7 @@ func runAndCapture(a assertion.Assertion, fixture string, timeout time.Duration,
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	serverCmd := a.Server.Command
-	serverArgs := make([]string, len(a.Server.Args))
-	copy(serverArgs, a.Server.Args)
-
-	if fixture != "" {
-		for i, arg := range serverArgs {
-			serverArgs[i] = strings.ReplaceAll(arg, "{{fixture}}", fixture)
-		}
-	}
-
-	var envSlice []string
-	for k, v := range a.Server.Env {
-		envSlice = append(envSlice, k+"="+v)
-	}
-
-	if dockerImage != "" {
-		dockerArgs := []string{"run", "--rm", "-i"}
-		if fixture != "" {
-			dockerArgs = append(dockerArgs, "-v", fixture+":"+fixture)
-		}
-		for _, e := range envSlice {
-			dockerArgs = append(dockerArgs, "-e", e)
-		}
-		dockerArgs = append(dockerArgs, dockerImage, serverCmd)
-		dockerArgs = append(dockerArgs, serverArgs...)
-		serverCmd = "docker"
-		serverArgs = dockerArgs
-		envSlice = nil
-	}
-
-	mcpClient, err := client.NewStdioMCPClient(serverCmd, envSlice, serverArgs...)
+	mcpClient, err := createMCPClient(a.Server, fixture, dockerImage)
 	if err != nil {
 		return "", false, fmt.Errorf("start server: %w", err)
 	}
