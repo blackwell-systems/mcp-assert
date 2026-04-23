@@ -31,7 +31,54 @@ The GitHub Action is the single highest-leverage distribution move. If adding mc
 | **--coverage-json** | **Shipped** | Medium | `--coverage-json <path>` on `coverage` command writes machine-readable coverage data. |
 | **Setup output capture** | **Shipped** | **High** | `capture:` field on setup steps extracts values via jsonpath, injects as `{{variable}}` into subsequent steps. Session lifecycle tests now use real session IDs. |
 | **Client capabilities (bidirectional)** | Planned | **High** | Mock client-side capabilities so servers that use sampling, roots, or elicitation can be tested. No other MCP testing tool supports this. |
-| **Trajectory assertions** | Planned | Low | Assert on the sequence of tool calls in a multi-step workflow, not just single tool responses. Requires capturing the full call trace, not just the final result. |
+| **Trajectory assertions** | Planned | **Critical** | Assert on tool call sequences, not just single tool responses. Essential for validating agent skill protocols (e.g. `/lsp-rename` must call prepare_rename before rename_symbol). Bridges tool correctness (Layer 1) with workflow correctness (Layer 2). |
+
+### Trajectory assertions detail
+
+**Why this is critical, not nice-to-have:**
+
+mcp-assert currently tests tools in isolation: "call X, check the response." But agent-lsp's 20 skills define exact tool call sequences. A skill is correct only if the agent calls the right tools in the right order. Testing each tool individually proves they work, but doesn't prove the agent follows the protocol.
+
+Examples of skill protocols that trajectory assertions would validate:
+
+| Skill | Required sequence | What breaks if skipped |
+|-------|------------------|----------------------|
+| `/lsp-rename` | prepare_rename -> confirm -> rename_symbol -> get_diagnostics | Renaming without prepare_rename skips validation (cursor on keyword, built-in type) |
+| `/lsp-refactor` | get_references -> simulate_edit_atomic -> apply_edit -> get_diagnostics -> run_tests | Editing without blast radius check risks breaking callers silently |
+| `/lsp-safe-edit` | simulate_edit_atomic -> (check net_delta) -> apply_edit | Applying without simulation skips error detection |
+| `/lsp-impact` | get_references -> call_hierarchy -> type_hierarchy | Incomplete blast radius analysis |
+
+**Proposed YAML format:**
+
+```yaml
+name: lsp-rename follows protocol
+trajectory:
+  - tool: prepare_rename
+    before: rename_symbol
+  - tool: rename_symbol
+    args_contain:
+      new_name: "Entity"
+    after: prepare_rename
+  - tool: get_diagnostics
+    after: rename_symbol
+graders:
+  - type: order
+    assert: prepare_rename before rename_symbol before get_diagnostics
+  - type: presence
+    assert: all_of [prepare_rename, rename_symbol, get_diagnostics]
+  - type: absence
+    assert: none_of [apply_edit]  # rename_symbol handles writes internally
+```
+
+**Implementation approaches:**
+
+1. **Audit trail parsing:** agent-lsp's `--audit-log` writes every tool call as JSONL. mcp-assert reads the log after a skill execution and checks the call sequence. No transport changes needed.
+
+2. **MCP transport interception:** mcp-assert acts as a proxy between the agent and the server, capturing every tool call in transit. More general but harder to implement.
+
+3. **Setup-driven replay:** Use the existing setup/capture mechanism to execute a sequence of tool calls, then assert on the final state. This works today but doesn't verify an agent's autonomous behavior.
+
+Approach #1 (audit trail) is the pragmatic first step. It works specifically with agent-lsp and requires no changes to mcp-assert's transport layer. The YAML format can be designed now and extended to approach #2 later.
 
 ### Client capabilities detail
 
