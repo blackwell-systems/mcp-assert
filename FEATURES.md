@@ -123,14 +123,18 @@ Transport is configured per-assertion in YAML via the `transport` and `url` fiel
 
 ---
 
-## Example Suites (4 servers, 3 languages, 85 assertions)
+## Example Suites (8 suites, 3 languages, 108 assertions)
 
-| Suite | Server | Language | Assertions | Key patterns |
-|-------|--------|----------|------------|--------------|
-| `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | 14 | Read, list, search, info, write, edit, create dir, move, directory tree, path traversal rejection (92% tool coverage) |
-| `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | 5 | Stateful setup (create → query), relations, observations |
-| `examples/sqlite/` | `mcp-server-sqlite` | Python | 6 | SQL queries, joins, counts, schema introspection, error handling |
-| `examples/agent-lsp-go/` | agent-lsp + gopls | Go | 60 | All 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, build (100% tool coverage) |
+| Suite | Server | Language | Transport | Assertions | Key patterns |
+|-------|--------|----------|-----------|------------|--------------|
+| `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | Read, list, search, info, write, edit, create dir, move, directory tree, path traversal rejection (92% tool coverage) |
+| `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 | Stateful setup (create → query), relations, observations |
+| `examples/sqlite/` | `mcp-server-sqlite` | Python | stdio | 6 | SQL queries, joins, counts, schema introspection, error handling |
+| `examples/agent-lsp-go/` | agent-lsp + gopls | Go | stdio | 60 | All 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, build (100% tool coverage) |
+| `examples/mcp-go-everything/` | mark3labs/mcp-go everything | Go | stdio | 9 | echo, add, image, resource link, notification, long-running operation (100% tool coverage) |
+| `examples/mcp-go-typed-tools/` | mark3labs/mcp-go typed_tools | Go | stdio | 3 | Typed greeting with required/optional params, error case |
+| `examples/mcp-go-structured/` | mark3labs/mcp-go structured | Go | stdio | 6 | Weather, user profile, assets, manual structured result |
+| `examples/mcp-go-everything-http/` | mark3labs/mcp-go everything | Go | HTTP | 5 | Same tools as stdio suite, transport conformance test |
 
 ---
 
@@ -138,7 +142,7 @@ Transport is configured per-assertion in YAML via the `transport` and `url` fiel
 
 | Job | What | Depends on |
 |-----|------|------------|
-| `build-and-test` | Build, vet, 100 unit tests with `-race` | — |
+| `build-and-test` | Build, vet, 111 unit tests with `-race` | — |
 | `e2e-filesystem` | 14 assertions against filesystem server | build-and-test |
 | `e2e-memory` | 5 assertions against memory server | build-and-test |
 | `e2e-sqlite` | 6 assertions against SQLite server (Python/uv) | build-and-test |

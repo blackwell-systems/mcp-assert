@@ -18,8 +18,9 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **`mcp-assert init`** — scaffolds a commented assertion template and fixture directory for new users.
 - **Docs site** — mkdocs with Material theme. README slimmed from 553→103 lines. 8 pages: getting-started, writing-assertions, cli reference, examples, ci-integration, architecture, roadmap, dogfooding.
 - **mcp-go SDK example suites** — 18 assertions across 3 servers from the [mark3labs/mcp-go](https://github.com/mark3labs/mcp-go) SDK: everything (9, 100% coverage), typed_tools (3, 100%), structured_input_and_output (6, 100%). Found transport crash bug ([mark3labs/mcp-go#826](https://github.com/mark3labs/mcp-go/issues/826)).
-- **103 total assertions** across 7 servers in 3 languages: filesystem (14), memory (5), sqlite (6), agent-lsp (60), mcp-go-everything (9), mcp-go-typed-tools (3), mcp-go-structured (6).
-- **100 unit tests** (up from 49). Runner: 42 tests (substitution, capture, extractJSONPath, overrides, error paths, timeout, Docker, generate). Race-detector clean.
+- **HTTP transport conformance tests** — 5 assertions testing mcp-go everything server over HTTP, same tools and expectations as stdio suite. Proves transport-agnostic testing works end-to-end.
+- **108 total assertions** across 8 server suites in 3 languages: filesystem (14), memory (5), sqlite (6), agent-lsp (60), mcp-go-everything (9), mcp-go-typed-tools (3), mcp-go-structured (6), mcp-go-everything-http (5).
+- **111 unit tests** (up from 49). Runner: 53 tests (substitution, capture, extractJSONPath, overrides, error paths, timeout, Docker, generate, transport selection). Race-detector clean.
 - **GitHub Pages docs site** — dark mode, Material theme, auto-deployed on push.
 
 ## [0.1.1] - 2026-04-23
