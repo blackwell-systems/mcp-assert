@@ -1,0 +1,15 @@
+# Add tool: adds two numbers and returns the sum
+name: add returns the sum of two numbers
+server:
+  command: mcp-go-everything
+  args: []
+assert:
+  tool: add
+  args:
+    a: 3
+    b: 7
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["10"]
+timeout: 15s

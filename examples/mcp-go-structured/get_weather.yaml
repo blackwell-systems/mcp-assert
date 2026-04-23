@@ -1,0 +1,15 @@
+# get_weather tool: returns structured weather data for a location
+name: get_weather returns weather for a location
+server:
+  command: mcp-go-structured
+  args: []
+assert:
+  tool: get_weather
+  args:
+    location: "San Francisco"
+    units: "celsius"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["San Francisco"]
+timeout: 15s

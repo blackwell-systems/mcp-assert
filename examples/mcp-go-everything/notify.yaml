@@ -1,0 +1,13 @@
+# notify tool: sends a notification to the client
+name: notify sends notification successfully
+server:
+  command: mcp-go-everything
+  args: []
+assert:
+  tool: notify
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["notification sent"]
+timeout: 15s

@@ -1,0 +1,14 @@
+# Echo tool: echoes back the input message
+name: echo returns the input message
+server:
+  command: mcp-go-everything
+  args: []
+assert:
+  tool: echo
+  args:
+    message: "hello from mcp-assert"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Echo: hello from mcp-assert"]
+timeout: 15s

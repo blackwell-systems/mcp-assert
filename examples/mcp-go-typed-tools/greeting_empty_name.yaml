@@ -1,0 +1,13 @@
+# Edge case: greeting with empty name should return error
+name: greeting rejects empty name
+server:
+  command: mcp-go-typed-tools
+  args: []
+assert:
+  tool: greeting
+  args:
+    name: ""
+  expect:
+    is_error: true
+    contains: ["name is required"]
+timeout: 15s

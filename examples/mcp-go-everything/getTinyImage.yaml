@@ -1,0 +1,13 @@
+# getTinyImage tool: returns a base64-encoded PNG image
+name: getTinyImage returns image content
+server:
+  command: mcp-go-everything
+  args: []
+assert:
+  tool: getTinyImage
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["tiny image"]
+timeout: 15s

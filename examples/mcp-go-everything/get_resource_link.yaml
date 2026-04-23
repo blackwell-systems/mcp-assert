@@ -1,0 +1,14 @@
+# get_resource_link tool: returns a resource link with specified type
+name: get_resource_link returns a resource link
+server:
+  command: mcp-go-everything
+  args: []
+assert:
+  tool: get_resource_link
+  args:
+    resource_type: "report"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["report"]
+timeout: 15s

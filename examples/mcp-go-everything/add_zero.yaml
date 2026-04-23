@@ -1,0 +1,15 @@
+# Edge case: add with zero values
+name: add handles zero values
+server:
+  command: mcp-go-everything
+  args: []
+assert:
+  tool: add
+  args:
+    a: 0
+    b: 0
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["0"]
+timeout: 15s

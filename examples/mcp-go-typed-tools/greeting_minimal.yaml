@@ -1,0 +1,14 @@
+# Minimal greeting: only required name parameter
+name: greeting works with only name
+server:
+  command: mcp-go-typed-tools
+  args: []
+assert:
+  tool: greeting
+  args:
+    name: "Bob"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Hello, Bob!"]
+timeout: 15s

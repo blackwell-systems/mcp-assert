@@ -1,0 +1,14 @@
+# get_assets tool: returns a list of assets with optional limit
+name: get_assets returns asset list
+server:
+  command: mcp-go-structured
+  args: []
+assert:
+  tool: get_assets
+  args:
+    limit: 3
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Bitcoin", "Ethereum", "Cardano"]
+timeout: 15s

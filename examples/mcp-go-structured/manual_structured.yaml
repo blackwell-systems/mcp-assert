@@ -1,0 +1,14 @@
+# manual_structured tool: returns manually constructed structured weather data
+name: manual_structured returns weather with fallback text
+server:
+  command: mcp-go-structured
+  args: []
+assert:
+  tool: manual_structured
+  args:
+    location: "London"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["London", "Sunny"]
+timeout: 15s

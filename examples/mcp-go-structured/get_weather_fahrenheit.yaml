@@ -1,0 +1,15 @@
+# get_weather with fahrenheit units
+name: get_weather converts to fahrenheit
+server:
+  command: mcp-go-structured
+  args: []
+assert:
+  tool: get_weather
+  args:
+    location: "Chicago"
+    units: "fahrenheit"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Chicago"]
+timeout: 15s

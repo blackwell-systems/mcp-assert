@@ -1,0 +1,13 @@
+# get_assets with no limit (defaults to 10, but only 5 assets exist)
+name: get_assets returns all assets with default limit
+server:
+  command: mcp-go-structured
+  args: []
+assert:
+  tool: get_assets
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Bitcoin", "Ethereum", "Cardano", "Solana"]
+timeout: 15s

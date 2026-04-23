@@ -1,0 +1,14 @@
+# Edge case: echo with empty string message
+name: echo handles empty message
+server:
+  command: mcp-go-everything
+  args: []
+assert:
+  tool: echo
+  args:
+    message: ""
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Echo:"]
+timeout: 15s

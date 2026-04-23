@@ -1,0 +1,22 @@
+# longRunningOperation tool: runs a multi-step operation with progress.
+#
+# BUG FOUND: This tool fails with "transport closed" even with minimal
+# duration/steps. The tool calls server.ServerFromContext(ctx) and attempts
+# to send progress notifications, which causes a transport error when
+# the client does not provide a progress token in the request meta.
+# The sleep + notification pattern appears to race with stdio transport
+# teardown. Filed as a potential mcp-go SDK issue.
+name: longRunningOperation completes with short duration
+server:
+  command: mcp-go-everything
+  args: []
+assert:
+  tool: longRunningOperation
+  args:
+    duration: 0.1
+    steps: 1
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Long running operation completed"]
+timeout: 15s

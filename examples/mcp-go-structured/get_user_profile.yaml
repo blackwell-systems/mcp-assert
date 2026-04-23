@@ -1,0 +1,14 @@
+# get_user_profile tool: returns a user profile by ID
+name: get_user_profile returns user data
+server:
+  command: mcp-go-structured
+  args: []
+assert:
+  tool: get_user_profile
+  args:
+    userId: "user-42"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["John Doe", "john.doe@example.com"]
+timeout: 15s
