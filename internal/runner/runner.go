@@ -243,10 +243,14 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration) 
 
 	// Check assertions (with file snapshots for file_unchanged).
 	if err := assertion.CheckWithSnapshots(a.Assert.Expect, resultText, isError, snapshots); err != nil {
+		detail := err.Error()
+		if isError && resultText != "" {
+			detail += "\n      server response: " + resultText
+		}
 		return assertion.Result{
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
-			Detail:   err.Error(),
+			Detail:   detail,
 			Duration: time.Since(start),
 		}
 	}

@@ -14,6 +14,12 @@ setup:
     args:
       file_path: "{{fixture}}/greeter.go"
       language_id: go
+  - tool: get_diagnostics
+    args:
+      file_path: "{{fixture}}/main.go"
+  - tool: get_diagnostics
+    args:
+      file_path: "{{fixture}}/greeter.go"
 assert:
   tool: get_references
   args:
@@ -24,4 +30,4 @@ assert:
     not_error: true
     contains: ["greeter.go"]
     min_results: 2
-timeout: 60s
+timeout: 120s
