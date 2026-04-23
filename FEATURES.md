@@ -4,20 +4,22 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 
 ---
 
-## CLI Commands (6)
+## CLI Commands (8)
 
 | Command | Description | Key flags |
 |---------|-------------|-----------|
+| `init` | Scaffold an assertion template and fixture directory | `[dir]` |
 | `run` | Execute assertions against an MCP server | `--suite`, `--server`, `--fixture`, `--trials`, `--docker`, `--json`, `--junit`, `--markdown`, `--badge`, `--baseline`, `--save-baseline` |
 | `ci` | Run with CI-specific exit codes and reporting | All `run` flags + `--threshold`, `--fail-on-regression` |
 | `matrix` | Run assertions across multiple language servers | `--suite`, `--languages`, `--fixture` |
 | `coverage` | Report which server tools have assertions | `--suite`, `--server`, `--coverage-json` |
+| `generate` | Auto-generate stub assertions from a server's tools/list | `--server`, `--output`, `--fixture` |
 | `snapshot` | Capture/compare tool response snapshots | `--suite`, `--server`, `--fixture`, `--update`, `--docker` |
 | `watch` | Rerun assertions on YAML file change | Same as `run` + polling interval |
 
 ---
 
-## Assertion Types (13)
+## Assertion Types (14)
 
 | Type | Category | What it checks |
 |------|----------|----------------|
@@ -109,7 +111,7 @@ Only PASS → non-PASS transitions are flagged. Previously-failing tests that st
 
 ---
 
-## Example Suites (4 servers, 3 languages, 37 assertions)
+## Example Suites (4 servers, 3 languages, 76 assertions)
 
 | Suite | Server | Language | Assertions | Key patterns |
 |-------|--------|----------|------------|--------------|
@@ -124,7 +126,7 @@ Only PASS → non-PASS transitions are flagged. Previously-failing tests that st
 
 | Job | What | Depends on |
 |-----|------|------------|
-| `build-and-test` | Build, vet, 81 unit tests with `-race` | — |
+| `build-and-test` | Build, vet, 89 unit tests with `-race` | — |
 | `e2e-filesystem` | 14 assertions against filesystem server | build-and-test |
 | `e2e-memory` | 5 assertions against memory server | build-and-test |
 | `e2e-sqlite` | 6 assertions against SQLite server (Python/uv) | build-and-test |
@@ -138,10 +140,10 @@ All e2e jobs upload JUnit XML artifacts.
 
 | Package | Tests | What |
 |---------|-------|------|
-| `internal/assertion` | 22 | All 13 assertion types, loader (YAML parsing, subdirs, errors), snapshot comparison |
+| `internal/assertion` | 22 | All 14 assertion types, loader (YAML parsing, subdirs, errors), snapshot comparison |
 | `internal/report` | 36 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare |
 | `internal/runner` | 23 | Recursive fixture substitution, server override, bad binary, timeout, Docker flag, CLI error paths (missing flags, nonexistent suite, --fail-on-regression without --baseline) |
-| Total | 81 | Race-detector clean |
+| Total | 89 | Race-detector clean |
 
 ---
 
@@ -180,7 +182,7 @@ cmd/mcp-assert/main.go     CLI entry, command dispatch
 internal/assertion/
   types.go                  Suite, Assertion, Expect, Result types
   loader.go                 YAML file loading, subdirectory recursion
-  checker.go                13 assertion type implementations
+  checker.go                14 assertion type implementations
 internal/runner/
   runner.go                 Run, Matrix, CI commands, MCP client lifecycle
   runner_test.go            23 tests: substitution, overrides, error paths, timeout, Docker

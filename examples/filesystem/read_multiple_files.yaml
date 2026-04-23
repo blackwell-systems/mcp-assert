@@ -1,3 +1,5 @@
+# Read multiple files in a single tool call. Note the array argument —
+# {{fixture}} substitution works inside arrays and nested objects too.
 name: read_multiple_files reads two files at once
 server:
   command: npx
@@ -10,5 +12,5 @@ assert:
       - "{{fixture}}/config.json"
   expect:
     not_error: true
-    contains: ["Hello, world!", "test-project"]
+    contains: ["Hello, world!", "test-project"]  # Content from both files
 timeout: 15s

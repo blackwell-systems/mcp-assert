@@ -1,3 +1,6 @@
+# Negative test: search for something that doesn't exist.
+# Uses not_contains to verify the nonexistent entity is NOT in results.
+# No setup steps — the server starts with an empty knowledge graph.
 name: search returns empty for nonexistent entity
 server:
   command: npx

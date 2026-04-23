@@ -1,3 +1,4 @@
+# Verify file metadata is returned (size, timestamps, etc.).
 name: get_file_info returns metadata
 server:
   command: npx
@@ -9,5 +10,5 @@ assert:
   expect:
     not_error: true
     not_empty: true
-    contains: ["size"]
+    contains: ["size"]                     # Metadata should include file size
 timeout: 15s

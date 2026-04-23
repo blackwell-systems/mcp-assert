@@ -1,13 +1,17 @@
+# Basic read test: call read_file and check the response contains expected text.
+# This is the simplest possible assertion — no setup, just call and check.
 name: read_file returns file contents
 server:
   command: npx
   args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+  # {{fixture}} is replaced at runtime with the --fixture directory path.
+  # The filesystem server needs it as an allowed directory argument.
 assert:
-  tool: read_file
+  tool: read_file                          # MCP tool to call
   args:
-    path: "{{fixture}}/hello.txt"
+    path: "{{fixture}}/hello.txt"          # Arguments passed to the tool
   expect:
-    not_error: true
-    not_empty: true
-    contains: ["Hello, world!"]
-timeout: 15s
+    not_error: true                        # Assert the tool did not return an error
+    not_empty: true                        # Assert the response is not empty
+    contains: ["Hello, world!"]            # Assert these strings appear in the response
+timeout: 15s                               # Kill the server if no response in 15s

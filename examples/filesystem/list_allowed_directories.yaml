@@ -1,3 +1,4 @@
+# Verify the server reports its allowed directories correctly.
 name: list_allowed_directories shows permitted paths
 server:
   command: npx

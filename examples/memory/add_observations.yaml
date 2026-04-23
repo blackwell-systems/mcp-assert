@@ -1,15 +1,17 @@
+# Multi-step setup: create an entity, add observations, then verify.
+# Setup steps run in order — the second step depends on the first.
 name: add observations to existing entity
 server:
   command: npx
   args: ["@modelcontextprotocol/server-memory"]
 setup:
-  - tool: create_entities
+  - tool: create_entities                  # Step 1: create the entity
     args:
       entities:
         - name: "Alice"
           entityType: "person"
           observations: ["engineer"]
-  - tool: add_observations
+  - tool: add_observations                 # Step 2: add new observations
     args:
       observations:
         - entityName: "Alice"
@@ -20,5 +22,5 @@ assert:
     query: "Alice"
   expect:
     not_error: true
-    contains: ["Alice", "promoted to staff"]
+    contains: ["Alice", "promoted to staff"]  # Verify new observation is present
 timeout: 15s

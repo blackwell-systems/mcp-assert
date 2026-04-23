@@ -1,3 +1,5 @@
+# Test file editing with dryRun: true so the fixture file is not modified.
+# This pattern lets you test edit functionality without side effects.
 name: edit_file modifies existing file content
 server:
   command: npx
@@ -9,7 +11,7 @@ assert:
     edits:
       - oldText: "Hello, world!"
         newText: "Hello, mcp-assert!"
-    dryRun: true
+    dryRun: true                           # Preview only — don't modify the file
   expect:
     not_error: true
 timeout: 15s

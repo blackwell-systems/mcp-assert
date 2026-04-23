@@ -1,3 +1,4 @@
+# Read a text file (variant of read_file with line numbers).
 name: read_text_file returns file with line numbers
 server:
   command: npx

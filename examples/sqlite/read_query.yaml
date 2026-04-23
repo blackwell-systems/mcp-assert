@@ -1,3 +1,4 @@
+# Run a SELECT query and verify specific row data appears in the result.
 name: read_query returns rows from users table
 server:
   command: uvx
@@ -9,5 +10,5 @@ assert:
   expect:
     not_error: true
     not_empty: true
-    contains: ["Alice", "admin", "Bob", "Charlie"]
+    contains: ["Alice", "admin", "Bob", "Charlie"]  # Expected row values
 timeout: 15s

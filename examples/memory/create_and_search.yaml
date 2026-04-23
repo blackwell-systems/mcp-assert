@@ -1,9 +1,13 @@
+# Stateful test: create entities in setup, then search for them in the assertion.
+# The memory server has no fixture directory — state is created at runtime via
+# setup steps. Each assertion gets a fresh server process, so there's no
+# cross-test contamination.
 name: create entities then search by name
 server:
   command: npx
   args: ["@modelcontextprotocol/server-memory"]
 setup:
-  - tool: create_entities
+  - tool: create_entities                  # Populate the knowledge graph
     args:
       entities:
         - name: "Alice"
@@ -19,5 +23,5 @@ assert:
   expect:
     not_error: true
     not_empty: true
-    contains: ["Alice", "person"]
+    contains: ["Alice", "person"]          # Verify entity and type are returned
 timeout: 15s

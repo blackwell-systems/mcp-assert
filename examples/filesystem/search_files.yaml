@@ -1,3 +1,4 @@
+# Search for files matching a glob pattern.
 name: search_files finds matching files
 server:
   command: npx
@@ -9,5 +10,5 @@ assert:
     pattern: "*.txt"
   expect:
     not_error: true
-    contains: ["hello.txt"]
+    contains: ["hello.txt"]                # Should find our fixture file
 timeout: 15s

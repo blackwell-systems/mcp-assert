@@ -1,3 +1,6 @@
+# Error handling: verify the server returns a useful error for bad SQL.
+# Note: some servers return errors in the response text rather than setting
+# isError: true. Use contains to check for the error message in either case.
 name: read_query returns error for invalid SQL
 server:
   command: uvx
@@ -7,5 +10,5 @@ assert:
   args:
     query: "SELECT * FROM nonexistent_table"
   expect:
-    contains: ["no such table"]
+    contains: ["no such table"]            # Error message in the response
 timeout: 15s

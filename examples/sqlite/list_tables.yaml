@@ -1,12 +1,13 @@
+# List all tables in the database. The fixture is a pre-built .db file.
 name: list_tables returns all tables in database
 server:
   command: uvx
   args: ["mcp-server-sqlite", "--db-path", "{{fixture}}/test.db"]
 assert:
   tool: list_tables
-  args: {}
+  args: {}                                 # No arguments needed
   expect:
     not_error: true
     not_empty: true
-    contains: ["users", "projects"]
+    contains: ["users", "projects"]        # Both tables from our fixture DB
 timeout: 15s

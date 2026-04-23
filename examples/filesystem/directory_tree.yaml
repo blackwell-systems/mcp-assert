@@ -1,3 +1,4 @@
+# Recursive directory tree listing.
 name: directory_tree shows nested structure
 server:
   command: npx

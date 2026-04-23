@@ -1,3 +1,4 @@
+# Inspect table schema: verify expected columns exist.
 name: describe_table shows column definitions
 server:
   command: uvx
@@ -9,5 +10,5 @@ assert:
   expect:
     not_error: true
     not_empty: true
-    contains: ["name", "email", "role"]
+    contains: ["name", "email", "role"]    # Expected column names
 timeout: 15s

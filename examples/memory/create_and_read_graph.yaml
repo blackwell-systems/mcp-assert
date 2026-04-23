@@ -1,3 +1,4 @@
+# Create an entity in setup, then read the entire graph to verify it exists.
 name: read_graph returns all entities after creation
 server:
   command: npx

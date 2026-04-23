@@ -1,3 +1,4 @@
+# Test directory creation.
 name: create_directory makes a new directory
 server:
   command: npx

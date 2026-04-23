@@ -1,3 +1,4 @@
+# Directory listing that includes file sizes.
 name: list_directory_with_sizes includes file sizes
 server:
   command: npx

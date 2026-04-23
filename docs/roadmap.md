@@ -67,5 +67,5 @@ This bridges mcp-assert (tool correctness) with skill evaluation (workflow corre
 | Item | Status | Description |
 |------|--------|-------------|
 | **MCP server leaderboard** | Planned | Public page showing coverage scores for popular MCP servers. Run mcp-assert against each, publish results. Servers compete on correctness. |
-| **Assertion generation from OpenAPI/tool schema** | Planned | Given a server's `tools/list` output, auto-generate stub assertions for every tool. Combined with snapshot mode, this gets to 100% coverage with zero manual work. |
+| **Assertion generation** | **Shipped** | `mcp-assert generate --server <cmd> --output <dir>` queries `tools/list`, reads input schemas, creates one stub YAML per tool. Combined with `snapshot --update`, this gets 100% coverage with zero manual assertion writing. |
 | **VS Code extension** | Planned | Run assertions from the editor. Click-to-run on YAML files, inline pass/fail markers, coverage gutter annotations. |

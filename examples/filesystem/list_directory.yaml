@@ -1,3 +1,4 @@
+# List directory contents and verify expected files are present.
 name: list_directory shows fixture contents
 server:
   command: npx
@@ -9,5 +10,5 @@ assert:
   expect:
     not_error: true
     not_empty: true
-    contains: ["hello.txt", "config.json", "subdir"]
+    contains: ["hello.txt", "config.json", "subdir"]  # All expected entries
 timeout: 15s

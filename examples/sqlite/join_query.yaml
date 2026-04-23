@@ -1,3 +1,4 @@
+# JOIN query: verify cross-table data appears correctly.
 name: read_query handles joins across tables
 server:
   command: uvx

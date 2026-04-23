@@ -1,9 +1,12 @@
+# Stateful test with setup: create a file first, then move it.
+# Setup steps run in order before the assertion. If any setup step fails,
+# the entire assertion fails.
 name: move_file renames a file
 server:
   command: npx
   args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
 setup:
-  - tool: write_file
+  - tool: write_file                       # Create the file to move
     args:
       path: "{{fixture}}/moveme.txt"
       content: "to be moved"

@@ -21,7 +21,7 @@ mcp-assert is a single Go binary that tests MCP servers by starting them as subp
 ```
 YAML files ──> Loader ──> Assertions ──> Runner ──> MCP Client ──> Server
                                            │
-                                           ├──> Checker (13 assertion types)
+                                           ├──> Checker (14 assertion types)
                                            │
                                            └──> Reporter (terminal, JUnit, markdown, badge)
 ```

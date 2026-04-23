@@ -1,3 +1,5 @@
+# Test file creation. Note: this modifies the fixture directory.
+# Use Docker isolation (--docker) if you need a clean state per test.
 name: write_file creates a new file
 server:
   command: npx
