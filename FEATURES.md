@@ -111,14 +111,14 @@ Only PASS → non-PASS transitions are flagged. Previously-failing tests that st
 
 ---
 
-## Example Suites (4 servers, 3 languages, 76 assertions)
+## Example Suites (4 servers, 3 languages, 85 assertions)
 
 | Suite | Server | Language | Assertions | Key patterns |
 |-------|--------|----------|------------|--------------|
 | `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | 14 | Read, list, search, info, write, edit, create dir, move, directory tree, path traversal rejection (92% tool coverage) |
 | `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | 5 | Stateful setup (create → query), relations, observations |
 | `examples/sqlite/` | `mcp-server-sqlite` | Python | 6 | SQL queries, joins, counts, schema introspection, error handling |
-| `examples/agent-lsp-go/` | agent-lsp + gopls | Go | 51 | All 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, build (100% tool coverage) |
+| `examples/agent-lsp-go/` | agent-lsp + gopls | Go | 60 | All 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, build (100% tool coverage) |
 
 ---
 
@@ -130,7 +130,7 @@ Only PASS → non-PASS transitions are flagged. Previously-failing tests that st
 | `e2e-filesystem` | 14 assertions against filesystem server | build-and-test |
 | `e2e-memory` | 5 assertions against memory server | build-and-test |
 | `e2e-sqlite` | 6 assertions against SQLite server (Python/uv) | build-and-test |
-| `e2e-agent-lsp` | 51 assertions against agent-lsp + gopls | build-and-test |
+| `e2e-agent-lsp` | 60 assertions against agent-lsp + gopls | build-and-test |
 
 All e2e jobs upload JUnit XML artifacts.
 
@@ -142,7 +142,7 @@ All e2e jobs upload JUnit XML artifacts.
 |---------|-------|------|
 | `internal/assertion` | 22 | All 14 assertion types, loader (YAML parsing, subdirs, errors), snapshot comparison |
 | `internal/report` | 36 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare |
-| `internal/runner` | 31 | Recursive fixture substitution, server override, bad binary, timeout, Docker flag, generate schema parsing, stub generation, filename sanitization, CLI error paths |
+| `internal/runner` | 42 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, generate schema parsing, stub generation, filename sanitization, CLI error paths |
 | Total | 100 | Race-detector clean |
 
 ---
@@ -159,6 +159,8 @@ server:
 setup:
   - tool: setup_tool
     args: { key: value }
+    capture:
+      variable_name: "$.json.path"    # extract from response
 assert:
   tool: tool_under_test
   args: { key: value }

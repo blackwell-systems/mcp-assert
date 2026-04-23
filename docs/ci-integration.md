@@ -21,8 +21,8 @@ A dedicated GitHub Action is also available: [`blackwell-systems/mcp-assert-acti
 ## CI commands
 
 ```bash
-# Fail the build if any assertion regresses
-mcp-assert ci --suite evals/ --fail-on-regression
+# Fail the build if any assertion regresses (requires --baseline)
+mcp-assert ci --suite evals/ --baseline baseline.json --fail-on-regression
 
 # Set a minimum pass threshold
 mcp-assert ci --suite evals/ --threshold 95

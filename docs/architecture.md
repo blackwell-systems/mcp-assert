@@ -110,7 +110,7 @@ cmd/mcp-assert/main.go
   └── internal/runner
         ├── internal/assertion (types, loader, checker)
         ├── internal/report (all output formats)
-        ├─�� mark3labs/mcp-go/client (MCP stdio transport)
+        ├── mark3labs/mcp-go/client (MCP stdio transport)
         └── mark3labs/mcp-go/mcp (MCP protocol types)
 ```
 

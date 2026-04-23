@@ -33,12 +33,13 @@ mcp-assert run --suite <dir> [flags]
 | `--badge <path>` | Write shields.io endpoint JSON |
 | `--baseline <path>` | Compare against saved baseline |
 | `--save-baseline <path>` | Save current results as baseline JSON |
+| `--timeout <duration>` | Per-assertion timeout (default: `30s`) |
 
 **Exit codes:** 0 = all passed, 1 = one or more failures.
 
 ### `mcp-assert ci`
 
-Run with CI-specific exit codes and reporting. Supports all `run` flags plus:
+Run with CI-specific exit codes and reporting. Supports all `run` flags plus CI-specific flags:
 
 ```bash
 mcp-assert ci --suite <dir> [flags]
@@ -124,10 +125,26 @@ mcp-assert snapshot --suite <dir> --server <cmd> [--fixture <dir>] [--update] [-
 Rerun assertions automatically when YAML files change.
 
 ```bash
-mcp-assert watch --suite <dir> [--server <cmd>] [--fixture <dir>]
+mcp-assert watch --suite <dir> [--server <cmd>] [--fixture <dir>] [--interval <duration>]
 ```
 
-Polls every 2 seconds, clears terminal between runs. The assertion development loop: edit YAML, save, see result.
+| Flag | Description |
+|------|-------------|
+| `--interval <duration>` | Polling interval (default: `2s`) |
+
+Polls for changes, clears terminal between runs. The assertion development loop: edit YAML, save, see result.
+
+### `mcp-assert version`
+
+Print the installed version.
+
+```bash
+mcp-assert version
+```
+
+```
+mcp-assert v0.1.1
+```
 
 ## Server Override
 

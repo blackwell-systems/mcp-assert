@@ -97,6 +97,8 @@ Full documentation is available at [blackwell-systems.github.io/mcp-assert](http
 - [Examples](https://blackwell-systems.github.io/mcp-assert/examples/) — 4 example suites across 3 languages
 - [CI Integration](https://blackwell-systems.github.io/mcp-assert/ci-integration/) — GitHub Action, JUnit XML, regression detection
 - [Architecture](https://blackwell-systems.github.io/mcp-assert/architecture/) — internals and design decisions
+- [Roadmap](https://blackwell-systems.github.io/mcp-assert/roadmap/) — what's shipped and what's next
+- [Dogfooding](https://blackwell-systems.github.io/mcp-assert/dogfooding/) — real bugs found by testing our own servers
 
 ## License
 

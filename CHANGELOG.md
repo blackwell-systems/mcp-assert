@@ -36,7 +36,7 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ### Added
 
-- **Core assertion engine** with 13 deterministic assertion types: `contains`, `not_contains`, `equals`, `json_path`, `min_results`, `max_results`, `not_empty`, `not_error`, `is_error`, `matches_regex`, `file_contains`, `file_unchanged`, `net_delta`, `in_order`.
+- **Core assertion engine** with 14 deterministic assertion types: `contains`, `not_contains`, `equals`, `json_path`, `min_results`, `max_results`, `not_empty`, `not_error`, `is_error`, `matches_regex`, `file_contains`, `file_unchanged`, `net_delta`, `in_order`.
 - **CLI commands**: `run`, `matrix`, `ci`, `coverage`.
 - **`coverage` command** — queries the MCP server's `tools/list`, compares against assertion tool names, reports coverage percentage with covered/uncovered tool lists.
 - **`--server` flag** on `run` and `ci` overrides per-YAML server config from CLI.

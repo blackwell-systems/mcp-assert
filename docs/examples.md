@@ -39,7 +39,7 @@ mcp-assert run --suite examples/sqlite --fixture examples/sqlite/fixtures
 
 **Directory:** `examples/agent-lsp-go/`
 
-Tests [agent-lsp](https://github.com/blackwell-systems/agent-lsp) with gopls. 51 assertions covering all 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, and build.
+Tests [agent-lsp](https://github.com/blackwell-systems/agent-lsp) with gopls. 60 assertions covering all 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, and build.
 
 ```bash
 mcp-assert run --suite examples/agent-lsp-go --fixture /path/to/go/fixtures
