@@ -186,6 +186,36 @@ assert:
     is_error: true                          # The tool SHOULD return an error
 ```
 
+### Chaining outputs between steps (capture)
+
+Some workflows need output from one step as input to the next. Use `capture` to extract values via jsonpath:
+
+```yaml
+name: session lifecycle — create, edit, evaluate
+setup:
+  - tool: create_simulation_session
+    args:
+      workspace_root: "{{fixture}}"
+      language: go
+    capture:
+      session_id: "$.session_id"          # extract from JSON response
+  - tool: simulate_edit
+    args:
+      session_id: "{{session_id}}"        # inject captured value
+      file_path: "{{fixture}}/main.go"
+      start_line: 13
+      new_text: "return 42"
+assert:
+  tool: evaluate_session
+  args:
+    session_id: "{{session_id}}"          # same captured value
+  expect:
+    not_error: true
+    contains: ["net_delta"]
+```
+
+Captured variables work anywhere `{{fixture}}` works — strings, arrays, nested objects. Use this for session IDs, auth tokens, created resource IDs, or any value returned by a setup step.
+
 ### Server environment variables
 
 Pass environment variables to the server process:
@@ -237,6 +267,33 @@ Tests [agent-lsp](https://github.com/blackwell-systems/agent-lsp) with gopls. 51
 ```bash
 mcp-assert run --suite examples/agent-lsp-go --fixture /path/to/go/fixtures
 ```
+
+## Zero-Effort Coverage
+
+Get from zero to 100% coverage in three commands:
+
+```bash
+# 1. Generate stub assertions for every tool the server exposes
+mcp-assert generate --server "my-mcp-server" --output evals/ --fixture ./fixtures
+
+# 2. Capture actual outputs as snapshots
+mcp-assert snapshot --suite evals/ --server "my-mcp-server" --update
+
+# 3. Assert nothing changed
+mcp-assert run --suite evals/ --server "my-mcp-server"
+```
+
+`generate` queries `tools/list`, reads input schemas, and creates one YAML per tool with sensible defaults. `snapshot --update` captures real outputs. `run` asserts against them. Edit the generated YAMLs to replace `TODO` placeholders with real values.
+
+## Watch Mode
+
+Rerun assertions automatically when YAML files change:
+
+```bash
+mcp-assert watch --suite evals/ --server "my-mcp-server" --fixture ./fixtures
+```
+
+Polls every 2 seconds, clears terminal between runs. The assertion development loop: edit YAML, save, see result.
 
 ## Server Override
 
