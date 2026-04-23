@@ -14,6 +14,10 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **MCP client** via mcp-go stdio transport. Starts the MCP server under test, sends tool calls, captures responses.
 - **Cross-language matrix mode** runs the same assertions across multiple language server configurations.
 - **Report output** with pass/fail/skip per assertion, duration, and failure details. Server error text surfaced in failure output for debugging.
-- **27 unit tests** across checker (14), loader (8), report (5). All assertion types tested including edge cases.
+- **Structured reporting** — three output formats for CI integration:
+  - `--junit <path>`: JUnit XML for GitHub Actions test result tabs, Jenkins, CircleCI
+  - `--markdown <path>`: GitHub Step Summary table (auto-detects `$GITHUB_STEP_SUMMARY` in `ci` mode)
+  - `--badge <path>`: shields.io endpoint JSON for README badges
+- **36 unit tests** across checker (14), loader (8), report (14). All assertion types and report formats tested.
 - **End-to-end verified** against real agent-lsp + gopls. All 7 example assertions pass: hover, definition, references, diagnostics, symbols, completions, speculative execution.
 - **CI workflow** for build, vet, and test.
