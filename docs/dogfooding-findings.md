@@ -70,6 +70,20 @@ What we found by using mcp-assert to test agent-lsp (our own MCP server) and the
 
 ---
 
+## External server findings
+
+### 8. mcp-go SDK: longRunningOperation crashes stdio transport
+
+**What:** The `longRunningOperation` tool in `mark3labs/mcp-go`'s `examples/everything` server causes `transport error: transport closed` when called over stdio, even with minimal params (`duration: 0.1`, `steps: 1`). The tool handler calls `time.Sleep()` which races with stdio transport teardown.
+
+**How mcp-assert found it:** Building a comprehensive assertion suite for the mcp-go SDK's 3 example servers. 17/18 assertions passed. The `longRunningOperation` crash was the only failure.
+
+**Status:** Filed as [mark3labs/mcp-go#826](https://github.com/mark3labs/mcp-go/issues/826). This is a bug in the Go MCP SDK that mcp-assert itself depends on.
+
+**Impact:** This is the first external community server we scanned. Finding a bug in the SDK we depend on validates the scan-and-contribute flywheel strategy.
+
+---
+
 ## Patterns observed
 
 **Writing assertions forces you to read your own schema.** You discover parameter naming inconsistencies, misleading descriptions, and undocumented requirements that you'd never notice from the implementation side.
