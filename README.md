@@ -166,7 +166,9 @@ mcp-assert run --suite evals/ --badge badge.json
 | Grading | LLM-as-judge (subjective, costly) | Deterministic assertions (exact, free) |
 | Speed | Seconds per test (LLM round-trip) | Milliseconds per test (no LLM) |
 | CI cost | API calls on every run | Zero external dependencies |
-| Reliability | Varies by model temperature | Deterministic pass/fail |
+| Reliability | Not measured | pass@k / pass^k per assertion |
+| Regression | Not supported | Baseline comparison, fail on backslide |
+| Docker | Not supported | Per-assertion container isolation |
 | Multi-language | Not supported | Same assertion across N language servers |
 
 ## Assertion Types
@@ -218,6 +220,16 @@ timeout: 30s
 
 The `{{fixture}}` placeholder in args is replaced with the `--fixture` directory at runtime.
 
+## Docker Isolation
+
+Run each assertion in a fresh Docker container for reproducibility:
+
+```bash
+mcp-assert run --suite evals/ --docker ghcr.io/blackwell-systems/agent-lsp:go --fixture /workspace
+```
+
+The fixture directory is mounted into the container. Each assertion gets a clean environment — no cross-test contamination, no "works on my machine."
+
 ## Reliability Metrics
 
 Run multiple trials to measure consistency:
@@ -225,6 +237,46 @@ Run multiple trials to measure consistency:
 ```bash
 mcp-assert run --suite evals/ --trials 5
 ```
+
+```
+PASS  hover returns type info                 690ms
+PASS  hover returns type info                 650ms
+PASS  hover returns type info                 710ms
+FAIL  get_references finds cross-file callers 90001ms
+      tool call get_references failed: context deadline exceeded
+PASS  get_references finds cross-file callers 27305ms
+
+Reliability:
+  Assertion                                     Trials  Passed    pass@k  pass^k
+  ------------------------------------------    ------  ------  --------  ------
+  hover returns type info                            3       3       YES     YES
+  get_references finds cross-file callers            2       1       YES      NO
+
+  pass@k: 2/2 capable, pass^k: 1/2 reliable
+```
+
+- **pass@k** (capability): Did the assertion pass at least once? If NO, the tool is broken.
+- **pass^k** (reliability): Did the assertion pass every time? If NO, the tool is flaky.
+
+## Regression Detection
+
+Save a baseline, then detect regressions on future runs:
+
+```bash
+# Save current results as baseline
+mcp-assert run --suite evals/ --save-baseline baseline.json
+
+# Later: compare against baseline
+mcp-assert ci --suite evals/ --baseline baseline.json --fail-on-regression
+```
+
+```
+Regressions detected (1):
+  get_references finds cross-file callers: was PASS, now FAIL
+error: 1 regression(s) detected
+```
+
+Only flags transitions from PASS to FAIL. Previously-failing tests that still fail are not regressions. New tests that fail are not regressions.
 
 ## License
 
