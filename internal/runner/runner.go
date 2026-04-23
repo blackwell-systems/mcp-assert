@@ -227,6 +227,11 @@ func CI(args []string) error {
 func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string) assertion.Result {
 	start := time.Now()
 
+	// Trajectory assertions check a tool call sequence without calling the server.
+	if len(a.Trajectory) > 0 {
+		return runTrajectoryAssertion(a, fixture, start)
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -554,6 +559,45 @@ func writeReports(results []assertion.Result, junitPath, markdownPath, badgePath
 		if err := report.WriteBadge(results, badgePath); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: badge: %v\n", err)
 		}
+	}
+}
+
+// runTrajectoryAssertion checks a tool call sequence without starting an MCP server.
+// The trace comes from the assertion's inline Trace field or an AuditLog file.
+func runTrajectoryAssertion(a assertion.Assertion, fixture string, start time.Time) assertion.Result {
+	var trace []assertion.TraceEntry
+
+	if a.AuditLog != "" {
+		// Load trace from agent-lsp JSONL audit log.
+		path := strings.ReplaceAll(a.AuditLog, "{{fixture}}", fixture)
+		loaded, err := assertion.LoadAuditLog(path)
+		if err != nil {
+			return assertion.Result{
+				Name:     a.Name,
+				Status:   assertion.StatusFail,
+				Detail:   fmt.Sprintf("audit_log: %v", err),
+				Duration: time.Since(start),
+			}
+		}
+		trace = loaded
+	} else {
+		// Use inline trace from YAML.
+		trace = a.Trace
+	}
+
+	if err := assertion.CheckTrajectory(a.Trajectory, trace); err != nil {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   err.Error(),
+			Duration: time.Since(start),
+		}
+	}
+
+	return assertion.Result{
+		Name:     a.Name,
+		Status:   assertion.StatusPass,
+		Duration: time.Since(start),
 	}
 }
 

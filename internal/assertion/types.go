@@ -9,12 +9,31 @@ type Suite struct {
 }
 
 // Assertion defines a single test: call a tool with known inputs, check the output.
+// For trajectory assertions, set Trace and Trajectory instead of Assert.
 type Assertion struct {
-	Name    string       `yaml:"name"`
-	Server  ServerConfig `yaml:"server"`
-	Setup   []ToolCall   `yaml:"setup"`
-	Assert  AssertBlock  `yaml:"assert"`
-	Timeout string       `yaml:"timeout"`
+	Name       string                `yaml:"name"`
+	Server     ServerConfig          `yaml:"server"`
+	Setup      []ToolCall            `yaml:"setup"`
+	Assert     AssertBlock           `yaml:"assert"`
+	Timeout    string                `yaml:"timeout"`
+	Trace      []TraceEntry          `yaml:"trace,omitempty"`      // inline tool call sequence
+	AuditLog   string                `yaml:"audit_log,omitempty"`  // path to agent-lsp JSONL audit log
+	Trajectory []TrajectoryAssertion `yaml:"trajectory,omitempty"` // sequence checks
+}
+
+// TraceEntry is a single tool call in a recorded sequence.
+type TraceEntry struct {
+	Tool string         `yaml:"tool" json:"tool"`
+	Args map[string]any `yaml:"args,omitempty" json:"args,omitempty"`
+}
+
+// TrajectoryAssertion checks a property of a tool call sequence.
+// Type is one of: "order", "presence", "absence", "args_contain".
+type TrajectoryAssertion struct {
+	Type  string         `yaml:"type"`
+	Tools []string       `yaml:"tools,omitempty"`  // for order, presence, absence
+	Tool  string         `yaml:"tool,omitempty"`   // for args_contain
+	Args  map[string]any `yaml:"args,omitempty"`   // for args_contain: partial match
 }
 
 // ServerConfig specifies how to connect to the MCP server under test.
