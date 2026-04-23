@@ -162,7 +162,7 @@ Run each assertion in a fresh Docker container for reproducibility:
 mcp-assert run --suite evals/ --docker ghcr.io/blackwell-systems/agent-lsp:go --fixture /workspace
 ```
 
-The fixture directory is mounted into the container. Each assertion gets a clean environment — no cross-test contamination, no "works on my machine."
+The fixture directory is mounted into the container. Each assertion gets a clean environment: no cross-test contamination, no "works on my machine."
 
 Docker isolation is only supported with stdio transport (the default). HTTP/SSE transports connect to an already-running server and do not use Docker wrapping.
 

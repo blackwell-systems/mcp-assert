@@ -35,13 +35,13 @@ The loader reads a directory of YAML files (recursing one level into subdirector
 
 For each assertion:
 
-1. **Start server** — create the MCP client via `createMCPClient`, which selects the transport based on the `transport` field: stdio (default, launches subprocess via `client.NewStdioMCPClient`), SSE (`client.NewSSEMCPClient`), or streamable HTTP (`client.NewStreamableHttpClient`). If `--docker` is set with stdio, the command is wrapped in `docker run --rm -i` with volume mounts.
-2. **Initialize** — send `initialize` request with MCP protocol version, receive server capabilities.
-3. **Setup** — execute setup tool calls sequentially (e.g., `start_lsp`, `open_document`). These establish the state needed for the assertion. `{{fixture}}` substitution happens here.
-4. **Snapshot** — if `file_unchanged` assertions exist, read the files before the tool call.
-5. **Assert** — call the tool under test, capture the response text and `isError` flag.
-6. **Check** — run all expectations against the response (`internal/assertion/checker.go`).
-7. **Close** — shut down the MCP client (kills the server subprocess).
+1. **Start server**: create the MCP client via `createMCPClient`, which selects the transport based on the `transport` field: stdio (default, launches subprocess via `client.NewStdioMCPClient`), SSE (`client.NewSSEMCPClient`), or streamable HTTP (`client.NewStreamableHttpClient`). If `--docker` is set with stdio, the command is wrapped in `docker run --rm -i` with volume mounts.
+2. **Initialize**: send `initialize` request with MCP protocol version, receive server capabilities.
+3. **Setup**: execute setup tool calls sequentially (e.g., `start_lsp`, `open_document`). These establish the state needed for the assertion. `{{fixture}}` substitution happens here.
+4. **Snapshot**: if `file_unchanged` assertions exist, read the files before the tool call.
+5. **Assert**: call the tool under test, capture the response text and `isError` flag.
+6. **Check**: run all expectations against the response (`internal/assertion/checker.go`).
+7. **Close**: shut down the MCP client (kills the server subprocess).
 
 Each assertion gets its own server process. No state leaks between assertions.
 
@@ -49,20 +49,20 @@ Each assertion gets its own server process. No state leaks between assertions.
 
 The checker evaluates expectations in a fixed order:
 
-1. `not_error` / `is_error` — check `isError` flag
-2. `not_empty` — reject empty, null, [], {}
-3. `equals` — exact match (whitespace-trimmed)
-4. `contains` / `not_contains` — substring checks
-5. `matches_regex` — compiled regex matching
-6. `json_path` — dot-notation lookup on parsed JSON
-7. `min_results` / `max_results` — array length bounds
-8. `net_delta` — numeric field comparison
-9. `file_contains` — read file from disk, check content
-10. `in_order` — ordered substring search
+1. `not_error` / `is_error`: check `isError` flag
+2. `not_empty`: reject empty, null, [], {}
+3. `equals`: exact match (whitespace-trimmed)
+4. `contains` / `not_contains`: substring checks
+5. `matches_regex`: compiled regex matching
+6. `json_path`: dot-notation lookup on parsed JSON
+7. `min_results` / `max_results`: array length bounds
+8. `net_delta`: numeric field comparison
+9. `file_contains`: read file from disk, check content
+10. `in_order`: ordered substring search
 
 `file_unchanged` is handled separately via `CheckWithSnapshots` which compares post-execution file content against pre-execution snapshots.
 
-First failure short-circuits — only the first failing expectation is reported.
+First failure short-circuits: only the first failing expectation is reported.
 
 ### 4. Report Phase (`internal/report/`)
 
@@ -78,7 +78,7 @@ Results are dispatched to multiple output sinks:
 | `reliability.go` | pass@k / pass^k computation from multi-trial results |
 | `baseline.go` | Baseline JSON write/load, regression detection |
 
-All report outputs are best-effort — write errors go to stderr but don't fail the run.
+All report outputs are best-effort: write errors go to stderr but don't fail the run.
 
 ### 5. Coverage Phase (`internal/runner/coverage.go`)
 
@@ -90,7 +90,7 @@ The `coverage` command takes a different path:
 4. Compare server tool names against assertion tool names
 5. Report coverage percentage and per-tool status
 
-This does not execute any assertions — it only queries the tool catalog.
+This does not execute any assertions: it only queries the tool catalog.
 
 ## Key Design Decisions
 
@@ -98,7 +98,7 @@ This does not execute any assertions — it only queries the tool catalog.
 
 **Checker is pure.** `Check()` takes a string and returns an error. No I/O, no state, no side effects. `CheckWithSnapshots()` adds file comparison but the snapshots are passed in, not read internally. This makes the checker trivially testable.
 
-**Color degrades gracefully.** TTY detection via `os.ModeCharDevice`. `NO_COLOR` env var. `TERM=dumb`. In CI (pipes), output is plain `PASS`/`FAIL`/`SKIP` — no escape codes in JUnit XML or log files.
+**Color degrades gracefully.** TTY detection via `os.ModeCharDevice`. `NO_COLOR` env var. `TERM=dumb`. In CI (pipes), output is plain `PASS`/`FAIL`/`SKIP`: no escape codes in JUnit XML or log files.
 
 **Docker is a command wrapper (stdio only).** `--docker <image>` doesn't use the Docker SDK. It prepends `docker run --rm -i -v fixture:fixture` to the server command. Since MCP uses stdio, Docker's `-i` flag gives bidirectional pipe transport for free. The server process runs inside the container; the assertions run outside. Docker is only supported with stdio transport; HTTP/SSE transports connect to an already-running server.
 

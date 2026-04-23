@@ -10,7 +10,7 @@ What we found by using mcp-assert to test agent-lsp (our own MCP server) and the
 
 **What:** `get_symbol_source` used `character` as its position parameter. All 49 other tools use `column`. An agent switching between `get_references` (column) and `get_symbol_source` (character) would silently pass the wrong parameter and get no results.
 
-**How mcp-assert found it:** Writing assertion YAML for `get_symbol_source` — the assertion author instinctively used `column` (consistent with every other tool), the assertion failed, and the error message revealed the parameter was called `character`.
+**How mcp-assert found it:** Writing assertion YAML for `get_symbol_source`: the assertion author instinctively used `column` (consistent with every other tool), the assertion failed, and the error message revealed the parameter was called `character`.
 
 **Fix:** Renamed to `column` in the schema. Implementation accepts both for backward compatibility.
 
@@ -24,17 +24,17 @@ What we found by using mcp-assert to test agent-lsp (our own MCP server) and the
 
 ### 3. `simulate_edit_atomic` requires undocumented parameters
 
-**What:** When used without a session, `simulate_edit_atomic` requires `workspace_root` and `language` parameters. The error messages were just "workspace_root is required" and "language is required" — clear enough, but not discoverable from the schema alone.
+**What:** When used without a session, `simulate_edit_atomic` requires `workspace_root` and `language` parameters. The error messages were just "workspace_root is required" and "language is required": clear enough, but not discoverable from the schema alone.
 
 **How mcp-assert found it:** The first speculative assertion used only `file_path` and position params (matching the schema). Failed with `isError: true`. Adding server response surfacing to mcp-assert revealed the missing params one at a time.
 
-**Fix:** Added server error text to mcp-assert failure output. The schema already listed the params as optional — the issue was that they're conditionally required (required when no session_id is provided).
+**Fix:** Added server error text to mcp-assert failure output. The schema already listed the params as optional: the issue was that they're conditionally required (required when no session_id is provided).
 
 ### 4. Cross-file tools need warmup that isn't documented
 
 **What:** `get_references`, `call_hierarchy`, `rename_symbol`, and other cross-file tools return empty or error results when called immediately after `start_lsp`. gopls needs time to index the workspace.
 
-**How mcp-assert found it:** The `get_references` assertion passed locally (gopls indexed fast enough) but failed in CI (slower runner, gopls not ready). Adding `get_diagnostics` as a warmup step — which blocks until gopls returns diagnostics — fixed it.
+**How mcp-assert found it:** The `get_references` assertion passed locally (gopls indexed fast enough) but failed in CI (slower runner, gopls not ready). Adding `get_diagnostics` as a warmup step: which blocks until gopls returns diagnostics: fixed it.
 
 **Fix:** Documented the warmup pattern in ci-notes.md. All cross-file assertions now include `get_diagnostics` setup steps.
 
@@ -44,7 +44,7 @@ What we found by using mcp-assert to test agent-lsp (our own MCP server) and the
 
 **How it was found:** The `read_multiple_files` assertion for the filesystem server passed an array of paths. The `{{fixture}}` placeholders were sent literally to the server, which rejected them as "path outside allowed directories."
 
-**Fix:** Made substitution recursive — handles strings, arrays, and nested maps.
+**Fix:** Made substitution recursive: handles strings, arrays, and nested maps.
 
 ---
 
@@ -60,9 +60,9 @@ What we found by using mcp-assert to test agent-lsp (our own MCP server) and the
 
 ### 7. Shared fixture mutation causes cascading position failures
 
-**What:** `apply_edit.yaml` runs first (alphabetical order) and inserts a comment line into `main.go`, shifting all line numbers by +1. Every subsequent assertion pointing at `main.go` was hitting the wrong line — landing on comments instead of identifiers.
+**What:** `apply_edit.yaml` runs first (alphabetical order) and inserts a comment line into `main.go`, shifting all line numbers by +1. Every subsequent assertion pointing at `main.go` was hitting the wrong line: landing on comments instead of identifiers.
 
-**How mcp-assert found it:** 12 of 15 assertion failures had the same root cause: "no identifier found" or empty responses at positions that should have worked. The pattern — all failures in the same file, all off by exactly one line — pointed to a shared-state mutation.
+**How mcp-assert found it:** 12 of 15 assertion failures had the same root cause: "no identifier found" or empty responses at positions that should have worked. The pattern: all failures in the same file, all off by exactly one line: pointed to a shared-state mutation.
 
 **Fix:** Adjusted all position-dependent assertions to account for the inserted line. Long-term fix: either run `apply_edit` last, use a separate fixture copy, or use `--docker` for true isolation.
 
@@ -86,13 +86,13 @@ What we found by using mcp-assert to test agent-lsp (our own MCP server) and the
 
 ## PrefectHQ/fastmcp findings
 
-### 9. fastmcp testing_demo: clean results — no bugs found
+### 9. fastmcp testing_demo: clean results: no bugs found
 
 **What:** 11 assertions across 3 tools (add, greet, async_multiply) all passed on the first run. Edge cases tested: negative numbers, zero, empty strings, fractional multiplication, missing required arguments, default vs custom optional parameters.
 
 **What this tells us:** fastmcp's tool registration and Pydantic-based input validation handle edge cases well. Missing arguments correctly return `isError: true` with a validation error. Default parameter values work as expected. Async tools behave identically to sync tools from the MCP protocol perspective.
 
-**Significance:** This is the first Python MCP framework (as opposed to a standalone Python MCP server like sqlite) we've tested. A clean bill of health for a 25K-star framework validates that the Python MCP ecosystem has solid foundations. Not every scan finds bugs — and that's a useful signal too.
+**Significance:** This is the first Python MCP framework (as opposed to a standalone Python MCP server like sqlite) we've tested. A clean bill of health for a 25K-star framework validates that the Python MCP ecosystem has solid foundations. Not every scan finds bugs: and that's a useful signal too.
 
 ---
 
@@ -104,4 +104,4 @@ What we found by using mcp-assert to test agent-lsp (our own MCP server) and the
 
 **Timing is the #1 source of flakiness.** Language servers need indexing time. Assertions that work locally fail in CI. The `get_diagnostics` warmup pattern is the universal fix.
 
-**Negative tests catch real bugs.** The `read_media_file` finding came from a negative test (testing error handling). The `is_error` assertion type exists specifically for this — and it found an upstream protocol violation.
+**Negative tests catch real bugs.** The `read_media_file` finding came from a negative test (testing error handling). The `is_error` assertion type exists specifically for this: and it found an upstream protocol violation.

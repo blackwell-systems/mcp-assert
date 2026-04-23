@@ -2,7 +2,7 @@
 
 mcp-assert ships with example assertions for five MCP servers in three languages. All built-in examples use stdio transport (the default). For HTTP/SSE transport examples, see [Writing Assertions](writing-assertions.md#httpsse-transport).
 
-## Filesystem server — TypeScript
+## Filesystem server. TypeScript
 
 **Directory:** `examples/filesystem/`
 
@@ -13,7 +13,7 @@ npm install -g @modelcontextprotocol/server-filesystem
 mcp-assert run --suite examples/filesystem --fixture examples/filesystem/fixtures
 ```
 
-## Memory server — TypeScript
+## Memory server. TypeScript
 
 **Directory:** `examples/memory/`
 
@@ -24,7 +24,7 @@ npm install -g @modelcontextprotocol/server-memory
 mcp-assert run --suite examples/memory
 ```
 
-## SQLite server — Python
+## SQLite server. Python
 
 **Directory:** `examples/sqlite/`
 
@@ -35,7 +35,7 @@ uvx mcp-server-sqlite  # or: pip install mcp-server-sqlite
 mcp-assert run --suite examples/sqlite --fixture examples/sqlite/fixtures
 ```
 
-## fastmcp testing_demo — Python
+## fastmcp testing_demo. Python
 
 **Directory:** `examples/fastmcp-testing-demo/`
 
@@ -49,7 +49,7 @@ mcp-assert run --suite examples/fastmcp-testing-demo
 !!! note
     The assertions reference the server at `/tmp/fastmcp/examples/testing_demo/server.py`. Clone the fastmcp repo to `/tmp/fastmcp` before running, or use `--server` to override the path.
 
-## agent-lsp — Go
+## agent-lsp. Go
 
 **Directory:** `examples/agent-lsp-go/`
 

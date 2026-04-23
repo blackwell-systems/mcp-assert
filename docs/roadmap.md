@@ -6,17 +6,17 @@
 |------|--------|-------------|
 | **File upstream bugs** | **Shipped** | 2 bugs filed: [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029) (filesystem `read_media_file` returns invalid `blob` type) and [mark3labs/mcp-go#826](https://github.com/mark3labs/mcp-go/issues/826) (everything server `longRunningOperation` crashes stdio transport). |
 | **Community server suites** | **Shipped** | 29 assertions across 4 community servers: 3 mark3labs/mcp-go SDK examples (everything, typed_tools, structured_input_and_output) + PrefectHQ/fastmcp testing_demo (11 assertions, 100% tool coverage). Go and Python framework coverage. Scan-and-contribute flywheel validated. |
-| **External adoption** | Planned | Get one MCP server author to use mcp-assert and report results. The mcp-go bug report is the first touchpoint — watch for maintainer response. |
+| **External adoption** | Planned | Get one MCP server author to use mcp-assert and report results. The mcp-go bug report is the first touchpoint: watch for maintainer response. |
 
 ## Distribution
 
 | Item | Status | Priority | Description |
 |------|--------|----------|-------------|
-| **GitHub Action** | **Shipped** | **Highest** | [`blackwell-systems/mcp-assert-action@v1`](https://github.com/blackwell-systems/mcp-assert-action) — one line in any workflow. Downloads binary, runs assertions, uploads JUnit XML + badge. |
+| **GitHub Action** | **Shipped** | **Highest** | [`blackwell-systems/mcp-assert-action@v1`](https://github.com/blackwell-systems/mcp-assert-action): one line in any workflow. Downloads binary, runs assertions, uploads JUnit XML + badge. |
 | **GoReleaser** | **Shipped** | High | v0.1.1 released. Cross-compiled binaries for linux/darwin/windows × amd64/arm64. `go install ...@v0.1.1`. |
 | **Homebrew formula** | Planned | High | `brew install mcp-assert` |
-| **PyPI wrapper** | Planned | High | `pip install mcp-assert` — downloads the Go binary. Python MCP server authors won't `go install`. |
-| **npm wrapper** | Planned | Medium | `npx mcp-assert` — same pattern, TypeScript audience. |
+| **PyPI wrapper** | Planned | High | `pip install mcp-assert`: downloads the Go binary. Python MCP server authors won't `go install`. |
+| **npm wrapper** | Planned | Medium | `npx mcp-assert`: same pattern, TypeScript audience. |
 
 The GitHub Action is the single highest-leverage distribution move. If adding mcp-assert to a CI pipeline is one `uses:` line, adoption is frictionless. Every MCP server repo can add it in 30 seconds.
 
@@ -82,7 +82,7 @@ Approach #1 (audit trail) is the pragmatic first step. It works specifically wit
 
 ### Client capabilities detail
 
-MCP is bidirectional — servers can request things from the client (sampling, roots, elicitation). mcp-assert currently only acts as a tool-calling client. Adding client capability mocks would let it test servers that depend on these features.
+MCP is bidirectional: servers can request things from the client (sampling, roots, elicitation). mcp-assert currently only acts as a tool-calling client. Adding client capability mocks would let it test servers that depend on these features.
 
 **YAML format:**
 
@@ -107,9 +107,9 @@ server:
 | 2 | **Elicitation** | Medium | Return preset key-value pairs for server-initiated prompts. Unblocks mcp-go `elicitation` example. |
 | 3 | **Sampling** | Medium | Return mock LLM responses with configurable text, model, and stop reason. Unblocks any server that uses MCP sampling for agent behavior. |
 
-**Why this matters:** The mcp-go SDK has 3 example servers (roots_server, sampling_server, elicitation) that are currently untestable by any MCP testing tool. Building this would make mcp-assert the only tool that can fully simulate an MCP client environment — not just "call tools and check responses" but "participate in the full MCP protocol."
+**Why this matters:** The mcp-go SDK has 3 example servers (roots_server, sampling_server, elicitation) that are currently untestable by any MCP testing tool. Building this would make mcp-assert the only tool that can fully simulate an MCP client environment: not just "call tools and check responses" but "participate in the full MCP protocol."
 
-**The mock response pattern is key.** The server doesn't care if the LLM response is real. It just needs a response to continue its workflow. Same for roots (just return paths) and elicitation (just return values). The assertion still checks the tool result — client capabilities are setup for the server to function.
+**The mock response pattern is key.** The server doesn't care if the LLM response is real. It just needs a response to continue its workflow. Same for roots (just return paths) and elicitation (just return values). The assertion still checks the tool result: client capabilities are setup for the server to function.
 
 ### Setup output capture detail
 
@@ -165,7 +165,7 @@ This is the `jest --updateSnapshot` pattern applied to MCP servers. Write a mini
 
 ### Trajectory assertions detail
 
-Current assertions test single tool calls: "call X, check the response." Trajectory assertions test sequences: "the agent called A, then B, then C — verify the ordering and arguments."
+Current assertions test single tool calls: "call X, check the response." Trajectory assertions test sequences: "the agent called A, then B, then C: verify the ordering and arguments."
 
 ```yaml
 trajectory:

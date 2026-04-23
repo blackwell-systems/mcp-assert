@@ -84,7 +84,7 @@ setup:
         - entityName: "Alice"
           contents: ["promoted to staff"]
 assert:
-  tool: search_nodes                        # Runs last — this is what we're testing
+  tool: search_nodes                        # Runs last: this is what we're testing
   args:
     query: "Alice"
   expect:
@@ -128,7 +128,7 @@ assert:
 Some workflows need output from one step as input to the next. Use `capture` to extract values via jsonpath:
 
 ```yaml
-name: session lifecycle — create, edit, evaluate
+name: session lifecycle: create, edit, evaluate
 setup:
   - tool: create_simulation_session
     args:
@@ -151,7 +151,7 @@ assert:
     contains: ["net_delta"]
 ```
 
-Captured variables work anywhere `{{fixture}}` works — strings, arrays, nested objects. Use this for session IDs, auth tokens, created resource IDs, or any value returned by a setup step.
+Captured variables work anywhere `{{fixture}}` works: strings, arrays, nested objects. Use this for session IDs, auth tokens, created resource IDs, or any value returned by a setup step.
 
 ## HTTP/SSE Transport
 

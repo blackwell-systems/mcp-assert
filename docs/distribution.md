@@ -16,13 +16,13 @@ Scan server → Find bugs → File issue/PR → Link mcp-assert → Maintainers 
 4. Ship the assertion suite as an example in our repo
 5. Server maintainers and their community discover mcp-assert organically
 
-This is the playbook that made eslint, clippy, and staticcheck ubiquitous — they spread through the bugs they find.
+This is the playbook that made eslint, clippy, and staticcheck ubiquitous. They spread through the bugs they find.
 
 ### Proven: first result
 
 | Server | Bug found | Issue |
 |--------|-----------|-------|
-| `@modelcontextprotocol/server-filesystem` | `read_media_file` returns `type: "blob"` — not a valid MCP content type per the 2025-11-25 spec | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029) |
+| `@modelcontextprotocol/server-filesystem` | `read_media_file` returns `type: "blob"`, not a valid MCP content type per the 2025-11-25 spec | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029) |
 
 ## Target servers
 
@@ -43,19 +43,19 @@ Prioritized by stars, community size, and likelihood of finding issues.
 
 | Server | Language | Stars | Why target |
 |--------|----------|-------|------------|
-| `mark3labs/mcp-go` | Go | 1000+ | Go MCP SDK — testing the SDK's example servers validates the ecosystem |
-| `PrefectHQ/fastmcp` | Python | 25000+ | Most popular Python MCP framework — **11 assertions shipped, 100% tool coverage** |
-| `supabase/mcp` | TypeScript | 500+ | Database tools — deterministic query assertions are a natural fit |
-| `firebase/mcp` | TypeScript | — | Google ecosystem, high visibility |
-| `stripe/agent-toolkit` | TypeScript | — | Payment tools — correctness matters |
-| `linear/mcp-server` | TypeScript | — | Project management tools |
+| `mark3labs/mcp-go` | Go | 1000+ | Go MCP SDK. Testing the SDK's example servers validates the ecosystem |
+| `PrefectHQ/fastmcp` | Python | 25000+ | Most popular Python MCP framework. **11 assertions shipped, 100% tool coverage** |
+| `supabase/mcp` | TypeScript | 500+ | Database tools; deterministic query assertions are a natural fit |
+| `firebase/mcp` | TypeScript | - | Google ecosystem, high visibility |
+| `stripe/agent-toolkit` | TypeScript | - | Payment tools; correctness matters |
+| `linear/mcp-server` | TypeScript | - | Project management tools |
 
 ### Tier 3: Niche servers with engaged communities
 
 | Server | Language | Why target |
 |--------|----------|------------|
-| `tavily/mcp-server` | Python | Search tools — response shape assertions |
-| `browserbase/mcp-server` | TypeScript | Browser automation — state management testing |
+| `tavily/mcp-server` | Python | Search tools; response shape assertions |
+| `browserbase/mcp-server` | TypeScript | Browser automation; state management testing |
 | `Nix MCP servers` | Various | Nix community is quality-focused and vocal |
 
 ## Contribution format
@@ -91,7 +91,7 @@ Template:
 
 ### 3. Fix PR (when the fix is obvious)
 
-Even better than an issue — a PR with the fix and the assertion that proves it works. Include the assertion YAML in the PR description so the maintainer can verify.
+Even better than an issue: a PR with the fix and the assertion that proves it works. Include the assertion YAML in the PR description so the maintainer can verify.
 
 ## Distribution channels
 
@@ -99,11 +99,11 @@ Even better than an issue — a PR with the fix and the assertion that proves it
 
 | Channel | Status | Effort | Impact |
 |---------|--------|--------|--------|
-| **GitHub Action** | Planned | 1 day | `uses: blackwell-systems/mcp-assert-action@v1` — one line in any workflow |
+| **GitHub Action** | Planned | 1 day | `uses: blackwell-systems/mcp-assert-action@v1`, one line in any workflow |
 | **GoReleaser** | Planned | 1 hour | Tagged releases, `go install ...@v0.1.0`, GitHub Releases binaries |
 | **Homebrew** | Planned | 2 hours | `brew install mcp-assert` |
-| **PyPI wrapper** | Planned | 1 day | `pip install mcp-assert` — downloads Go binary |
-| **npm wrapper** | Planned | 1 day | `npx mcp-assert` — same pattern |
+| **PyPI wrapper** | Planned | 1 day | `pip install mcp-assert`, downloads Go binary |
+| **npm wrapper** | Planned | 1 day | `npx mcp-assert`, same pattern |
 
 ### Content (medium priority)
 
@@ -136,6 +136,6 @@ Even better than an issue — a PR with the fix and the assertion that proves it
 
 ## Non-goals
 
-- **Paid tier** — mcp-assert is free and open source. The value is ecosystem positioning, not revenue.
-- **SaaS dashboard** — no hosted version. CI-native, single binary.
-- **LLM-as-judge features** — stay in our lane. Deterministic assertions only. Don't dilute the positioning.
+- **Paid tier.** mcp-assert is free and open source. The value is ecosystem positioning, not revenue.
+- **SaaS dashboard.** No hosted version. CI-native, single binary.
+- **LLM-as-judge features.** Stay in our lane. Deterministic assertions only. Don't dilute the positioning.

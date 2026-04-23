@@ -2,11 +2,11 @@
 
 Test any MCP server in any language. No SDK required. No LLM required.
 
-A single Go binary that starts your MCP server over stdio, calls your tools, and asserts the results. Define assertions in YAML, run them in CI. Works with servers written in Go, TypeScript, Python, Rust, Java — anything that speaks MCP.
+A single Go binary that starts your MCP server over stdio, calls your tools, and asserts the results. Define assertions in YAML, run them in CI. Works with servers written in Go, TypeScript, Python, Rust, Java: anything that speaks MCP.
 
 ## Why
 
-Most MCP tools are deterministic: `read_file` returns file contents, `read_query` returns rows, `get_references` returns locations. Given the same input, the correct output is knowable in advance. You don't need an LLM to grade it — you need `assert.Equal`.
+Most MCP tools are deterministic: `read_file` returns file contents, `read_query` returns rows, `get_references` returns locations. Given the same input, the correct output is knowable in advance. You don't need an LLM to grade it: you need `assert.Equal`.
 
 Existing MCP eval frameworks use LLM-as-judge for everything: send a prompt, get a response, ask GPT "was this good?" on a 1-5 scale. This adds cost, latency, and false variance to tests that should be instant and exact.
 
@@ -16,11 +16,11 @@ mcp-assert tests MCP server tools the way you test code: given this input, asser
 
 | Your tool returns... | Use |
 |---|---|
-| Structured data (files, rows, locations, symbols) | **mcp-assert** — deterministic assertions |
-| Predictable state changes (rename, create, delete) | **mcp-assert** — assert the state after |
-| Error responses for bad input | **mcp-assert** — `is_error` and `contains` |
-| Natural language (summaries, explanations, descriptions) | **LLM-as-judge** — quality is subjective |
-| Creative content (commit messages, code suggestions) | **LLM-as-judge** — many correct answers |
+| Structured data (files, rows, locations, symbols) | **mcp-assert**: deterministic assertions |
+| Predictable state changes (rename, create, delete) | **mcp-assert**: assert the state after |
+| Error responses for bad input | **mcp-assert**. `is_error` and `contains` |
+| Natural language (summaries, explanations, descriptions) | **LLM-as-judge**: quality is subjective |
+| Creative content (commit messages, code suggestions) | **LLM-as-judge**: many correct answers |
 
 Most MCP servers are heavy on the first three and light on the last two. If your server returns data, mcp-assert covers it. If your server generates prose, you need a different tool.
 

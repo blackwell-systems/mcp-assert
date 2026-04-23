@@ -16,7 +16,7 @@
     path: results.xml
 ```
 
-A dedicated GitHub Action is also available: [`blackwell-systems/mcp-assert-action@v1`](https://github.com/blackwell-systems/mcp-assert-action) — one line in any workflow. Downloads binary, runs assertions, uploads JUnit XML + badge.
+A dedicated GitHub Action is also available: [`blackwell-systems/mcp-assert-action@v1`](https://github.com/blackwell-systems/mcp-assert-action): one line in any workflow. Downloads binary, runs assertions, uploads JUnit XML + badge.
 
 ## CI commands
 

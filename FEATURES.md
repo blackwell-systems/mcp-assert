@@ -96,7 +96,7 @@ Transport is configured per-assertion in YAML via the `transport` and `url` fiel
 - Fixture directory volume-mounted into the container
 - Environment variables forwarded via `-e` flags
 - Each assertion gets a fresh container (no cross-test contamination)
-- stdio piping for MCP transport — no port mapping needed
+- stdio piping for MCP transport, no port mapping needed
 
 ---
 
@@ -143,7 +143,7 @@ Transport is configured per-assertion in YAML via the `transport` and `url` fiel
 
 | Job | What | Depends on |
 |-----|------|------------|
-| `build-and-test` | Build, vet, 111 unit tests with `-race` | — |
+| `build-and-test` | Build, vet, 111 unit tests with `-race` | - |
 | `e2e-filesystem` | 14 assertions against filesystem server | build-and-test |
 | `e2e-memory` | 5 assertions against memory server | build-and-test |
 | `e2e-sqlite` | 6 assertions against SQLite server (Python/uv) | build-and-test |

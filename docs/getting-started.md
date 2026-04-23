@@ -51,7 +51,7 @@ mcp-assert run --suite evals/ --fixture ./fixtures
 
 ## Any language, same assertions
 
-Works the same for a Go server, a Python server, or anything else that speaks MCP — just change `server.command`:
+Works the same for a Go server, a Python server, or anything else that speaks MCP: just change `server.command`:
 
 ```yaml
 # Python server
@@ -86,6 +86,6 @@ mcp-assert run --suite evals/ --server "my-mcp-server"
 
 ## Next steps
 
-- [Writing Assertions](writing-assertions.md) — YAML format, all 14 assertion types, setup steps, capture, fixtures
-- [CLI Reference](cli.md) — full command reference with flags and examples
-- [CI Integration](ci-integration.md) — GitHub Action, JUnit XML, regression detection
+- [Writing Assertions](writing-assertions.md). YAML format, all 14 assertion types, setup steps, capture, fixtures
+- [CLI Reference](cli.md): full command reference with flags and examples
+- [CI Integration](ci-integration.md). GitHub Action, JUnit XML, regression detection
