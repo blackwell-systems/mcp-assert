@@ -181,6 +181,42 @@ trajectory:
 
 This bridges mcp-assert (tool correctness) with skill evaluation (workflow correctness). Low priority because it requires capturing tool call traces, which means either wrapping the MCP transport or parsing audit logs.
 
+## Scope Map
+
+mcp-assert expands along two axes. The current implementation is already broad; the planned items extend it further.
+
+### Axis 1: Server capabilities
+
+What kinds of servers can be fully tested?
+
+| Capability | Status | Notes |
+|-----------|--------|-------|
+| **Stdio servers** | Supported | Launch as subprocess, pipe stdin/stdout |
+| **HTTP servers (streamable)** | Supported | `transport: http` with `url:` field |
+| **SSE servers (legacy)** | Supported | `transport: sse` with `url:` field |
+| **Bidirectional (sampling, roots, elicitation)** | Planned | Servers that make requests back to the client. Requires mock client capabilities. |
+| **Authenticated servers (OAuth, API keys)** | Partial | Simple token injection works today via `server.env:`. OAuth refresh cycles need client capabilities expansion. |
+| **Streaming/long-running tools** | Partial | Servers that stream progress notifications during execution. The `longRunningOperation` bug in mcp-go exposed this gap. Requires client-side notification handling. |
+| **Multi-server composition** | Not yet | Tools that call other MCP servers. Testing the composition layer requires intercepting outgoing calls. |
+
+### Axis 2: Test patterns
+
+What can be asserted?
+
+| Pattern | Status | Notes |
+|---------|--------|-------|
+| **Single tool responses** | Supported | 14 assertion types: contains, json_path, is_error, net_delta, etc. |
+| **Multi-step workflows** | Supported | `setup:` steps with `capture:` for chaining outputs |
+| **Inline trace validation** | Supported | Trajectory assertions with inline `trace:` |
+| **Audit log validation** | Supported | Trajectory assertions against JSONL audit logs |
+| **Live agent trajectory capture** | Planned | Intercept tool calls made by a real agent session, validate the sequence automatically |
+| **Snapshot regression** | Supported | `snapshot --update` captures outputs; subsequent runs detect changes |
+| **Cross-language conformance** | Supported | Matrix mode runs same assertions across N servers |
+
+### Bottom line
+
+The YAML format and transport abstraction are both designed to accommodate expansion. The fundamental model (call a tool, assert the response) holds for virtually every MCP pattern that exists today. The two main expansion areas: making mcp-assert a more capable client (bidirectional, auth, streaming), and extending what can be asserted about server behavior (live trajectory capture, audit integration).
+
 ## Bigger Bets
 
 | Item | Status | Description |
