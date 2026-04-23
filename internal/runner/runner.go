@@ -6,12 +6,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
 	"github.com/blackwell-systems/mcp-assert/internal/report"
 	"github.com/mark3labs/mcp-go/client"
+	clienttransport "github.com/mark3labs/mcp-go/client/transport"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
@@ -392,10 +394,122 @@ func createMCPClient(server assertion.ServerConfig, fixture string, dockerImage 
 			envSlice = nil // env is passed via -e flags
 		}
 
+		// If client capabilities are set, use NewClient directly to pass options.
+		caps := server.ClientCapabilities
+		if len(caps.Roots) > 0 || caps.Sampling != nil || len(caps.Elicitation) > 0 {
+			return createStdioClientWithCapabilities(serverCmd, envSlice, serverArgs, fixture, caps)
+		}
+
 		return client.NewStdioMCPClient(serverCmd, envSlice, serverArgs...)
 	default:
 		return nil, fmt.Errorf("unknown transport %q (expected stdio, sse, or http)", transport)
 	}
+}
+
+// createStdioClientWithCapabilities creates a stdio client with mock client capabilities.
+func createStdioClientWithCapabilities(
+	command string,
+	env []string,
+	args []string,
+	fixture string,
+	caps assertion.ClientCapabilities,
+) (client.MCPClient, error) {
+	stdioTransport := clienttransport.NewStdioWithOptions(command, env, args)
+	if err := stdioTransport.Start(context.Background()); err != nil {
+		return nil, fmt.Errorf("failed to start stdio transport: %w", err)
+	}
+
+	var opts []client.ClientOption
+
+	// Roots: respond to roots/list with configured paths.
+	if len(caps.Roots) > 0 {
+		roots := make([]mcp.Root, 0, len(caps.Roots))
+		for _, path := range caps.Roots {
+			path = strings.ReplaceAll(path, "{{fixture}}", fixture)
+			roots = append(roots, mcp.Root{
+				URI:  "file://" + path,
+				Name: filepath.Base(path),
+			})
+		}
+		opts = append(opts, client.WithRootsHandler(&staticRootsHandler{roots: roots}))
+	}
+
+	// Sampling: respond to sampling/createMessage with a mock LLM response.
+	if caps.Sampling != nil {
+		text := caps.Sampling.Text
+		model := caps.Sampling.Model
+		if model == "" {
+			model = "mock"
+		}
+		stopReason := caps.Sampling.StopReason
+		if stopReason == "" {
+			stopReason = "end_turn"
+		}
+		opts = append(opts, client.WithSamplingHandler(&staticSamplingHandler{
+			text:       text,
+			model:      model,
+			stopReason: stopReason,
+		}))
+	}
+
+	// Elicitation: respond with preset values.
+	if len(caps.Elicitation) > 0 {
+		opts = append(opts, client.WithElicitationHandler(&staticElicitationHandler{values: caps.Elicitation}))
+	}
+
+	c := client.NewClient(stdioTransport, opts...)
+	// Start the client to register bidirectional request handlers (roots, sampling, elicitation).
+	if err := c.Start(context.Background()); err != nil {
+		return nil, fmt.Errorf("failed to start client: %w", err)
+	}
+	return c, nil
+}
+
+// staticRootsHandler returns a fixed list of roots.
+type staticRootsHandler struct {
+	roots []mcp.Root
+}
+
+func (h *staticRootsHandler) ListRoots(_ context.Context, _ mcp.ListRootsRequest) (*mcp.ListRootsResult, error) {
+	return &mcp.ListRootsResult{Roots: h.roots}, nil
+}
+
+// staticSamplingHandler returns a fixed mock LLM response.
+type staticSamplingHandler struct {
+	text       string
+	model      string
+	stopReason string
+}
+
+func (h *staticSamplingHandler) CreateMessage(_ context.Context, _ mcp.CreateMessageRequest) (*mcp.CreateMessageResult, error) {
+	return &mcp.CreateMessageResult{
+		SamplingMessage: mcp.SamplingMessage{
+			Role:    mcp.RoleAssistant,
+			Content: mcp.TextContent{Type: "text", Text: h.text},
+		},
+		Model:      h.model,
+		StopReason: h.stopReason,
+	}, nil
+}
+
+// staticElicitationHandler returns preset values for server-initiated prompts.
+type staticElicitationHandler struct {
+	values map[string]any
+}
+
+func (h *staticElicitationHandler) Elicit(_ context.Context, _ mcp.ElicitationRequest) (*mcp.ElicitationResult, error) {
+	var content any
+	if c, ok := h.values["content"]; ok {
+		content = c
+	} else {
+		content = h.values
+	}
+	return &mcp.ElicitationResult{
+		ElicitationResponse: mcp.ElicitationResponse{
+			Action:  mcp.ElicitationResponseActionAccept,
+			Content: content,
+		},
+	}, nil
 }
 
 func extractText(result *mcp.CallToolResult) string {

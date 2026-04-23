@@ -1,0 +1,17 @@
+# Tests mcp-go's roots_server example. The "roots" tool calls back to the
+# client asking for its workspace roots. mcp-assert responds with the
+# configured list via client_capabilities.roots.
+name: roots tool returns client workspace roots
+server:
+  command: /tmp/mcp-go-roots-server-v049
+  client_capabilities:
+    roots:
+      - "{{fixture}}"
+assert:
+  tool: roots
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Root list"]
+timeout: 15s

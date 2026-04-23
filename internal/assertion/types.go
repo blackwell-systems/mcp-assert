@@ -40,11 +40,27 @@ type TrajectoryAssertion struct {
 // For stdio transport (default), Command/Args/Env launch the server as a subprocess.
 // For HTTP or SSE transport, URL specifies the server endpoint.
 type ServerConfig struct {
-	Command   string            `yaml:"command"`
-	Args      []string          `yaml:"args"`
-	Env       map[string]string `yaml:"env"`
-	Transport string            `yaml:"transport,omitempty"` // "stdio" (default), "sse", "http"
-	URL       string            `yaml:"url,omitempty"`       // Required for sse/http transport
+	Command            string             `yaml:"command"`
+	Args               []string           `yaml:"args"`
+	Env                map[string]string  `yaml:"env"`
+	Transport          string             `yaml:"transport,omitempty"` // "stdio" (default), "sse", "http"
+	URL                string             `yaml:"url,omitempty"`       // Required for sse/http transport
+	ClientCapabilities ClientCapabilities `yaml:"client_capabilities,omitempty"`
+}
+
+// ClientCapabilities declares what the mcp-assert client supports.
+// When set, mcp-assert responds to server-initiated requests.
+type ClientCapabilities struct {
+	Roots     []string          `yaml:"roots,omitempty"`     // File/dir paths to return for roots/list requests
+	Sampling  *SamplingConfig   `yaml:"sampling,omitempty"`  // Mock LLM response for sampling requests
+	Elicitation map[string]any  `yaml:"elicitation,omitempty"` // Preset values for elicitation requests
+}
+
+// SamplingConfig provides a mock LLM response for servers that use MCP sampling.
+type SamplingConfig struct {
+	Text      string `yaml:"text"`                 // Response text content
+	Model     string `yaml:"model,omitempty"`      // Model name to report (default: "mock")
+	StopReason string `yaml:"stop_reason,omitempty"` // Stop reason (default: "end_turn")
 }
 
 // ToolCall is a single MCP tool invocation.
