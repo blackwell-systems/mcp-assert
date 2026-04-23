@@ -126,7 +126,7 @@ Only PASS → non-PASS transitions are flagged. Previously-failing tests that st
 
 | Job | What | Depends on |
 |-----|------|------------|
-| `build-and-test` | Build, vet, 89 unit tests with `-race` | — |
+| `build-and-test` | Build, vet, 100 unit tests with `-race` | — |
 | `e2e-filesystem` | 14 assertions against filesystem server | build-and-test |
 | `e2e-memory` | 5 assertions against memory server | build-and-test |
 | `e2e-sqlite` | 6 assertions against SQLite server (Python/uv) | build-and-test |
@@ -143,7 +143,7 @@ All e2e jobs upload JUnit XML artifacts.
 | `internal/assertion` | 22 | All 14 assertion types, loader (YAML parsing, subdirs, errors), snapshot comparison |
 | `internal/report` | 36 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare |
 | `internal/runner` | 31 | Recursive fixture substitution, server override, bad binary, timeout, Docker flag, generate schema parsing, stub generation, filename sanitization, CLI error paths |
-| Total | 89 | Race-detector clean |
+| Total | 100 | Race-detector clean |
 
 ---
 

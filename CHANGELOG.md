@@ -12,7 +12,10 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **`--coverage-json`** — machine-readable coverage data for dashboards and badges on the `coverage` command.
 - **pass@k / pass^k in structured reports** — reliability metrics now included in JUnit XML (`<properties>`) and markdown (table section) when `--trials > 1`. Previously terminal-only.
 - **`generate` command** — `mcp-assert generate --server <cmd> --output <dir>` queries `tools/list`, reads input schemas, creates one YAML stub per tool with sensible defaults (path params get `{{fixture}}/TODO`, integers default to 1). Combined with snapshot: `generate` + `snapshot --update` = zero-effort 100% coverage.
-- **89 unit tests** (up from 49). Runner package: 31 tests (substitution, overrides, error paths, timeout, Docker, generate schema parsing, stub generation, filename sanitization). Race-detector clean.
+- **Setup output capture** — setup steps can capture values from responses via jsonpath and inject them into subsequent steps using `{{variable}}` syntax. Unlocks real session lifecycle testing (create → edit → evaluate → commit/discard → destroy) instead of negative-only tests.
+- **3 session lifecycle assertions** using capture: full lifecycle (create→edit→evaluate→discard→destroy), commit path, and evaluate with net_delta verification.
+- **`mcp-assert init`** — scaffolds a commented assertion template and fixture directory for new users.
+- **100 unit tests** (up from 49). Runner: 42 tests (substitution, capture, extractJSONPath, overrides, error paths, timeout, Docker, generate). Race-detector clean.
 
 ## [0.1.1] - 2026-04-23
 
