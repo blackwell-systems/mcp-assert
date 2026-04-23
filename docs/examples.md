@@ -1,6 +1,6 @@
 # Examples
 
-mcp-assert ships with example assertions for four MCP servers in three languages. All built-in examples use stdio transport (the default). For HTTP/SSE transport examples, see [Writing Assertions](writing-assertions.md#httpsse-transport).
+mcp-assert ships with example assertions for five MCP servers in three languages. All built-in examples use stdio transport (the default). For HTTP/SSE transport examples, see [Writing Assertions](writing-assertions.md#httpsse-transport).
 
 ## Filesystem server — TypeScript
 
@@ -34,6 +34,20 @@ Tests the official `mcp-server-sqlite` (Python). 6 assertions: list tables, SELE
 uvx mcp-server-sqlite  # or: pip install mcp-server-sqlite
 mcp-assert run --suite examples/sqlite --fixture examples/sqlite/fixtures
 ```
+
+## fastmcp testing_demo — Python
+
+**Directory:** `examples/fastmcp-testing-demo/`
+
+Tests the `testing_demo` example server from [PrefectHQ/fastmcp](https://github.com/PrefectHQ/fastmcp) (25K stars), the most popular Python MCP framework. 11 assertions across 3 tools: `add` (sum, negative numbers, zero, missing argument error), `greet` (default greeting, custom greeting, empty name), and `async_multiply` (product, zero, negative, fractional). 100% tool coverage.
+
+```bash
+git clone --depth 1 https://github.com/PrefectHQ/fastmcp.git /tmp/fastmcp
+mcp-assert run --suite examples/fastmcp-testing-demo
+```
+
+!!! note
+    The assertions reference the server at `/tmp/fastmcp/examples/testing_demo/server.py`. Clone the fastmcp repo to `/tmp/fastmcp` before running, or use `--server` to override the path.
 
 ## agent-lsp — Go
 

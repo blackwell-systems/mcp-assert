@@ -44,6 +44,7 @@ Prioritized by stars, community size, and likelihood of finding issues.
 | Server | Language | Stars | Why target |
 |--------|----------|-------|------------|
 | `mark3labs/mcp-go` | Go | 1000+ | Go MCP SDK — testing the SDK's example servers validates the ecosystem |
+| `PrefectHQ/fastmcp` | Python | 25000+ | Most popular Python MCP framework — **11 assertions shipped, 100% tool coverage** |
 | `supabase/mcp` | TypeScript | 500+ | Database tools — deterministic query assertions are a natural fit |
 | `firebase/mcp` | TypeScript | — | Google ecosystem, high visibility |
 | `stripe/agent-toolkit` | TypeScript | — | Payment tools — correctness matters |

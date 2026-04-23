@@ -84,6 +84,18 @@ What we found by using mcp-assert to test agent-lsp (our own MCP server) and the
 
 ---
 
+## PrefectHQ/fastmcp findings
+
+### 9. fastmcp testing_demo: clean results — no bugs found
+
+**What:** 11 assertions across 3 tools (add, greet, async_multiply) all passed on the first run. Edge cases tested: negative numbers, zero, empty strings, fractional multiplication, missing required arguments, default vs custom optional parameters.
+
+**What this tells us:** fastmcp's tool registration and Pydantic-based input validation handle edge cases well. Missing arguments correctly return `isError: true` with a validation error. Default parameter values work as expected. Async tools behave identically to sync tools from the MCP protocol perspective.
+
+**Significance:** This is the first Python MCP framework (as opposed to a standalone Python MCP server like sqlite) we've tested. A clean bill of health for a 25K-star framework validates that the Python MCP ecosystem has solid foundations. Not every scan finds bugs — and that's a useful signal too.
+
+---
+
 ## Patterns observed
 
 **Writing assertions forces you to read your own schema.** You discover parameter naming inconsistencies, misleading descriptions, and undocumented requirements that you'd never notice from the implementation side.

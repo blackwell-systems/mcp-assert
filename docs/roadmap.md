@@ -5,7 +5,7 @@
 | Item | Status | Description |
 |------|--------|-------------|
 | **File upstream bugs** | **Shipped** | 2 bugs filed: [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029) (filesystem `read_media_file` returns invalid `blob` type) and [mark3labs/mcp-go#826](https://github.com/mark3labs/mcp-go/issues/826) (everything server `longRunningOperation` crashes stdio transport). |
-| **Community server suites** | **Shipped** | 18 assertions across 3 mark3labs/mcp-go SDK example servers (everything, typed_tools, structured_input_and_output). 100% tool coverage on each. Scan-and-contribute flywheel validated. |
+| **Community server suites** | **Shipped** | 29 assertions across 4 community servers: 3 mark3labs/mcp-go SDK examples (everything, typed_tools, structured_input_and_output) + PrefectHQ/fastmcp testing_demo (11 assertions, 100% tool coverage). Go and Python framework coverage. Scan-and-contribute flywheel validated. |
 | **External adoption** | Planned | Get one MCP server author to use mcp-assert and report results. The mcp-go bug report is the first touchpoint — watch for maintainer response. |
 
 ## Distribution

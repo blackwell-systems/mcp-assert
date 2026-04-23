@@ -1,0 +1,15 @@
+# Add tool: handles negative numbers correctly
+name: add handles negative numbers
+server:
+  command: uvx
+  args: [fastmcp, run, /tmp/fastmcp/examples/testing_demo/server.py]
+assert:
+  tool: add
+  args:
+    a: -5
+    b: 3
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["-2"]
+timeout: 30s

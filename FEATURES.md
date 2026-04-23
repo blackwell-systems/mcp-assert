@@ -123,7 +123,7 @@ Transport is configured per-assertion in YAML via the `transport` and `url` fiel
 
 ---
 
-## Example Suites (8 suites, 3 languages, 108 assertions)
+## Example Suites (9 suites, 3 languages, 119 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|
@@ -135,6 +135,7 @@ Transport is configured per-assertion in YAML via the `transport` and `url` fiel
 | `examples/mcp-go-typed-tools/` | mark3labs/mcp-go typed_tools | Go | stdio | 3 | Typed greeting with required/optional params, error case |
 | `examples/mcp-go-structured/` | mark3labs/mcp-go structured | Go | stdio | 6 | Weather, user profile, assets, manual structured result |
 | `examples/mcp-go-everything-http/` | mark3labs/mcp-go everything | Go | HTTP | 5 | Same tools as stdio suite, transport conformance test |
+| `examples/fastmcp-testing-demo/` | PrefectHQ/fastmcp testing_demo | Python | stdio | 11 | add, greet, async_multiply: edge cases, defaults, negative tests, missing-arg error (100% tool coverage) |
 
 ---
 

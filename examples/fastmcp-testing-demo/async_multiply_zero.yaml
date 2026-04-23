@@ -1,0 +1,15 @@
+# Async multiply tool: multiplication by zero returns zero
+name: async_multiply by zero returns zero
+server:
+  command: uvx
+  args: [fastmcp, run, /tmp/fastmcp/examples/testing_demo/server.py]
+assert:
+  tool: async_multiply
+  args:
+    x: 99.0
+    "y": 0.0
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["0"]
+timeout: 30s

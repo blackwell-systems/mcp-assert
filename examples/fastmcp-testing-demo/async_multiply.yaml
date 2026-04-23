@@ -1,0 +1,15 @@
+# Async multiply tool: multiplies two floats
+name: async_multiply returns the product
+server:
+  command: uvx
+  args: [fastmcp, run, /tmp/fastmcp/examples/testing_demo/server.py]
+assert:
+  tool: async_multiply
+  args:
+    x: 6.0
+    "y": 7.0
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["42"]
+timeout: 30s

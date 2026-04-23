@@ -1,0 +1,15 @@
+# Add tool: adds two integers and returns the sum
+name: add returns the sum of two numbers
+server:
+  command: uvx
+  args: [fastmcp, run, /tmp/fastmcp/examples/testing_demo/server.py]
+assert:
+  tool: add
+  args:
+    a: 3
+    b: 7
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["10"]
+timeout: 30s

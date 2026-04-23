@@ -1,0 +1,14 @@
+# Greet tool: greeting with an empty name still succeeds
+name: greet with empty name succeeds
+server:
+  command: uvx
+  args: [fastmcp, run, /tmp/fastmcp/examples/testing_demo/server.py]
+assert:
+  tool: greet
+  args:
+    name: ""
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Hello"]
+timeout: 30s
