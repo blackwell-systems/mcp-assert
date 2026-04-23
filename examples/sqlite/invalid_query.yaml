@@ -1,0 +1,11 @@
+name: read_query returns error for invalid SQL
+server:
+  command: uvx
+  args: ["mcp-server-sqlite", "--db-path", "{{fixture}}/test.db"]
+assert:
+  tool: read_query
+  args:
+    query: "SELECT * FROM nonexistent_table"
+  expect:
+    contains: ["no such table"]
+timeout: 15s

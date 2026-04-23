@@ -1,0 +1,12 @@
+name: list_tables returns all tables in database
+server:
+  command: uvx
+  args: ["mcp-server-sqlite", "--db-path", "{{fixture}}/test.db"]
+assert:
+  tool: list_tables
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["users", "projects"]
+timeout: 15s

@@ -22,9 +22,10 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **Reliability metrics** — `--trials N` now prints a `pass@k` / `pass^k` table: pass@k (capability: passed at least once), pass^k (reliability: passed every time), per-assertion pass rate.
 - **Regression detection** — `--baseline <path>` compares current results against a saved baseline. `--save-baseline <path>` persists results. `--fail-on-regression` exits 1 when a previously-passing assertion regresses.
 - **49 unit tests** with race detection across checker (14), loader (8), report (27). All assertion types, report formats, reliability metrics, and baseline operations tested.
-- **End-to-end verified in CI** — 31 assertions across 3 MCP servers, all passing:
-- **Example suites for 3 MCP servers** — not just agent-lsp:
-  - `examples/filesystem/` — 5 assertions for `@modelcontextprotocol/server-filesystem` (read, list, info, search, path traversal rejection)
-  - `examples/memory/` — 5 assertions for `@modelcontextprotocol/server-memory` (entities, relations, observations, graph, empty search)
-  - `examples/agent-lsp-go/` — 21 assertions for agent-lsp + gopls: hover, definition, references, diagnostics, symbols, completions, speculative edit, type_definition, implementation, call_hierarchy, workspace_symbols, signature_help, semantic_tokens, highlights, prepare_rename, rename, format, code_actions, change_impact, build, inlay_hints
-- **CI pipeline** — 4 jobs: unit tests with `-race`, e2e-filesystem (5 assertions), e2e-memory (5 assertions), e2e-agent-lsp (7 assertions against real gopls). All e2e jobs upload JUnit XML artifacts.
+- **End-to-end verified in CI** — 37 assertions across 4 MCP servers in 3 languages (TypeScript, Python, Go), all passing.
+- **Example suites for 4 MCP servers**:
+  - `examples/filesystem/` — 5 assertions for `@modelcontextprotocol/server-filesystem` (TypeScript: read, list, info, search, path traversal rejection)
+  - `examples/memory/` — 5 assertions for `@modelcontextprotocol/server-memory` (TypeScript: entities, relations, observations, graph, empty search)
+  - `examples/sqlite/` — 6 assertions for `mcp-server-sqlite` (Python: list tables, SELECT, COUNT, JOIN, describe schema, invalid SQL error)
+  - `examples/agent-lsp-go/` — 21 assertions for agent-lsp + gopls (Go: hover, definition, references, diagnostics, symbols, completions, speculative edit, type_definition, implementation, call_hierarchy, workspace_symbols, signature_help, semantic_tokens, highlights, prepare_rename, rename, format, code_actions, change_impact, build, inlay_hints)
+- **CI pipeline** — 5 jobs: unit tests with `-race`, e2e-filesystem (5), e2e-memory (5), e2e-sqlite (6, Python via uv), e2e-agent-lsp (21). All e2e jobs upload JUnit XML artifacts.

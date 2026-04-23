@@ -1,0 +1,13 @@
+name: describe_table shows column definitions
+server:
+  command: uvx
+  args: ["mcp-server-sqlite", "--db-path", "{{fixture}}/test.db"]
+assert:
+  tool: describe_table
+  args:
+    table_name: "users"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["name", "email", "role"]
+timeout: 15s

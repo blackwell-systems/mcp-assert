@@ -1,0 +1,12 @@
+name: read_query handles joins across tables
+server:
+  command: uvx
+  args: ["mcp-server-sqlite", "--db-path", "{{fixture}}/test.db"]
+assert:
+  tool: read_query
+  args:
+    query: "SELECT p.name, u.name as owner FROM projects p JOIN users u ON p.owner_id = u.id ORDER BY p.name"
+  expect:
+    not_error: true
+    contains: ["Alpha", "Alice", "Beta", "Bob"]
+timeout: 15s

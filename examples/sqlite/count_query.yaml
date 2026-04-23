@@ -1,0 +1,12 @@
+name: read_query counts rows correctly
+server:
+  command: uvx
+  args: ["mcp-server-sqlite", "--db-path", "{{fixture}}/test.db"]
+assert:
+  tool: read_query
+  args:
+    query: "SELECT COUNT(*) as total FROM users"
+  expect:
+    not_error: true
+    contains: ["3"]
+timeout: 15s

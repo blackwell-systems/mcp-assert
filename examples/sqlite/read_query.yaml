@@ -1,0 +1,13 @@
+name: read_query returns rows from users table
+server:
+  command: uvx
+  args: ["mcp-server-sqlite", "--db-path", "{{fixture}}/test.db"]
+assert:
+  tool: read_query
+  args:
+    query: "SELECT name, role FROM users ORDER BY name"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Alice", "admin", "Bob", "Charlie"]
+timeout: 15s

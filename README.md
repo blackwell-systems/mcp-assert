@@ -68,9 +68,9 @@ server:
 
 ## Example Suites
 
-mcp-assert ships with example assertions for three MCP servers:
+mcp-assert ships with example assertions for four MCP servers in three languages:
 
-### Filesystem server (`examples/filesystem/`)
+### Filesystem server — TypeScript (`examples/filesystem/`)
 
 Tests the official `@modelcontextprotocol/server-filesystem`. 5 assertions: read file, list directory, get file info, search files, and a **negative test** that verifies path traversal is rejected.
 
@@ -79,7 +79,7 @@ npm install -g @modelcontextprotocol/server-filesystem
 mcp-assert run --suite examples/filesystem --fixture examples/filesystem/fixtures
 ```
 
-### Memory server (`examples/memory/`)
+### Memory server — TypeScript (`examples/memory/`)
 
 Tests the official `@modelcontextprotocol/server-memory`. 5 assertions with **stateful setup**: create entities, add observations, create relations, search nodes, and verify empty search returns nothing.
 
@@ -88,9 +88,18 @@ npm install -g @modelcontextprotocol/server-memory
 mcp-assert run --suite examples/memory
 ```
 
-### agent-lsp (`examples/agent-lsp-go/`)
+### SQLite server — Python (`examples/sqlite/`)
 
-Tests [agent-lsp](https://github.com/blackwell-systems/agent-lsp) with gopls. 7 assertions: hover, definition, references, diagnostics, symbols, completions, and speculative execution.
+Tests the official `mcp-server-sqlite` (Python). 6 assertions: list tables, SELECT queries, COUNT, JOINs, describe table schema, and error handling for invalid SQL. Fixture is a pre-built `.db` file.
+
+```bash
+uvx mcp-server-sqlite  # or: pip install mcp-server-sqlite
+mcp-assert run --suite examples/sqlite --fixture examples/sqlite/fixtures
+```
+
+### agent-lsp — Go (`examples/agent-lsp-go/`)
+
+Tests [agent-lsp](https://github.com/blackwell-systems/agent-lsp) with gopls. 21 assertions covering navigation, refactoring, analysis, and build tools.
 
 ```bash
 mcp-assert run --suite examples/agent-lsp-go --fixture /path/to/go/fixtures

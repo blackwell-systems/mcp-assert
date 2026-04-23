@@ -99,6 +99,39 @@ jobs:
           name: memory-results
           path: memory-results.xml
 
+  # End-to-end: SQLite server (Python)
+  e2e-sqlite:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install mcp-assert
+        run: go install ./cmd/mcp-assert
+
+      - name: Run SQLite assertions
+        run: |
+          mcp-assert run \
+            --suite examples/sqlite \
+            --fixture ${{ github.workspace }}/examples/sqlite/fixtures \
+            --timeout 30s \
+            --junit sqlite-results.xml
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sqlite-results
+          path: sqlite-results.xml
+
   # End-to-end: agent-lsp + gopls
   e2e-agent-lsp:
     runs-on: ubuntu-latest
