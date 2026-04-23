@@ -18,10 +18,10 @@ The format is based on Keep a Changelog, Semantic Versioning.
   - `--junit <path>`: JUnit XML for GitHub Actions test result tabs, Jenkins, CircleCI
   - `--markdown <path>`: GitHub Step Summary table (auto-detects `$GITHUB_STEP_SUMMARY` in `ci` mode)
   - `--badge <path>`: shields.io endpoint JSON for README badges
-- **36 unit tests** across checker (14), loader (8), report (14). All assertion types and report formats tested.
-- **End-to-end verified** against real agent-lsp + gopls. All 7 example assertions pass: hover, definition, references, diagnostics, symbols, completions, speculative execution.
+- **36 unit tests** with race detection across checker (14), loader (8), report (14). All assertion types and report formats tested.
+- **End-to-end verified in CI** — 17 assertions across 3 MCP servers, all passing:
 - **Example suites for 3 MCP servers** — not just agent-lsp:
   - `examples/filesystem/` — 5 assertions for `@modelcontextprotocol/server-filesystem` (read, list, info, search, path traversal rejection)
   - `examples/memory/` — 5 assertions for `@modelcontextprotocol/server-memory` (entities, relations, observations, graph, empty search)
   - `examples/agent-lsp-go/` — 7 assertions for agent-lsp + gopls
-- **CI workflow** for build, vet, and test.
+- **CI pipeline** — 4 jobs: unit tests with `-race`, e2e-filesystem (5 assertions), e2e-memory (5 assertions), e2e-agent-lsp (7 assertions against real gopls). All e2e jobs upload JUnit XML artifacts.
