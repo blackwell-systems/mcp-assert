@@ -142,7 +142,7 @@ All e2e jobs upload JUnit XML artifacts.
 |---------|-------|------|
 | `internal/assertion` | 22 | All 14 assertion types, loader (YAML parsing, subdirs, errors), snapshot comparison |
 | `internal/report` | 36 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare |
-| `internal/runner` | 23 | Recursive fixture substitution, server override, bad binary, timeout, Docker flag, CLI error paths (missing flags, nonexistent suite, --fail-on-regression without --baseline) |
+| `internal/runner` | 31 | Recursive fixture substitution, server override, bad binary, timeout, Docker flag, generate schema parsing, stub generation, filename sanitization, CLI error paths |
 | Total | 89 | Race-detector clean |
 
 ---
@@ -185,8 +185,10 @@ internal/assertion/
   checker.go                14 assertion type implementations
 internal/runner/
   runner.go                 Run, Matrix, CI commands, MCP client lifecycle
-  runner_test.go            23 tests: substitution, overrides, error paths, timeout, Docker
+  runner_test.go            31 tests: substitution, overrides, error paths, timeout, Docker, generate
   coverage.go               Coverage command, tools/list query, --coverage-json
+  generate.go               Auto-generate stub assertions from tools/list
+  init.go                   Scaffold assertion template and fixture directory
   snapshot.go               Snapshot capture/compare command
   watch.go                  File-watching rerun loop
 internal/report/
