@@ -181,6 +181,51 @@ trajectory:
 
 This bridges mcp-assert (tool correctness) with skill evaluation (workflow correctness). Low priority because it requires capturing tool call traces, which means either wrapping the MCP transport or parsing audit logs.
 
+## MCP Protocol Surface Coverage
+
+Tracking coverage of every method defined in the MCP 2025-11-25 specification.
+
+### Server features
+
+| Protocol area | Methods | Status | Priority |
+|--------------|---------|--------|----------|
+| **Tools** | `tools/list`, `tools/call`, `notifications/tools/list_changed` | Covered | — |
+| **Resources** | `resources/list`, `resources/read`, `resources/subscribe`, `resources/unsubscribe`, `notifications/resources/updated`, `notifications/resources/list_changed` | Not covered | **High** |
+| **Prompts** | `prompts/list`, `prompts/get`, `notifications/prompts/list_changed` | Not covered | Medium |
+
+### Client features (server-initiated requests)
+
+| Protocol area | Methods | Status | Priority |
+|--------------|---------|--------|----------|
+| **Sampling** | `sampling/createMessage` | Covered (`client_capabilities.sampling`) | — |
+| **Roots** | `roots/list`, `notifications/roots/list_changed` | Covered (`client_capabilities.roots`) | — |
+| **Elicitation** | `elicitation/create` | Covered (`client_capabilities.elicitation`) | — |
+
+### Utilities and protocol mechanics
+
+| Protocol area | Methods | Status | Priority |
+|--------------|---------|--------|----------|
+| **Progress** | `notifications/progress` during tool execution | Not covered | Medium |
+| **Cancellation** | `$/cancelRequest` | Not covered | Low |
+| **Logging** | `logging/setLevel`, `notifications/message` | Not covered | Low |
+| **Pagination** | Cursor-based pagination on `resources/list`, `tools/list`, etc. | Not covered | Medium |
+| **Completion** | `completion/complete` (argument autocompletion) | Not covered | Low |
+| **Ping** | `ping` keepalive | Not covered | Low |
+| **Task execution** | `taskSupport` on tools, async task results | Not covered | Medium |
+
+### Coverage summary
+
+| Category | Covered | Total | Notes |
+|----------|---------|-------|-------|
+| Server features | 1/3 | 3 | Tools covered; Resources and Prompts are gaps |
+| Client features | 3/3 | 3 | Sampling, roots, elicitation all covered |
+| Utilities | 0/7 | 7 | Progress, cancellation, logging, pagination, completion, ping, tasks |
+| **Total** | **4/13** | **13** | |
+
+The biggest gap is server features: Resources and Prompts are whole categories of MCP servers that mcp-assert currently cannot test at all. Every document store, knowledge base, or prompt-template server falls into this gap.
+
+---
+
 ## Scope Map
 
 mcp-assert expands along two axes. The current implementation is already broad; the planned items extend it further.
