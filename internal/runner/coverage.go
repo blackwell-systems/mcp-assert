@@ -20,6 +20,7 @@ func Coverage(args []string) error {
 	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")
 	serverSpec := fs.String("server", "", "Server command (e.g. 'agent-lsp go:gopls')")
 	timeout := fs.Duration("timeout", 15*time.Second, "Timeout for tools/list call")
+	coverageJSON := fs.String("coverage-json", "", "Write coverage data as JSON to path")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -135,6 +136,13 @@ func Coverage(args []string) error {
 	}
 
 	fmt.Println()
+
+	if *coverageJSON != "" {
+		if err := report.WriteToolCoverageJSON(serverTools, testedTools, *coverageJSON); err != nil {
+			return fmt.Errorf("writing coverage JSON: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -143,16 +151,4 @@ func plural(n int) string {
 		return ""
 	}
 	return "s"
-}
-
-// WriteToolCoverage writes coverage data as JSON for CI consumption.
-func WriteToolCoverage(serverTools []string, testedTools map[string]int, path string) error {
-	// Placeholder for --coverage-json flag.
-	_ = path
-	return nil
-}
-
-// ExportColorEnabled exposes colorEnabled for the coverage command.
-func init() {
-	// The report package's ColorEnabled is used directly.
 }

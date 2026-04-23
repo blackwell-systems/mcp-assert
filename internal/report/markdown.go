@@ -57,6 +57,37 @@ func WriteMarkdownSummary(results []assertion.Result, path string) error {
 		b.WriteString(fmt.Sprintf("\n_%d assertion(s) skipped_\n", skipped))
 	}
 
+	// Reliability section when trials > 1.
+	if hasMultipleTrials(results) {
+		stats := ComputeReliability(results)
+		capable, reliable := 0, 0
+		for _, s := range stats {
+			if s.PassAt {
+				capable++
+			}
+			if s.PassUp {
+				reliable++
+			}
+		}
+		total := len(stats)
+
+		b.WriteString("\n### Reliability\n\n")
+		b.WriteString("| Assertion | Trials | Passed | pass@k | pass^k |\n")
+		b.WriteString("|-----------|--------|--------|--------|--------|\n")
+		for _, s := range stats {
+			passAt := "YES"
+			if !s.PassAt {
+				passAt = "NO"
+			}
+			passUp := "YES"
+			if !s.PassUp {
+				passUp = "NO"
+			}
+			b.WriteString(fmt.Sprintf("| %s | %d | %d | %s | %s |\n", s.Name, s.Trials, s.Passed, passAt, passUp))
+		}
+		b.WriteString(fmt.Sprintf("\n**pass@k: %d/%d capable, pass^k: %d/%d reliable**\n", capable, total, reliable, total))
+	}
+
 	// Append to file (GitHub Step Summary expects append).
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
