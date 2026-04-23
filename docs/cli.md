@@ -166,6 +166,25 @@ The fixture directory is mounted into the container. Each assertion gets a clean
 
 Docker isolation is only supported with stdio transport (the default). HTTP/SSE transports connect to an already-running server and do not use Docker wrapping.
 
+## Client Capabilities
+
+Client capabilities are configured per-assertion in YAML, not via CLI flags. Set `client_capabilities` in the server block to make mcp-assert respond to server-initiated requests (roots, sampling, elicitation):
+
+```yaml
+server:
+  command: /path/to/server
+  client_capabilities:
+    roots:
+      - "{{fixture}}"
+    sampling:
+      text: "mock response"
+    elicitation:
+      content:
+        confirmed: true
+```
+
+See [Writing Assertions](writing-assertions.md#client-capabilities-bidirectional-mcp) for full examples of each capability type.
+
 ## HTTP/SSE Transport
 
 Transport is configured per-assertion in YAML, not via CLI flags. Set `transport: sse` or `transport: http` with a `url` field to connect to HTTP-based MCP servers instead of launching a subprocess:

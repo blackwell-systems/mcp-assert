@@ -153,6 +153,101 @@ assert:
 
 Captured variables work anywhere `{{fixture}}` works: strings, arrays, nested objects. Use this for session IDs, auth tokens, created resource IDs, or any value returned by a setup step.
 
+## Client Capabilities (Bidirectional MCP)
+
+MCP is bidirectional: servers can request things from the client. Use `client_capabilities` in the server block to make mcp-assert respond to these server-initiated requests.
+
+### Roots
+
+Some servers call `roots/list` to discover the client's workspace. Provide the paths to return:
+
+```yaml
+name: roots tool returns client workspace roots
+server:
+  command: /path/to/roots-server
+  client_capabilities:
+    roots:
+      - "{{fixture}}"
+assert:
+  tool: roots
+  args: {}
+  expect:
+    not_error: true
+    contains: ["Root list"]
+timeout: 15s
+```
+
+`{{fixture}}` in roots paths is substituted at runtime, just like in args. Each path becomes a `file://` URI with the directory basename as the root name.
+
+### Sampling
+
+Servers that use `sampling/createMessage` to call an LLM via the client. Provide a mock response:
+
+```yaml
+name: ask_llm returns mock sampling response
+server:
+  command: /path/to/sampling-server
+  client_capabilities:
+    sampling:
+      text: "The capital of France is Paris."
+      model: mock-gpt          # Optional; defaults to "mock"
+      stop_reason: end_turn    # Optional; defaults to "end_turn"
+assert:
+  tool: ask_llm
+  args:
+    question: "What is the capital of France?"
+  expect:
+    not_error: true
+    contains: ["Paris"]
+timeout: 15s
+```
+
+The server receives the mock response and incorporates it into its tool output. The assertion checks the final tool result, not the sampling exchange directly.
+
+### Elicitation
+
+Servers that use `elicitation/create` to prompt the user for structured input. Provide preset values:
+
+```yaml
+name: create_project accepts elicitation response
+server:
+  command: /path/to/elicitation-server
+  client_capabilities:
+    elicitation:
+      content:
+        projectName: "myapp"
+        framework: "react"
+        includeTests: true
+assert:
+  tool: create_project
+  args: {}
+  expect:
+    not_error: true
+    contains: ["myapp"]
+timeout: 15s
+```
+
+mcp-assert responds to the elicitation request with `action: accept` and the provided content. If the `content` key is omitted, the entire elicitation map is used as the response content.
+
+### Combining capabilities
+
+All three capabilities can be set together:
+
+```yaml
+server:
+  command: /path/to/server
+  client_capabilities:
+    roots:
+      - "{{fixture}}/workspace"
+    sampling:
+      text: "Mock LLM answer"
+    elicitation:
+      content:
+        confirmed: true
+```
+
+`client_capabilities` is a YAML-level feature. There is no CLI flag equivalent, and it applies to stdio transport only.
+
 ## HTTP/SSE Transport
 
 By default, mcp-assert connects to servers over stdio (launching a subprocess). For servers that run over HTTP, set the `transport` and `url` fields:

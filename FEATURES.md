@@ -101,6 +101,23 @@ Transport is configured per-assertion in YAML via the `transport` and `url` fiel
 
 ---
 
+## Client Capabilities (Bidirectional MCP)
+
+MCP is bidirectional: servers can request things from the client (roots, sampling, elicitation). Set `client_capabilities` in the server block to make mcp-assert respond to these requests:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `roots` | `[]string` | File/directory paths returned for `roots/list` requests. `{{fixture}}` is substituted. |
+| `sampling` | object | Mock LLM response for `sampling/createMessage` requests. |
+| `sampling.text` | `string` | Response text content. |
+| `sampling.model` | `string` | Model name to report (default: `"mock"`). |
+| `sampling.stop_reason` | `string` | Stop reason (default: `"end_turn"`). |
+| `elicitation` | object | Preset values for `elicitation/create` requests. Set `content: {...}` for the response fields, or set fields directly (used as the whole content). |
+
+`client_capabilities` is a YAML-level feature; there is no CLI flag equivalent. Applies to stdio transport only.
+
+---
+
 ## Docker Isolation
 
 `--docker <image>` wraps the MCP server command in `docker run --rm -i` (stdio transport only):
@@ -134,7 +151,7 @@ Transport is configured per-assertion in YAML via the `transport` and `url` fiel
 
 ---
 
-## Example Suites (10 suites, 3 languages, 136 assertions)
+## Example Suites (13 suites, 3 languages, 140 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|
@@ -146,6 +163,9 @@ Transport is configured per-assertion in YAML via the `transport` and `url` fiel
 | `examples/mcp-go-typed-tools/` | mark3labs/mcp-go typed_tools | Go | stdio | 3 | Typed greeting with required/optional params, error case |
 | `examples/mcp-go-structured/` | mark3labs/mcp-go structured | Go | stdio | 6 | Weather, user profile, assets, manual structured result |
 | `examples/mcp-go-everything-http/` | mark3labs/mcp-go everything | Go | HTTP | 5 | Same tools as stdio suite, transport conformance test |
+| `examples/mcp-go-roots/` | mark3labs/mcp-go roots_server | Go | stdio | 1 | `roots` tool calls back to client; mcp-assert responds via `client_capabilities.roots` |
+| `examples/mcp-go-sampling/` | mark3labs/mcp-go sampling_server | Go | stdio | 3 | `ask_llm` (with/without system prompt), `greet`; mock LLM response via `client_capabilities.sampling` (100% tool coverage) |
+| `examples/mcp-go-elicitation/` | mark3labs/mcp-go elicitation | Go | stdio | 1 | `create_project`; form-based elicitation via `client_capabilities.elicitation` |
 | `examples/fastmcp-testing-demo/` | PrefectHQ/fastmcp testing_demo | Python | stdio | 11 | add, greet, async_multiply: edge cases, defaults, negative tests, missing-arg error (100% tool coverage) |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 | All 20 agent-lsp skill protocols: required tool call sequences, safety gates (e.g. get_references before apply_edit), absence checks (e.g. no apply_edit in simulate), order constraints |
 
@@ -171,8 +191,8 @@ All e2e jobs upload JUnit XML artifacts.
 |---------|-------|------|
 | `internal/assertion` | 22 | All 14 assertion types, loader (YAML parsing, subdirs, errors), snapshot comparison |
 | `internal/report` | 36 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare |
-| `internal/runner` | 53 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, transport selection (stdio/SSE/HTTP), URL validation, generate schema parsing, stub generation, filename sanitization, CLI error paths |
-| Total | 111 | Race-detector clean |
+| `internal/runner` | 86 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, transport selection (stdio/SSE/HTTP), URL validation, generate schema parsing, stub generation, filename sanitization, CLI error paths, client capabilities (handler unit tests, fixture substitution, capability path selection, bad-server error paths) |
+| Total | 144 | Race-detector clean |
 
 ---
 
@@ -187,6 +207,17 @@ server:
     KEY: value
   transport: stdio                   # "stdio" (default), "sse", or "http"
   url: "http://localhost:8080/sse"   # required for sse/http transport
+  client_capabilities:               # optional: respond to server-initiated requests
+    roots:                           # respond to roots/list
+      - "{{fixture}}"
+    sampling:                        # respond to sampling/createMessage
+      text: "mock LLM response"
+      model: mock                    # default: "mock"
+      stop_reason: end_turn          # default: "end_turn"
+    elicitation:                     # respond to elicitation/create
+      content:
+        projectName: "myapp"
+        framework: "react"
 setup:
   - tool: setup_tool
     args: { key: value }

@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- **Client capabilities (roots, sampling, elicitation)**: servers that make requests back to the client can now be fully tested via `client_capabilities` in server YAML config. Set `roots: [paths]` to respond to `roots/list`, `sampling: {text, model, stop_reason}` to respond to `sampling/createMessage` with a mock LLM response, or `elicitation: {content: {...}}` to respond to `elicitation/create` with preset values. Verified against mcp-go `roots_server`, `sampling_server`, and `elicitation` example servers. Makes mcp-assert the only MCP testing tool that can fully simulate a bidirectional MCP client environment.
+- **mcp-go sampling_server suite**: 3 assertions for `mark3labs/mcp-go` sampling_server — `ask_llm` with and without a custom system prompt, and `greet` (verifying that non-sampling tools work normally when `client_capabilities.sampling` is set). 100% tool coverage.
+- **mcp-go elicitation suite**: 1 assertion for `mark3labs/mcp-go` elicitation server — `create_project` responding to a form-based elicitation request with preset field values (`projectName`, `framework`, `includeTests`).
+- **19 new unit tests** for client capabilities: `TestStaticRootsHandler_ListRoots`, `TestStaticRootsHandler_EmptyRoots`, `TestStaticSamplingHandler_CreateMessage`, `TestStaticSamplingHandler_DefaultModelAndStopReason`, `TestStaticElicitationHandler_ReturnsContentAndAccept`, `TestStaticElicitationHandler_FallsBackToWholeMap`, `TestCreateStdioClientWithCapabilities_FixtureSubstitution`, `TestCreateMCPClient_WithRoots_UsesCapabilityPath`, `TestCreateMCPClient_WithSampling_UsesCapabilityPath`, `TestCreateMCPClient_WithElicitation_UsesCapabilityPath`, `TestCreateMCPClient_EmptyClientCapabilities_UsesSimplePath`, `TestRunAssertion_ClientCapabilities_BadServer`. Total unit tests: 144.
+
 ## [0.1.2] - 2026-04-23
 
 ### Added

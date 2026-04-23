@@ -6,14 +6,14 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 6 |
-| Server suites | 9 (including HTTP transport variant) |
+| Servers scanned | 9 |
+| Server suites | 12 (including HTTP transport variant) |
 | Languages tested | 3 (Go, TypeScript, Python) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 136 (119 server + 20 trajectory) |
+| Total assertions | 140 (123 server + 20 trajectory) |
 | Upstream bugs found | 2 |
 | Upstream issues filed | 2 |
-| Clean scans (no bugs) | 3 |
+| Clean scans (no bugs) | 6 |
 | Internal bugs fixed | 5 |
 
 ## Server Results
@@ -34,6 +34,9 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | `mark3labs/mcp-go` everything | Go | HTTP | 5 | 100% | 0 | Transport conformance: same tools pass over HTTP |
 | `mark3labs/mcp-go` typed_tools | Go | stdio | 3 | 100% | 0 | Clean |
 | `mark3labs/mcp-go` structured | Go | stdio | 6 | 100% | 0 | Clean |
+| `mark3labs/mcp-go` roots_server | Go | stdio | 1 | 100% | 0 | Clean. Verified bidirectional roots/list via `client_capabilities.roots` |
+| `mark3labs/mcp-go` sampling_server | Go | stdio | 3 | 100% | 0 | Clean. Verified bidirectional sampling/createMessage via `client_capabilities.sampling` |
+| `mark3labs/mcp-go` elicitation | Go | stdio | 1 | 25% (1/4) | 0 | Clean. `create_project` verified via `client_capabilities.elicitation`. `auth_via_url`, `process_data`, `protected_action` require URL elicitation or complex flows not yet covered. |
 | `PrefectHQ/fastmcp` testing_demo | Python | stdio | 11 | 100% | 0 | Clean. Pydantic validation handles edge cases correctly |
 
 ### Internal (agent-lsp)

@@ -30,7 +30,7 @@ The GitHub Action is the single highest-leverage distribution move. If adding mc
 | **pass@k in reports** | **Shipped** | Medium | Reliability metrics in JUnit XML (`<properties>`) and markdown (reliability table) when `--trials > 1`. |
 | **--coverage-json** | **Shipped** | Medium | `--coverage-json <path>` on `coverage` command writes machine-readable coverage data. |
 | **Setup output capture** | **Shipped** | **High** | `capture:` field on setup steps extracts values via jsonpath, injects as `{{variable}}` into subsequent steps. Session lifecycle tests now use real session IDs. |
-| **Client capabilities (bidirectional)** | Planned | **High** | Mock client-side capabilities so servers that use sampling, roots, or elicitation can be tested. No other MCP testing tool supports this. |
+| **Client capabilities (bidirectional)** | **Shipped** | **High** | Mock client-side capabilities so servers that use sampling, roots, or elicitation can be tested. Set `client_capabilities` in server YAML: `roots: [paths]`, `sampling: {text, model, stop_reason}`, or `elicitation: {content: {...}}`. Verified against mcp-go `roots_server`, `sampling_server`, and `elicitation` example servers. No other MCP testing tool supports this. |
 | **Trajectory assertions** | **Shipped** | **Critical** | 4 types (order, presence, absence, args_contain). Inline trace or audit log source. 20 example assertions covering all agent-lsp skill protocols (rename, safe-edit, refactor, cross-repo, dead-code, docs, edit-export, edit-symbol, explore, extract-function, fix-all, format-code, generate, impact, implement, local-symbols, simulate, test-correlation, understand, verify). 21 new tests. Runs in 0ms (no server). |
 
 ### Trajectory assertions detail
@@ -194,7 +194,7 @@ What kinds of servers can be fully tested?
 | **Stdio servers** | Supported | Launch as subprocess, pipe stdin/stdout |
 | **HTTP servers (streamable)** | Supported | `transport: http` with `url:` field |
 | **SSE servers (legacy)** | Supported | `transport: sse` with `url:` field |
-| **Bidirectional (sampling, roots, elicitation)** | Planned | Servers that make requests back to the client. Requires mock client capabilities. |
+| **Bidirectional (sampling, roots, elicitation)** | **Supported** | Servers that make requests back to the client. Set `client_capabilities` in server YAML config. Verified against mcp-go roots_server, sampling_server, and elicitation example servers. |
 | **Authenticated servers (OAuth, API keys)** | Partial | Simple token injection works today via `server.env:`. OAuth refresh cycles need client capabilities expansion. |
 | **Streaming/long-running tools** | Partial | Servers that stream progress notifications during execution. The `longRunningOperation` bug in mcp-go exposed this gap. Requires client-side notification handling. |
 | **Multi-server composition** | Not yet | Tools that call other MCP servers. Testing the composition layer requires intercepting outgoing calls. |

@@ -36,6 +36,9 @@ The loader reads a directory of YAML files (recursing one level into subdirector
 For each assertion:
 
 1. **Start server**: create the MCP client via `createMCPClient`, which selects the transport based on the `transport` field: stdio (default, launches subprocess via `client.NewStdioMCPClient`), SSE (`client.NewSSEMCPClient`), or streamable HTTP (`client.NewStreamableHttpClient`). If `--docker` is set with stdio, the command is wrapped in `docker run --rm -i` with volume mounts.
+
+   1.5. **Client capabilities**: if `client_capabilities` is set in the server config (roots, sampling, or elicitation), `createStdioClientWithCapabilities` is used instead of `NewStdioMCPClient`. It constructs a raw `clienttransport.StdioTransport`, registers bidirectional request handlers (`staticRootsHandler`, `staticSamplingHandler`, `staticElicitationHandler`), and calls `c.Start(ctx)` to activate them before `Initialize` is called.
+
 2. **Initialize**: send `initialize` request with MCP protocol version, receive server capabilities.
 3. **Setup**: execute setup tool calls sequentially (e.g., `start_lsp`, `open_document`). These establish the state needed for the assertion. `{{fixture}}` substitution happens here.
 4. **Snapshot**: if `file_unchanged` assertions exist, read the files before the tool call.
@@ -103,6 +106,8 @@ This does not execute any assertions: it only queries the tool catalog.
 **Docker is a command wrapper (stdio only).** `--docker <image>` doesn't use the Docker SDK. It prepends `docker run --rm -i -v fixture:fixture` to the server command. Since MCP uses stdio, Docker's `-i` flag gives bidirectional pipe transport for free. The server process runs inside the container; the assertions run outside. Docker is only supported with stdio transport; HTTP/SSE transports connect to an already-running server.
 
 **Transport is pluggable.** `createMCPClient` is a single helper (in `runner.go`) used by `runAssertion`, `runAndCapture`, and `Coverage`. It reads the `transport` field from `ServerConfig` and creates the appropriate mcp-go client. All three transports (stdio, SSE, streamable HTTP) return the same `MCPClient` interface, so the rest of the runner is transport-agnostic.
+
+**Client capabilities use a separate construction path.** When `client_capabilities` has roots, sampling, or elicitation set, `createMCPClient` delegates to `createStdioClientWithCapabilities` instead of `client.NewStdioMCPClient`. The key difference: `NewStdioMCPClient` is a convenience wrapper that starts the transport and returns a connected client, whereas `createStdioClientWithCapabilities` uses the lower-level `client.NewClient` with explicit handler options so bidirectional handlers are registered before the client starts. `c.Start(ctx)` must be called after `NewClient` to register the handlers; without it, the server's `roots/list` or `sampling/createMessage` requests arrive before handlers are wired up.
 
 **Setup tools are not counted as "tested" by coverage.** `start_lsp` and `open_document` appear in every assertion's setup but aren't the tools under test. The coverage command only counts the `assert.tool` field.
 
