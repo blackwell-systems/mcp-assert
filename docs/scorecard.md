@@ -38,7 +38,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | `mark3labs/mcp-go` roots_server | Go | stdio | 1 | 100% | 0 | Clean. Verified bidirectional roots/list via `client_capabilities.roots` |
 | `mark3labs/mcp-go` sampling_server | Go | stdio | 3 | 100% | 0 | Clean. Verified bidirectional sampling/createMessage via `client_capabilities.sampling` |
 | `mark3labs/mcp-go` elicitation | Go | stdio | 1 | 25% (1/4) | 0 | Clean. `create_project` verified via `client_capabilities.elicitation`. `auth_via_url`, `process_data`, `protected_action` require URL elicitation or complex flows not yet covered. |
-| `PrefectHQ/fastmcp` testing_demo | Python | stdio | 11 | 100% | 0 | Clean. Pydantic validation handles edge cases correctly |
+| `PrefectHQ/fastmcp` testing_demo | Python | stdio | 16 | 100% tools + resources + prompts | 0 | Clean. All three MCP feature categories: 11 tool assertions (100% coverage), 3 resource assertions (list, read static, read parameterized), 2 prompt assertions (list, get with argument). |
 
 ### Internal (agent-lsp)
 

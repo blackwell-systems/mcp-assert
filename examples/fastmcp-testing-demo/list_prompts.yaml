@@ -1,0 +1,12 @@
+# Test prompts/list — assert the server exposes its prompt templates.
+name: prompts/list returns demo prompts
+server:
+  command: uvx
+  args: [fastmcp, run, /tmp/fastmcp/examples/testing_demo/server.py]
+assert_prompts:
+  list: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["hello", "explain"]
+timeout: 30s

@@ -1,0 +1,12 @@
+# Test resources/list — assert the server exposes expected resource URIs.
+name: resources/list returns demo resources
+server:
+  command: uvx
+  args: [fastmcp, run, /tmp/fastmcp/examples/testing_demo/server.py]
+assert_resources:
+  list: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["demo://info"]
+timeout: 30s

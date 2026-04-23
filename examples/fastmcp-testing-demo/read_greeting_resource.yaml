@@ -1,0 +1,12 @@
+# Test resources/read — read a parameterized greeting resource with a name.
+name: resources/read returns greeting for Alice
+server:
+  command: uvx
+  args: [fastmcp, run, /tmp/fastmcp/examples/testing_demo/server.py]
+assert_resources:
+  read: "demo://greeting/Alice"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Alice"]
+timeout: 30s

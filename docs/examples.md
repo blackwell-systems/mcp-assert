@@ -39,7 +39,11 @@ mcp-assert run --suite examples/sqlite --fixture examples/sqlite/fixtures
 
 **Directory:** `examples/fastmcp-testing-demo/`
 
-Tests the `testing_demo` example server from [PrefectHQ/fastmcp](https://github.com/PrefectHQ/fastmcp) (25K stars), the most popular Python MCP framework. 11 assertions across 3 tools: `add` (sum, negative numbers, zero, missing argument error), `greet` (default greeting, custom greeting, empty name), and `async_multiply` (product, zero, negative, fractional). 100% tool coverage.
+Tests the `testing_demo` example server from [PrefectHQ/fastmcp](https://github.com/PrefectHQ/fastmcp) (25K stars), the most popular Python MCP framework. 16 assertions covering all three MCP feature categories:
+
+- **Tools (11):** `add` (sum, negative numbers, zero, missing argument error), `greet` (default greeting, custom greeting, empty name), and `async_multiply` (product, zero, negative, fractional). 100% tool coverage.
+- **Resources (3):** `resources/list` (verifies `demo://info` is exposed), `resources/read demo://info` (static server info), `resources/read demo://greeting/Alice` (parameterized template resource).
+- **Prompts (2):** `prompts/list` (verifies `hello` and `explain` are exposed), `prompts/get hello` with `name: "Alice"` argument.
 
 ```bash
 git clone --depth 1 https://github.com/PrefectHQ/fastmcp.git /tmp/fastmcp
