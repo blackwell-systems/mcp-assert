@@ -1,11 +1,13 @@
 package runner
 
 import (
+	"context"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
+	"github.com/mark3labs/mcp-go/mcp"
 )
 
 // --- substituteFixture tests ---
@@ -633,5 +635,281 @@ func TestRunAssertion_UnknownTransport(t *testing.T) {
 	}
 	if !strings.Contains(r.Detail, "unknown transport") {
 		t.Errorf("expected unknown transport error, got: %s", r.Detail)
+	}
+}
+
+// --- Client capabilities unit tests ---
+
+func TestStaticRootsHandler_ListRoots(t *testing.T) {
+	roots := []mcp.Root{
+		{URI: "file:///workspace", Name: "workspace"},
+		{URI: "file:///home/user/project", Name: "project"},
+	}
+	h := &staticRootsHandler{roots: roots}
+
+	result, err := h.ListRoots(context.Background(), mcp.ListRootsRequest{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result == nil {
+		t.Fatal("expected non-nil result")
+	}
+	if len(result.Roots) != 2 {
+		t.Fatalf("expected 2 roots, got %d", len(result.Roots))
+	}
+	if result.Roots[0].URI != "file:///workspace" {
+		t.Errorf("expected file:///workspace, got %q", result.Roots[0].URI)
+	}
+	if result.Roots[0].Name != "workspace" {
+		t.Errorf("expected workspace, got %q", result.Roots[0].Name)
+	}
+	if result.Roots[1].URI != "file:///home/user/project" {
+		t.Errorf("expected file:///home/user/project, got %q", result.Roots[1].URI)
+	}
+}
+
+func TestStaticRootsHandler_EmptyRoots(t *testing.T) {
+	h := &staticRootsHandler{roots: []mcp.Root{}}
+
+	result, err := h.ListRoots(context.Background(), mcp.ListRootsRequest{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result == nil {
+		t.Fatal("expected non-nil result")
+	}
+	if len(result.Roots) != 0 {
+		t.Errorf("expected 0 roots, got %d", len(result.Roots))
+	}
+}
+
+func TestStaticSamplingHandler_CreateMessage(t *testing.T) {
+	h := &staticSamplingHandler{
+		text:       "mock LLM response",
+		model:      "test-model",
+		stopReason: "end_turn",
+	}
+
+	result, err := h.CreateMessage(context.Background(), mcp.CreateMessageRequest{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result == nil {
+		t.Fatal("expected non-nil result")
+	}
+	if result.Model != "test-model" {
+		t.Errorf("expected model test-model, got %q", result.Model)
+	}
+	if result.StopReason != "end_turn" {
+		t.Errorf("expected stop_reason end_turn, got %q", result.StopReason)
+	}
+	if result.Role != mcp.RoleAssistant {
+		t.Errorf("expected role assistant, got %q", result.Role)
+	}
+	tc, ok := result.Content.(mcp.TextContent)
+	if !ok {
+		t.Fatalf("expected TextContent, got %T", result.Content)
+	}
+	if tc.Text != "mock LLM response" {
+		t.Errorf("expected 'mock LLM response', got %q", tc.Text)
+	}
+}
+
+func TestStaticSamplingHandler_DefaultModelAndStopReason(t *testing.T) {
+	// The runner sets defaults before constructing the handler (model="mock", stop_reason="end_turn"),
+	// so test that handler faithfully returns whatever it was constructed with.
+	h := &staticSamplingHandler{
+		text:       "hi",
+		model:      "mock",
+		stopReason: "end_turn",
+	}
+
+	result, err := h.CreateMessage(context.Background(), mcp.CreateMessageRequest{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.Model != "mock" {
+		t.Errorf("expected default model 'mock', got %q", result.Model)
+	}
+	if result.StopReason != "end_turn" {
+		t.Errorf("expected default stop_reason 'end_turn', got %q", result.StopReason)
+	}
+}
+
+func TestStaticElicitationHandler_ReturnsContentAndAccept(t *testing.T) {
+	h := &staticElicitationHandler{
+		values: map[string]any{
+			"content": map[string]any{
+				"projectName": "myapp",
+				"framework":   "react",
+			},
+		},
+	}
+
+	result, err := h.Elicit(context.Background(), mcp.ElicitationRequest{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result == nil {
+		t.Fatal("expected non-nil result")
+	}
+	if result.Action != mcp.ElicitationResponseActionAccept {
+		t.Errorf("expected action 'accept', got %q", result.Action)
+	}
+	content, ok := result.Content.(map[string]any)
+	if !ok {
+		t.Fatalf("expected map[string]any content, got %T", result.Content)
+	}
+	if content["projectName"] != "myapp" {
+		t.Errorf("expected projectName 'myapp', got %v", content["projectName"])
+	}
+	if content["framework"] != "react" {
+		t.Errorf("expected framework 'react', got %v", content["framework"])
+	}
+}
+
+func TestStaticElicitationHandler_FallsBackToWholeMap(t *testing.T) {
+	// When there is no "content" key, the entire values map is used as content.
+	h := &staticElicitationHandler{
+		values: map[string]any{
+			"name":    "Alice",
+			"confirm": true,
+		},
+	}
+
+	result, err := h.Elicit(context.Background(), mcp.ElicitationRequest{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.Action != mcp.ElicitationResponseActionAccept {
+		t.Errorf("expected accept, got %q", result.Action)
+	}
+	content, ok := result.Content.(map[string]any)
+	if !ok {
+		t.Fatalf("expected map content, got %T", result.Content)
+	}
+	if content["name"] != "Alice" {
+		t.Errorf("expected name Alice, got %v", content["name"])
+	}
+}
+
+func TestCreateStdioClientWithCapabilities_FixtureSubstitution(t *testing.T) {
+	// Verify that {{fixture}} is substituted in roots paths when building the handler.
+	// We can't start a real server, so verify the capability path is taken
+	// (createStdioClientWithCapabilities returns an error for nonexistent binary)
+	// and that the error is about the binary, not fixture substitution.
+	caps := assertion.ClientCapabilities{
+		Roots: []string{"{{fixture}}/project", "{{fixture}}/lib"},
+	}
+	_, err := createStdioClientWithCapabilities(
+		"nonexistent-binary-caps-test",
+		nil,
+		nil,
+		"/tmp/test-fixture",
+		caps,
+	)
+	if err == nil {
+		t.Fatal("expected error for nonexistent binary")
+	}
+	// The error should be about transport start, not about fixture substitution panicking.
+	if strings.Contains(err.Error(), "{{fixture}}") {
+		t.Errorf("fixture placeholder leaked into error: %v", err)
+	}
+}
+
+func TestCreateMCPClient_WithRoots_UsesCapabilityPath(t *testing.T) {
+	// When Roots is non-empty, createMCPClient should take the capability path
+	// (createStdioClientWithCapabilities). Verify the error is from transport start,
+	// not the simple stdio path.
+	server := assertion.ServerConfig{
+		Command: "nonexistent-binary-roots-path",
+		ClientCapabilities: assertion.ClientCapabilities{
+			Roots: []string{"/tmp"},
+		},
+	}
+	_, err := createMCPClient(server, "", "")
+	if err == nil {
+		t.Fatal("expected error for nonexistent binary")
+	}
+	// Should not get "unknown transport" or "requires a url" — those indicate wrong branch.
+	if strings.Contains(err.Error(), "unknown transport") || strings.Contains(err.Error(), "requires a url") {
+		t.Errorf("should have taken capabilities path, got unexpected error: %v", err)
+	}
+}
+
+func TestCreateMCPClient_WithSampling_UsesCapabilityPath(t *testing.T) {
+	server := assertion.ServerConfig{
+		Command: "nonexistent-binary-sampling-path",
+		ClientCapabilities: assertion.ClientCapabilities{
+			Sampling: &assertion.SamplingConfig{Text: "hello"},
+		},
+	}
+	_, err := createMCPClient(server, "", "")
+	if err == nil {
+		t.Fatal("expected error for nonexistent binary")
+	}
+	if strings.Contains(err.Error(), "unknown transport") || strings.Contains(err.Error(), "requires a url") {
+		t.Errorf("should have taken capabilities path, got unexpected error: %v", err)
+	}
+}
+
+func TestCreateMCPClient_WithElicitation_UsesCapabilityPath(t *testing.T) {
+	server := assertion.ServerConfig{
+		Command: "nonexistent-binary-elicitation-path",
+		ClientCapabilities: assertion.ClientCapabilities{
+			Elicitation: map[string]any{"name": "Alice"},
+		},
+	}
+	_, err := createMCPClient(server, "", "")
+	if err == nil {
+		t.Fatal("expected error for nonexistent binary")
+	}
+	if strings.Contains(err.Error(), "unknown transport") || strings.Contains(err.Error(), "requires a url") {
+		t.Errorf("should have taken capabilities path, got unexpected error: %v", err)
+	}
+}
+
+func TestCreateMCPClient_EmptyClientCapabilities_UsesSimplePath(t *testing.T) {
+	// Zero-value ClientCapabilities: should use simple NewStdioMCPClient path.
+	server := assertion.ServerConfig{
+		Command:            "nonexistent-binary-simple-path",
+		ClientCapabilities: assertion.ClientCapabilities{},
+	}
+	_, err := createMCPClient(server, "", "")
+	if err == nil {
+		t.Fatal("expected error for nonexistent binary")
+	}
+	// Simple stdio path also errors for nonexistent binary; just confirm no panic.
+	if strings.Contains(err.Error(), "unknown transport") {
+		t.Errorf("empty capabilities should use simple path: %v", err)
+	}
+}
+
+func TestRunAssertion_ClientCapabilities_BadServer(t *testing.T) {
+	// Client capabilities path: nonexistent server produces clean FAIL, not a panic.
+	a := assertion.Assertion{
+		Name: "client capabilities bad server",
+		Server: assertion.ServerConfig{
+			Command: "nonexistent-binary-with-caps",
+			ClientCapabilities: assertion.ClientCapabilities{
+				Roots: []string{"/tmp"},
+				Sampling: &assertion.SamplingConfig{
+					Text:  "mock response",
+					Model: "test",
+				},
+			},
+		},
+		Assert: assertion.AssertBlock{
+			Tool: "roots",
+			Args: map[string]any{},
+		},
+	}
+
+	r := runAssertion(a, "/tmp", 2*time.Second, "")
+	if r.Status != assertion.StatusFail {
+		t.Errorf("expected FAIL for bad binary with capabilities, got %s", r.Status)
+	}
+	if r.Detail == "" {
+		t.Error("expected error detail, got empty string")
 	}
 }

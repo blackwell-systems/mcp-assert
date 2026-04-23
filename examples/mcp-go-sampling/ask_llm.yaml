@@ -1,0 +1,20 @@
+# Tests mcp-go's sampling_server example. The "ask_llm" tool calls back to the
+# client via sampling/createMessage to get an LLM response. mcp-assert responds
+# with the configured mock text via client_capabilities.sampling.
+name: ask_llm returns mock sampling response
+server:
+  command: /tmp/mcp-go-sampling-server-v049
+  client_capabilities:
+    sampling:
+      text: "The capital of France is Paris."
+      model: mock-gpt
+      stop_reason: end_turn
+assert:
+  tool: ask_llm
+  args:
+    question: "What is the capital of France?"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Paris"]
+timeout: 15s

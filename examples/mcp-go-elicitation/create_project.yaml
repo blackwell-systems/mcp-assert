@@ -1,0 +1,20 @@
+# Tests mcp-go's elicitation example server. The "create_project" tool calls back
+# to the client via elicitation/create asking for project details. mcp-assert
+# responds with preset values via client_capabilities.elicitation.
+name: create_project accepts elicitation response
+server:
+  command: /tmp/mcp-go-elicitation-server-v049
+  client_capabilities:
+    elicitation:
+      content:
+        projectName: "myapp"
+        framework: "react"
+        includeTests: true
+assert:
+  tool: create_project
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["myapp"]
+timeout: 15s

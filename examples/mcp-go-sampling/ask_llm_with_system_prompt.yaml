@@ -1,0 +1,20 @@
+# Tests ask_llm with an explicit system_prompt parameter.
+# Verifies that the tool accepts the optional parameter and still returns
+# the mock sampling response via client_capabilities.sampling.
+name: ask_llm accepts custom system prompt
+server:
+  command: /tmp/mcp-go-sampling-server-v049
+  client_capabilities:
+    sampling:
+      text: "Python was created by Guido van Rossum."
+      model: mock
+      stop_reason: end_turn
+assert:
+  tool: ask_llm
+  args:
+    question: "Who created Python?"
+    system_prompt: "You are a programming language historian."
+  expect:
+    not_error: true
+    contains: ["Guido"]
+timeout: 15s

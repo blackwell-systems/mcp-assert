@@ -1,0 +1,18 @@
+# Tests the greet tool on mcp-go's sampling_server. This tool does not use
+# sampling — it verifies that non-sampling tools work normally even when
+# client_capabilities.sampling is configured.
+name: greet works without triggering sampling
+server:
+  command: /tmp/mcp-go-sampling-server-v049
+  client_capabilities:
+    sampling:
+      text: "this should not appear in greet response"
+      model: mock
+assert:
+  tool: greet
+  args:
+    name: "World"
+  expect:
+    not_error: true
+    contains: ["Hello, World"]
+timeout: 15s
