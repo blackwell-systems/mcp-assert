@@ -4,9 +4,9 @@
 
 | Item | Status | Description |
 |------|--------|-------------|
-| **File upstream bug** | **Shipped** | Filed [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029) — `read_media_file` returns `type: "blob"`, violating MCP spec. |
-| **Community server suites** | Planned | Add example assertions for 2-3 popular community servers (Brave Search, GitHub, Slack) to demonstrate breadth beyond official Anthropic servers. |
-| **External adoption** | Planned | Get one MCP server author to use mcp-assert and report results. A single "I tested my server with mcp-assert" post is worth more than any feature. |
+| **File upstream bugs** | **Shipped** | 2 bugs filed: [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029) (filesystem `read_media_file` returns invalid `blob` type) and [mark3labs/mcp-go#826](https://github.com/mark3labs/mcp-go/issues/826) (everything server `longRunningOperation` crashes stdio transport). |
+| **Community server suites** | **Shipped** | 18 assertions across 3 mark3labs/mcp-go SDK example servers (everything, typed_tools, structured_input_and_output). 100% tool coverage on each. Scan-and-contribute flywheel validated. |
+| **External adoption** | Planned | Get one MCP server author to use mcp-assert and report results. The mcp-go bug report is the first touchpoint — watch for maintainer response. |
 
 ## Distribution
 
