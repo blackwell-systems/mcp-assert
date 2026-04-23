@@ -56,7 +56,7 @@ What we found by using mcp-assert to test agent-lsp (our own MCP server) and the
 
 **How mcp-assert found it:** Writing a comprehensive assertion suite for all 14 filesystem tools. The `read_media_file` assertion crashed the MCP transport layer instead of returning `isError: true`.
 
-**Status:** Upstream bug. Not filed yet.
+**Status:** Filed as [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). The `type: "blob"` content type violates the MCP 2025-11-25 specification which only allows `text`, `image`, `audio`, `resource_link`, and `resource`.
 
 ---
 
