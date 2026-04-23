@@ -498,3 +498,190 @@ func TestLoadBaseline_Missing(t *testing.T) {
 		t.Error("expected error for missing file")
 	}
 }
+
+// --- Coverage JSON tests ---
+
+func TestWriteToolCoverageJSON(t *testing.T) {
+	serverTools := []string{"hover", "definition", "references", "apply_edit"}
+	testedTools := map[string]int{
+		"hover":      2,
+		"definition": 1,
+	}
+	path := filepath.Join(t.TempDir(), "coverage.json")
+
+	if err := WriteToolCoverageJSON(serverTools, testedTools, path); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	data, _ := os.ReadFile(path)
+	var cov CoverageData
+	if err := json.Unmarshal(data, &cov); err != nil {
+		t.Fatalf("invalid JSON: %v", err)
+	}
+
+	if cov.Total != 4 {
+		t.Errorf("expected total 4, got %d", cov.Total)
+	}
+	if cov.Covered != 2 {
+		t.Errorf("expected covered 2, got %d", cov.Covered)
+	}
+	if cov.Percentage != 50 {
+		t.Errorf("expected percentage 50, got %d", cov.Percentage)
+	}
+	if len(cov.CoveredTools) != 2 {
+		t.Fatalf("expected 2 covered tools, got %d", len(cov.CoveredTools))
+	}
+	// Covered tools are sorted alphabetically.
+	if cov.CoveredTools[0].Name != "definition" {
+		t.Errorf("expected first covered tool 'definition', got %q", cov.CoveredTools[0].Name)
+	}
+	if cov.CoveredTools[0].Assertions != 1 {
+		t.Errorf("expected 1 assertion for definition, got %d", cov.CoveredTools[0].Assertions)
+	}
+	if cov.CoveredTools[1].Name != "hover" {
+		t.Errorf("expected second covered tool 'hover', got %q", cov.CoveredTools[1].Name)
+	}
+	if cov.CoveredTools[1].Assertions != 2 {
+		t.Errorf("expected 2 assertions for hover, got %d", cov.CoveredTools[1].Assertions)
+	}
+	if len(cov.UncoveredTools) != 2 {
+		t.Fatalf("expected 2 uncovered tools, got %d", len(cov.UncoveredTools))
+	}
+	if cov.UncoveredTools[0] != "apply_edit" {
+		t.Errorf("expected first uncovered tool 'apply_edit', got %q", cov.UncoveredTools[0])
+	}
+}
+
+func TestWriteToolCoverageJSON_Empty(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "coverage.json")
+
+	if err := WriteToolCoverageJSON(nil, nil, path); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	data, _ := os.ReadFile(path)
+	var cov CoverageData
+	json.Unmarshal(data, &cov)
+
+	if cov.Total != 0 {
+		t.Errorf("expected total 0, got %d", cov.Total)
+	}
+	// Ensure non-nil slices in JSON.
+	if cov.CoveredTools == nil {
+		t.Error("expected non-nil covered_tools array")
+	}
+	if cov.UncoveredTools == nil {
+		t.Error("expected non-nil uncovered_tools array")
+	}
+}
+
+// --- JUnit pass@k / pass^k tests ---
+
+func TestWriteJUnit_WithTrials(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass, Duration: 100 * time.Millisecond, Trial: 1},
+		{Name: "hover", Status: assertion.StatusPass, Duration: 110 * time.Millisecond, Trial: 2},
+		{Name: "refs", Status: assertion.StatusPass, Duration: 200 * time.Millisecond, Trial: 1},
+		{Name: "refs", Status: assertion.StatusFail, Detail: "timeout", Duration: 300 * time.Millisecond, Trial: 2},
+	}
+	path := filepath.Join(t.TempDir(), "results.xml")
+
+	if err := WriteJUnit(results, path); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	data, _ := os.ReadFile(path)
+	content := string(data)
+
+	// Should contain properties element with pass_at_k and pass_up_k.
+	if !strings.Contains(content, `<properties>`) {
+		t.Error("expected <properties> element in JUnit XML")
+	}
+	if !strings.Contains(content, `name="pass_at_k"`) {
+		t.Error("expected pass_at_k property")
+	}
+	if !strings.Contains(content, `value="2/2"`) {
+		t.Error("expected pass_at_k value '2/2'")
+	}
+	if !strings.Contains(content, `name="pass_up_k"`) {
+		t.Error("expected pass_up_k property")
+	}
+	if !strings.Contains(content, `value="1/2"`) {
+		t.Error("expected pass_up_k value '1/2'")
+	}
+
+	// Verify valid XML.
+	var suites junitTestSuites
+	if err := xml.Unmarshal(data, &suites); err != nil {
+		t.Fatalf("invalid XML: %v", err)
+	}
+	if suites.Suites[0].Properties == nil {
+		t.Fatal("expected properties in parsed XML")
+	}
+	if len(suites.Suites[0].Properties.Properties) != 2 {
+		t.Errorf("expected 2 properties, got %d", len(suites.Suites[0].Properties.Properties))
+	}
+}
+
+func TestWriteJUnit_NoTrials_NoProperties(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass, Duration: 100 * time.Millisecond},
+	}
+	path := filepath.Join(t.TempDir(), "results.xml")
+
+	WriteJUnit(results, path)
+	data, _ := os.ReadFile(path)
+
+	if strings.Contains(string(data), `<properties>`) {
+		t.Error("should not contain properties when no trials")
+	}
+}
+
+// --- Markdown reliability section tests ---
+
+func TestWriteMarkdownSummary_WithTrials(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass, Duration: 100 * time.Millisecond, Trial: 1},
+		{Name: "hover", Status: assertion.StatusPass, Duration: 110 * time.Millisecond, Trial: 2},
+		{Name: "refs", Status: assertion.StatusPass, Duration: 200 * time.Millisecond, Trial: 1},
+		{Name: "refs", Status: assertion.StatusFail, Detail: "timeout", Duration: 300 * time.Millisecond, Trial: 2},
+	}
+	path := filepath.Join(t.TempDir(), "summary.md")
+
+	if err := WriteMarkdownSummary(results, path); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	data, _ := os.ReadFile(path)
+	content := string(data)
+
+	if !strings.Contains(content, "### Reliability") {
+		t.Error("expected Reliability section header")
+	}
+	if !strings.Contains(content, "pass@k") {
+		t.Error("expected pass@k in reliability table")
+	}
+	if !strings.Contains(content, "pass^k") {
+		t.Error("expected pass^k in reliability table")
+	}
+	if !strings.Contains(content, "2/2 capable") {
+		t.Error("expected '2/2 capable' in summary")
+	}
+	if !strings.Contains(content, "1/2 reliable") {
+		t.Error("expected '1/2 reliable' in summary")
+	}
+}
+
+func TestWriteMarkdownSummary_NoTrials_NoReliability(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass, Duration: 100 * time.Millisecond},
+	}
+	path := filepath.Join(t.TempDir(), "summary.md")
+
+	WriteMarkdownSummary(results, path)
+	data, _ := os.ReadFile(path)
+
+	if strings.Contains(string(data), "Reliability") {
+		t.Error("should not contain reliability section when no trials")
+	}
+}

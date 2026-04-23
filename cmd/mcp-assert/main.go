@@ -92,6 +92,8 @@ Flags:
   --junit <path>         Write JUnit XML report to path
   --markdown <path>      Write markdown summary to path (auto-detects $GITHUB_STEP_SUMMARY in ci mode)
   --badge <path>         Write shields.io endpoint JSON to path
+  --coverage-json <path> Write coverage data as JSON (coverage command)
+  --interval <duration>  Polling interval for watch mode (default: 2s)
 
 `)
 }
