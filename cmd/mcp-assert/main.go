@@ -62,7 +62,10 @@ Flags:
   --trials N             Number of trials per assertion (default: 1)
   --languages <spec>     Comma-separated lang:server pairs for matrix mode
   --threshold N          Minimum pass percentage for CI mode (default: 100)
-  --fail-on-regression   Exit 1 if any previously-passing assertion fails
+  --docker <image>       Run MCP server inside a Docker container
+  --baseline <path>      Baseline JSON for regression detection
+  --save-baseline <path> Save current results as baseline
+  --fail-on-regression   Exit 1 if a previously-passing assertion regresses (requires --baseline)
   --timeout <duration>   Per-assertion timeout (default: 30s)
   --json                 Output results as JSON
   --junit <path>         Write JUnit XML report to path

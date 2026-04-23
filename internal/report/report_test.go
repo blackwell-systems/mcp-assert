@@ -312,3 +312,191 @@ func TestWriteBadge_WithFailure(t *testing.T) {
 		t.Errorf("expected color 'red', got %q", badge.Color)
 	}
 }
+
+// --- Reliability tests ---
+
+func TestComputeReliability_AllPass(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass, Trial: 1},
+		{Name: "hover", Status: assertion.StatusPass, Trial: 2},
+		{Name: "hover", Status: assertion.StatusPass, Trial: 3},
+	}
+
+	stats := ComputeReliability(results)
+	if len(stats) != 1 {
+		t.Fatalf("expected 1 stat, got %d", len(stats))
+	}
+	if !stats[0].PassAt {
+		t.Error("expected pass@k = true")
+	}
+	if !stats[0].PassUp {
+		t.Error("expected pass^k = true")
+	}
+	if stats[0].Rate != 1.0 {
+		t.Errorf("expected rate 1.0, got %f", stats[0].Rate)
+	}
+}
+
+func TestComputeReliability_Flaky(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "refs", Status: assertion.StatusPass, Trial: 1},
+		{Name: "refs", Status: assertion.StatusFail, Trial: 2},
+		{Name: "refs", Status: assertion.StatusPass, Trial: 3},
+	}
+
+	stats := ComputeReliability(results)
+	if !stats[0].PassAt {
+		t.Error("expected pass@k = true (passed at least once)")
+	}
+	if stats[0].PassUp {
+		t.Error("expected pass^k = false (didn't pass every time)")
+	}
+	if stats[0].Passed != 2 {
+		t.Errorf("expected 2 passed, got %d", stats[0].Passed)
+	}
+}
+
+func TestComputeReliability_NeverPassed(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "broken", Status: assertion.StatusFail, Trial: 1},
+		{Name: "broken", Status: assertion.StatusFail, Trial: 2},
+	}
+
+	stats := ComputeReliability(results)
+	if stats[0].PassAt {
+		t.Error("expected pass@k = false")
+	}
+	if stats[0].PassUp {
+		t.Error("expected pass^k = false")
+	}
+}
+
+func TestComputeReliability_MultipleAssertions(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass, Trial: 1},
+		{Name: "hover", Status: assertion.StatusPass, Trial: 2},
+		{Name: "refs", Status: assertion.StatusPass, Trial: 1},
+		{Name: "refs", Status: assertion.StatusFail, Trial: 2},
+	}
+
+	stats := ComputeReliability(results)
+	if len(stats) != 2 {
+		t.Fatalf("expected 2 stats, got %d", len(stats))
+	}
+	// hover: reliable
+	if !stats[0].PassUp {
+		t.Error("hover should be pass^k = true")
+	}
+	// refs: flaky
+	if stats[1].PassUp {
+		t.Error("refs should be pass^k = false")
+	}
+}
+
+// --- Baseline / Regression tests ---
+
+func TestWriteAndLoadBaseline(t *testing.T) {
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass},
+		{Name: "refs", Status: assertion.StatusFail},
+	}
+	path := filepath.Join(t.TempDir(), "baseline.json")
+
+	if err := WriteBaseline(results, path); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	baseline, err := LoadBaseline(path)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(baseline.Entries) != 2 {
+		t.Fatalf("expected 2 entries, got %d", len(baseline.Entries))
+	}
+}
+
+func TestDetectRegressions_NoRegression(t *testing.T) {
+	baseline := &Baseline{Entries: []BaselineEntry{
+		{Name: "hover", Status: assertion.StatusPass},
+		{Name: "refs", Status: assertion.StatusPass},
+	}}
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass},
+		{Name: "refs", Status: assertion.StatusPass},
+	}
+
+	regressions := DetectRegressions(baseline, results)
+	if len(regressions) != 0 {
+		t.Errorf("expected 0 regressions, got %d", len(regressions))
+	}
+}
+
+func TestDetectRegressions_WithRegression(t *testing.T) {
+	baseline := &Baseline{Entries: []BaselineEntry{
+		{Name: "hover", Status: assertion.StatusPass},
+		{Name: "refs", Status: assertion.StatusPass},
+	}}
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass},
+		{Name: "refs", Status: assertion.StatusFail},
+	}
+
+	regressions := DetectRegressions(baseline, results)
+	if len(regressions) != 1 {
+		t.Fatalf("expected 1 regression, got %d", len(regressions))
+	}
+	if regressions[0].Name != "refs" {
+		t.Errorf("expected regression on 'refs', got %q", regressions[0].Name)
+	}
+	if regressions[0].NowStatus != assertion.StatusFail {
+		t.Errorf("expected now status FAIL, got %s", regressions[0].NowStatus)
+	}
+}
+
+func TestDetectRegressions_PreviouslyFailing(t *testing.T) {
+	// Previously failing -> still failing is NOT a regression.
+	baseline := &Baseline{Entries: []BaselineEntry{
+		{Name: "broken", Status: assertion.StatusFail},
+	}}
+	results := []assertion.Result{
+		{Name: "broken", Status: assertion.StatusFail},
+	}
+
+	regressions := DetectRegressions(baseline, results)
+	if len(regressions) != 0 {
+		t.Errorf("expected 0 regressions for previously-failing test, got %d", len(regressions))
+	}
+}
+
+func TestDetectRegressions_NewAssertion(t *testing.T) {
+	// New assertion not in baseline is not a regression.
+	baseline := &Baseline{Entries: []BaselineEntry{
+		{Name: "hover", Status: assertion.StatusPass},
+	}}
+	results := []assertion.Result{
+		{Name: "hover", Status: assertion.StatusPass},
+		{Name: "new_test", Status: assertion.StatusFail},
+	}
+
+	regressions := DetectRegressions(baseline, results)
+	if len(regressions) != 0 {
+		t.Errorf("expected 0 regressions for new test, got %d", len(regressions))
+	}
+}
+
+func TestLoadBaseline_Invalid(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "bad.json")
+	os.WriteFile(path, []byte("not json"), 0644)
+
+	_, err := LoadBaseline(path)
+	if err == nil {
+		t.Error("expected error for invalid JSON")
+	}
+}
+
+func TestLoadBaseline_Missing(t *testing.T) {
+	_, err := LoadBaseline("/nonexistent/baseline.json")
+	if err == nil {
+		t.Error("expected error for missing file")
+	}
+}

@@ -21,12 +21,15 @@ func Run(args []string) error {
 	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")
 	fixture := fs.String("fixture", "", "Fixture directory (substituted for {{fixture}})")
 	server := fs.String("server", "", "Override server command (e.g. 'agent-lsp go:gopls')")
+	docker := fs.String("docker", "", "Run MCP server inside this Docker image")
 	trials := fs.Int("trials", 1, "Number of trials per assertion")
 	timeout := fs.Duration("timeout", 30*time.Second, "Per-assertion timeout")
 	jsonOut := fs.Bool("json", false, "Output results as JSON")
 	junitPath := fs.String("junit", "", "Write JUnit XML report to path")
 	markdownPath := fs.String("markdown", "", "Write markdown summary to path (or $GITHUB_STEP_SUMMARY)")
 	badgePath := fs.String("badge", "", "Write shields.io badge JSON to path")
+	baselinePath := fs.String("baseline", "", "Baseline JSON file for regression detection")
+	saveBaseline := fs.String("save-baseline", "", "Save current results as baseline to path")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -46,7 +49,7 @@ func Run(args []string) error {
 			applyServerOverride(&a, *server)
 		}
 		for trial := 1; trial <= *trials; trial++ {
-			r := runAssertion(a, *fixture, *timeout)
+			r := runAssertion(a, *fixture, *timeout, *docker)
 			r.Trial = trial
 			allResults = append(allResults, r)
 		}
@@ -57,9 +60,31 @@ func Run(args []string) error {
 		fmt.Println(string(data))
 	} else {
 		report.PrintResults(allResults)
+		if *trials > 1 {
+			report.PrintReliability(allResults)
+		}
 	}
 
 	writeReports(allResults, *junitPath, *markdownPath, *badgePath)
+
+	if *saveBaseline != "" {
+		if err := report.WriteBaseline(allResults, *saveBaseline); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: save-baseline: %v\n", err)
+		}
+	}
+
+	// Regression detection.
+	if *baselinePath != "" {
+		baseline, err := report.LoadBaseline(*baselinePath)
+		if err != nil {
+			return fmt.Errorf("loading baseline: %w", err)
+		}
+		regressions := report.DetectRegressions(baseline, allResults)
+		report.PrintRegressions(regressions)
+		if len(regressions) > 0 {
+			return fmt.Errorf("%d regression(s) detected", len(regressions))
+		}
+	}
 
 	for _, r := range allResults {
 		if r.Status == assertion.StatusFail {
@@ -101,7 +126,7 @@ func Matrix(args []string) error {
 			// Override server config for matrix mode.
 			a.Server.Command = "agent-lsp"
 			a.Server.Args = []string{lang + ":" + server}
-			r := runAssertion(a, *fixture, *timeout)
+			r := runAssertion(a, *fixture, *timeout, "")
 			r.Language = lang
 			allResults = append(allResults, r)
 		}
@@ -117,17 +142,24 @@ func CI(args []string) error {
 	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")
 	fixture := fs.String("fixture", "", "Fixture directory")
 	server := fs.String("server", "", "Override server command (e.g. 'agent-lsp go:gopls')")
+	docker := fs.String("docker", "", "Run MCP server inside this Docker image")
 	threshold := fs.Int("threshold", 100, "Minimum pass percentage")
 	timeout := fs.Duration("timeout", 30*time.Second, "Per-assertion timeout")
 	junitPath := fs.String("junit", "", "Write JUnit XML report to path")
 	markdownPath := fs.String("markdown", "", "Write markdown summary to path (or $GITHUB_STEP_SUMMARY)")
 	badgePath := fs.String("badge", "", "Write shields.io badge JSON to path")
+	baselinePath := fs.String("baseline", "", "Baseline JSON file for regression detection")
+	saveBaseline := fs.String("save-baseline", "", "Save current results as baseline to path")
+	failOnRegression := fs.Bool("fail-on-regression", false, "Exit 1 if any previously-passing assertion regresses (requires --baseline)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 
 	if *suiteDir == "" {
 		return fmt.Errorf("--suite is required")
+	}
+	if *failOnRegression && *baselinePath == "" {
+		return fmt.Errorf("--fail-on-regression requires --baseline")
 	}
 
 	suite, err := assertion.LoadSuite(*suiteDir)
@@ -140,7 +172,7 @@ func CI(args []string) error {
 		if *server != "" {
 			applyServerOverride(&a, *server)
 		}
-		r := runAssertion(a, *fixture, *timeout)
+		r := runAssertion(a, *fixture, *timeout, *docker)
 		allResults = append(allResults, r)
 	}
 
@@ -152,6 +184,25 @@ func CI(args []string) error {
 		mdPath = os.Getenv("GITHUB_STEP_SUMMARY")
 	}
 	writeReports(allResults, *junitPath, mdPath, *badgePath)
+
+	if *saveBaseline != "" {
+		if err := report.WriteBaseline(allResults, *saveBaseline); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: save-baseline: %v\n", err)
+		}
+	}
+
+	// Regression detection.
+	if *baselinePath != "" {
+		baseline, err := report.LoadBaseline(*baselinePath)
+		if err != nil {
+			return fmt.Errorf("loading baseline: %w", err)
+		}
+		regressions := report.DetectRegressions(baseline, allResults)
+		report.PrintRegressions(regressions)
+		if *failOnRegression && len(regressions) > 0 {
+			return fmt.Errorf("%d regression(s) detected", len(regressions))
+		}
+	}
 
 	passed := countPasses(allResults)
 	total := len(allResults)
@@ -166,7 +217,7 @@ func CI(args []string) error {
 	return nil
 }
 
-func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration) assertion.Result {
+func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string) assertion.Result {
 	start := time.Now()
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -187,6 +238,22 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration) 
 	var envSlice []string
 	for k, v := range a.Server.Env {
 		envSlice = append(envSlice, k+"="+v)
+	}
+
+	// Docker isolation: wrap server command in docker run -i.
+	if dockerImage != "" {
+		dockerArgs := []string{"run", "--rm", "-i"}
+		if fixture != "" {
+			dockerArgs = append(dockerArgs, "-v", fixture+":"+fixture)
+		}
+		for _, e := range envSlice {
+			dockerArgs = append(dockerArgs, "-e", e)
+		}
+		dockerArgs = append(dockerArgs, dockerImage, serverCmd)
+		dockerArgs = append(dockerArgs, serverArgs...)
+		serverCmd = "docker"
+		serverArgs = dockerArgs
+		envSlice = nil // env is passed via -e flags
 	}
 
 	mcpClient, err := client.NewStdioMCPClient(serverCmd, envSlice, serverArgs...)
