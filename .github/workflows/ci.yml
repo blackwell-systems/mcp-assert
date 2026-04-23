@@ -26,6 +26,24 @@ jobs:
       - name: Unit tests (with race detector)
         run: go test ./... -v -race -count=1
 
+      - name: Install mcp-assert
+        run: go install ./cmd/mcp-assert
+
+      - name: Trajectory assertions (no server needed)
+        run: |
+          mcp-assert run \
+            --suite examples/trajectory \
+            --timeout 5s \
+            --junit trajectory-results.xml
+
+      - name: Upload trajectory results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trajectory-results
+          path: trajectory-results.xml
+          if-no-files-found: ignore
+
   # End-to-end: filesystem server
   e2e-filesystem:
     runs-on: ubuntu-latest
