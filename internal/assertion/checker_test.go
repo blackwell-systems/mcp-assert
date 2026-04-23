@@ -265,3 +265,32 @@ func TestCheck_Combined(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
+
+func TestCheckProgress_PassesWhenCountMeetsMinimum(t *testing.T) {
+	err := CheckProgress(Expect{MinProgress: intPtr(3)}, 3)
+	if err != nil {
+		t.Fatalf("expected pass when count == min_progress, got: %v", err)
+	}
+}
+
+func TestCheckProgress_PassesWhenCountExceedsMinimum(t *testing.T) {
+	err := CheckProgress(Expect{MinProgress: intPtr(2)}, 5)
+	if err != nil {
+		t.Fatalf("expected pass when count > min_progress, got: %v", err)
+	}
+}
+
+func TestCheckProgress_FailsWhenCountBelowMinimum(t *testing.T) {
+	err := CheckProgress(Expect{MinProgress: intPtr(3)}, 1)
+	if err == nil {
+		t.Fatal("expected error when count < min_progress")
+	}
+}
+
+func TestCheckProgress_NoMinProgress_AlwaysPasses(t *testing.T) {
+	// min_progress not set: no check, always passes regardless of count.
+	err := CheckProgress(Expect{}, 0)
+	if err != nil {
+		t.Fatalf("expected pass when min_progress not set, got: %v", err)
+	}
+}

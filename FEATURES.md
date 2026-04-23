@@ -19,7 +19,7 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 
 ---
 
-## Assertion Types (14 + 4 trajectory)
+## Assertion Types (15 + 4 trajectory)
 
 | Type | Category | What it checks |
 |------|----------|----------------|
@@ -37,6 +37,7 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 | `file_unchanged` | Side effect | File on disk was not modified (snapshot comparison) |
 | `net_delta` | Speculative | Diagnostic delta equals expected value |
 | `in_order` | Sequence | Substrings appear in specified order within response |
+| `min_progress` | Progress | At least N `notifications/progress` received during tool execution (requires `capture_progress: true` on the assert block) |
 
 ## Trajectory Assertion Types (4)
 
@@ -151,7 +152,7 @@ MCP is bidirectional: servers can request things from the client (roots, samplin
 
 ---
 
-## Example Suites (13 suites, 3 languages, 140 assertions)
+## Example Suites (14 suites, 3 languages, 144 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|
@@ -166,6 +167,7 @@ MCP is bidirectional: servers can request things from the client (roots, samplin
 | `examples/mcp-go-roots/` | mark3labs/mcp-go roots_server | Go | stdio | 1 | `roots` tool calls back to client; mcp-assert responds via `client_capabilities.roots` |
 | `examples/mcp-go-sampling/` | mark3labs/mcp-go sampling_server | Go | stdio | 3 | `ask_llm` (with/without system prompt), `greet`; mock LLM response via `client_capabilities.sampling` (100% tool coverage) |
 | `examples/mcp-go-elicitation/` | mark3labs/mcp-go elicitation | Go | stdio | 1 | `create_project`; form-based elicitation via `client_capabilities.elicitation` |
+| `examples/mcp-go-everything-prompts/` | mark3labs/mcp-go everything | Go | stdio | 4 | `prompts/list`, `prompts/get` (static + with arguments), pagination pattern documentation |
 | `examples/fastmcp-testing-demo/` | PrefectHQ/fastmcp testing_demo | Python | stdio | 11 | add, greet, async_multiply: edge cases, defaults, negative tests, missing-arg error (100% tool coverage) |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 | All 20 agent-lsp skill protocols: required tool call sequences, safety gates (e.g. get_references before apply_edit), absence checks (e.g. no apply_edit in simulate), order constraints |
 
@@ -189,10 +191,10 @@ All e2e jobs upload JUnit XML artifacts.
 
 | Package | Tests | What |
 |---------|-------|------|
-| `internal/assertion` | 22 | All 14 assertion types, loader (YAML parsing, subdirs, errors), snapshot comparison |
+| `internal/assertion` | 26 | All 15 assertion types (including min_progress), loader (YAML parsing, subdirs, errors), snapshot comparison, CheckProgress |
 | `internal/report` | 36 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare |
-| `internal/runner` | 86 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, transport selection (stdio/SSE/HTTP), URL validation, generate schema parsing, stub generation, filename sanitization, CLI error paths, client capabilities (handler unit tests, fixture substitution, capability path selection, bad-server error paths) |
-| Total | 144 | Race-detector clean |
+| `internal/runner` | 95 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, transport selection (stdio/SSE/HTTP), URL validation, generate schema parsing, stub generation, filename sanitization, CLI error paths, client capabilities (handler unit tests, fixture substitution, capability path selection, bad-server error paths), prompt assertions (list/get/validation/fixture), progress capture |
+| Total | 157 | Race-detector clean |
 
 ---
 
@@ -226,13 +228,31 @@ setup:
 assert:
   tool: tool_under_test
   args: { key: value }
+  capture_progress: true             # optional: collect notifications/progress
   expect:
     not_error: true
     contains: ["expected"]
     json_path:
       "$.field": "value"
     min_results: 3
+    min_progress: 2                  # requires capture_progress: true
 timeout: 30s
+
+# OR: test MCP prompts instead of a tool
+assert_prompts:
+  list: {}                           # call prompts/list
+  expect:
+    not_empty: true
+    contains: ["my_prompt"]
+
+# OR: get a specific prompt with arguments
+assert_prompts:
+  get:
+    name: "code_review"
+    arguments:
+      language: "go"
+  expect:
+    contains: ["review"]
 ```
 
 `{{fixture}}` in args is replaced with `--fixture` directory at runtime.

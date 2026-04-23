@@ -149,6 +149,15 @@ func Check(expect Expect, resultText string, isError bool) error {
 	return nil
 }
 
+// CheckProgress verifies that the number of notifications/progress received meets the
+// min_progress expectation. Call this after CallTool when capture_progress is true.
+func CheckProgress(expect Expect, count int) error {
+	if expect.MinProgress != nil && count < *expect.MinProgress {
+		return fmt.Errorf("expected at least %d progress notification(s), got %d", *expect.MinProgress, count)
+	}
+	return nil
+}
+
 // CheckWithSnapshots evaluates all expectations including file_unchanged.
 // snapshots maps file paths to their content before the tool was called.
 func CheckWithSnapshots(expect Expect, resultText string, isError bool, snapshots map[string]string) error {

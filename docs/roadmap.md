@@ -192,7 +192,7 @@ Tracking coverage of every method defined in the MCP 2025-11-25 specification.
 | **Tools** | `tools/list`, `tools/call`, `notifications/tools/list_changed` | Covered | — |
 | **Resources** | `resources/list`, `resources/read` | Covered | — |
 | **Resources (advanced)** | `resources/subscribe`, `resources/unsubscribe`, `notifications/resources/updated`, `notifications/resources/list_changed` | Not covered | Low |
-| **Prompts** | `prompts/list`, `prompts/get`, `notifications/prompts/list_changed` | Not covered | Medium |
+| **Prompts** | `prompts/list`, `prompts/get`, `notifications/prompts/list_changed` | **Covered** | — |
 
 ### Client features (server-initiated requests)
 
@@ -206,10 +206,10 @@ Tracking coverage of every method defined in the MCP 2025-11-25 specification.
 
 | Protocol area | Methods | Status | Priority |
 |--------------|---------|--------|----------|
-| **Progress** | `notifications/progress` during tool execution | Not covered | Medium |
+| **Progress** | `notifications/progress` during tool execution | **Covered** (`capture_progress` + `min_progress`) | — |
 | **Cancellation** | `$/cancelRequest` | Not covered | Low |
 | **Logging** | `logging/setLevel`, `notifications/message` | Not covered | Low |
-| **Pagination** | Cursor-based pagination on `resources/list`, `tools/list`, etc. | Not covered | Medium |
+| **Pagination** | Cursor-based pagination on `resources/list`, `tools/list`, `prompts/list` | **Covered** (via `json_path` on marshaled response; `cursor:` field in `list:` block) | — |
 | **Completion** | `completion/complete` (argument autocompletion) | Not covered | Low |
 | **Ping** | `ping` keepalive | Not covered | Low |
 | **Task execution** | `taskSupport` on tools, async task results | Not covered | Medium |
@@ -218,12 +218,12 @@ Tracking coverage of every method defined in the MCP 2025-11-25 specification.
 
 | Category | Covered | Total | Notes |
 |----------|---------|-------|-------|
-| Server features | 2/3 | 3 | Tools and Resources (list/read) covered; Prompts gap remains |
+| Server features | 3/3 | 3 | Tools, Resources (list/read), and Prompts (list/get) all covered |
 | Client features | 3/3 | 3 | Sampling, roots, elicitation all covered |
-| Utilities | 0/7 | 7 | Progress, cancellation, logging, pagination, completion, ping, tasks |
-| **Total** | **5/13** | **13** | | |
+| Utilities | 2/7 | 7 | Progress (capture_progress + min_progress) and Pagination (json_path on list responses) covered; cancellation, logging, completion, ping, tasks remain |
+| **Total** | **8/13** | **13** | | |
 
-The biggest gap is server features: Resources and Prompts are whole categories of MCP servers that mcp-assert currently cannot test at all. Every document store, knowledge base, or prompt-template server falls into this gap.
+All three MCP server feature categories are now fully covered. The remaining gaps are in utilities: cancellation, logging, completion, ping, and task execution.
 
 ---
 

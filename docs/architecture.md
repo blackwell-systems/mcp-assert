@@ -40,11 +40,13 @@ For each assertion:
    1.5. **Client capabilities**: if `client_capabilities` is set in the server config (roots, sampling, or elicitation), `createStdioClientWithCapabilities` is used instead of `NewStdioMCPClient`. It constructs a raw `clienttransport.StdioTransport`, registers bidirectional request handlers (`staticRootsHandler`, `staticSamplingHandler`, `staticElicitationHandler`), and calls `c.Start(ctx)` to activate them before `Initialize` is called.
 
 2. **Initialize**: send `initialize` request with MCP protocol version, receive server capabilities.
-3. **Setup**: execute setup tool calls sequentially (e.g., `start_lsp`, `open_document`). These establish the state needed for the assertion. `{{fixture}}` substitution happens here.
-4. **Snapshot**: if `file_unchanged` assertions exist, read the files before the tool call.
-5. **Assert**: call the tool under test, capture the response text and `isError` flag.
-6. **Check**: run all expectations against the response (`internal/assertion/checker.go`).
-7. **Close**: shut down the MCP client (kills the server subprocess).
+3. **Route**: if `assert_resources` is set, dispatch to `runResourceAssertion`; if `assert_prompts` is set, dispatch to `runPromptAssertion`. Otherwise continue with tools/call path.
+4. **Progress registration**: if `capture_progress: true` is set on the `assert:` block, register an `OnNotification` handler that counts `notifications/progress` messages before running setup.
+5. **Setup**: execute setup tool calls sequentially (e.g., `start_lsp`, `open_document`). These establish the state needed for the assertion. `{{fixture}}` substitution happens here.
+6. **Snapshot**: if `file_unchanged` assertions exist, read the files before the tool call.
+7. **Assert**: call the tool under test, capture the response text and `isError` flag.
+8. **Check**: run all expectations against the response (`internal/assertion/checker.go`). Then, if `capture_progress` was set, call `CheckProgress` to verify the notification count.
+9. **Close**: shut down the MCP client (kills the server subprocess).
 
 Each assertion gets its own server process. No state leaks between assertions.
 

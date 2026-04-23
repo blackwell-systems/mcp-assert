@@ -248,6 +248,124 @@ server:
 
 `client_capabilities` is a YAML-level feature. There is no CLI flag equivalent, and it applies to stdio transport only.
 
+## Prompt Assertions
+
+MCP servers can expose prompt templates via `prompts/list` and `prompts/get`. Use `assert_prompts:` instead of `assert:` to test them.
+
+### List prompts
+
+```yaml
+name: server exposes expected prompt templates
+server:
+  command: /path/to/mcp-server
+assert_prompts:
+  list: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["code_review", "summarize"]
+timeout: 15s
+```
+
+The `list: {}` value calls `prompts/list` and marshals the result as JSON. All `expect` assertions work on the JSON response, including `json_path`:
+
+```yaml
+assert_prompts:
+  list: {}
+  expect:
+    json_path:
+      "$.prompts[0].name": "code_review"
+```
+
+### Get a prompt
+
+Use `get:` to call `prompts/get` and retrieve a rendered prompt. The response text is built from the prompt's description and message content:
+
+```yaml
+name: simple prompt returns expected content
+server:
+  command: /path/to/mcp-server
+assert_prompts:
+  get:
+    name: "simple_prompt"
+  expect:
+    not_error: true
+    contains: ["simple prompt without arguments"]
+timeout: 15s
+```
+
+### Get a template prompt with arguments
+
+Template prompts require arguments. Pass them as a string map:
+
+```yaml
+name: code review prompt accepts language argument
+server:
+  command: /path/to/mcp-server
+assert_prompts:
+  get:
+    name: "code_review"
+    arguments:
+      language: "go"
+      style: "concise"
+  expect:
+    not_error: true
+    contains: ["language=go", "style=concise"]
+timeout: 15s
+```
+
+`{{fixture}}` and captured variables (from `setup:` steps) are substituted in `name` and all `arguments` values.
+
+### Pagination
+
+`prompts/list`, `resources/list`, and `tools/list` support cursor-based pagination. Assert on cursor values via `json_path`:
+
+```yaml
+assert_prompts:
+  list: {}
+  expect:
+    json_path:
+      "$.nextCursor": "page2-cursor"
+```
+
+To request a specific page, pass the cursor in the `list:` block:
+
+```yaml
+assert_prompts:
+  list:
+    cursor: "page2-cursor"
+  expect:
+    contains: ["page2-prompt"]
+```
+
+The same pattern applies to `assert_resources: list:` and works with `json_path` on any list response.
+
+## Progress Notifications
+
+Some tools send `notifications/progress` during execution. Use `capture_progress: true` on the `assert:` block to collect them, then assert the count with `min_progress:`:
+
+```yaml
+name: long operation sends progress updates
+server:
+  command: /path/to/mcp-server
+assert:
+  tool: long_running_operation
+  args:
+    duration: 5
+    steps: 3
+  capture_progress: true
+  expect:
+    not_error: true
+    min_progress: 3
+timeout: 30s
+```
+
+`capture_progress` registers a notification handler before the tool call. After the tool returns, `min_progress` asserts the handler received at least that many `notifications/progress` messages.
+
+If `capture_progress: true` is set but `min_progress` is absent, progress notifications are collected but not checked — useful for ensuring the feature doesn't break existing assertions.
+
+Note: progress capture requires the server to properly send `notifications/progress` notifications. The mcp-go `everything` server's `longRunningOperation` has a known stdio transport bug (`fmt.Printf` to stdout corrupts the JSON-RPC stream) that prevents reliable testing with that server. Test against servers that send progress correctly.
+
 ## HTTP/SSE Transport
 
 By default, mcp-assert connects to servers over stdio (launching a subprocess). For servers that run over HTTP, set the `transport` and `url` fields:

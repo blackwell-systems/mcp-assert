@@ -185,6 +185,35 @@ server:
 
 See [Writing Assertions](writing-assertions.md#client-capabilities-bidirectional-mcp) for full examples of each capability type.
 
+## Prompt Assertions
+
+`assert_prompts:` is a YAML-level feature with no CLI flag equivalent. It replaces `assert:` to test `prompts/list` or `prompts/get` instead of tools/call:
+
+```yaml
+assert_prompts:
+  list: {}          # or: get: {name: "my_prompt", arguments: {key: val}}
+  expect:
+    not_empty: true
+    contains: ["expected_prompt"]
+```
+
+See [Writing Assertions](writing-assertions.md#prompt-assertions) for full examples including pagination.
+
+## Progress Capture
+
+`capture_progress` and `min_progress` are YAML-level features on the `assert:` block, not CLI flags:
+
+```yaml
+assert:
+  tool: long_operation
+  args: {}
+  capture_progress: true
+  expect:
+    min_progress: 3
+```
+
+See [Writing Assertions](writing-assertions.md#progress-notifications) for details.
+
 ## HTTP/SSE Transport
 
 Transport is configured per-assertion in YAML, not via CLI flags. Set `transport: sse` or `transport: http` with a `url` field to connect to HTTP-based MCP servers instead of launching a subprocess:

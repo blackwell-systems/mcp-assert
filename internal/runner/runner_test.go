@@ -997,3 +997,122 @@ func TestResourceAssertBlock_FixtureSubstitution(t *testing.T) {
 		t.Errorf("fixture placeholder leaked into error: %s", r.Detail)
 	}
 }
+
+// --- Prompt assertion tests ---
+
+func TestRunAssertion_Prompts_RequiresListOrGet(t *testing.T) {
+	// assert_prompts with neither list nor get should fail cleanly before starting the server.
+	a := assertion.Assertion{
+		Name:   "bad prompt assertion",
+		Server: assertion.ServerConfig{Command: "nonexistent"},
+		AssertPrompts: &assertion.PromptAssertBlock{
+			// Neither List nor Get set.
+			Expect: assertion.Expect{},
+		},
+	}
+	r := runAssertion(a, "", 2*time.Second, "")
+	if r.Status != assertion.StatusFail {
+		t.Errorf("expected FAIL for missing list/get, got %s", r.Status)
+	}
+	if !strings.Contains(r.Detail, "list") && !strings.Contains(r.Detail, "get") {
+		t.Errorf("expected error mentioning list or get, got: %s", r.Detail)
+	}
+}
+
+func TestRunAssertion_Prompts_BadServer(t *testing.T) {
+	// assert_prompts with a nonexistent server should fail cleanly.
+	listArgs := &assertion.PromptListArgs{}
+	a := assertion.Assertion{
+		Name:   "prompt bad server",
+		Server: assertion.ServerConfig{Command: "nonexistent-prompt-server"},
+		AssertPrompts: &assertion.PromptAssertBlock{
+			List:   listArgs,
+			Expect: assertion.Expect{},
+		},
+	}
+	r := runAssertion(a, "", 2*time.Second, "")
+	if r.Status != assertion.StatusFail {
+		t.Errorf("expected FAIL for bad server, got %s", r.Status)
+	}
+	if r.Detail == "" {
+		t.Error("expected non-empty error detail")
+	}
+}
+
+func TestRunAssertion_Prompts_FixtureSubstitutionInGetArgs(t *testing.T) {
+	// Verify {{fixture}} is substituted in prompt name and arguments.
+	// Can't start a real server; just verify substitution path doesn't panic
+	// and produces a server-start error, not a fixture error.
+	a := assertion.Assertion{
+		Name:   "prompt fixture sub",
+		Server: assertion.ServerConfig{Command: "nonexistent-prompt-fixture"},
+		AssertPrompts: &assertion.PromptAssertBlock{
+			Get: &assertion.PromptGetArgs{
+				Name: "code_review",
+				Arguments: map[string]string{
+					"path": "{{fixture}}/main.go",
+				},
+			},
+			Expect: assertion.Expect{},
+		},
+	}
+	r := runAssertion(a, "/tmp/myproject", 2*time.Second, "")
+	if r.Status != assertion.StatusFail {
+		t.Errorf("expected FAIL, got %s", r.Status)
+	}
+	// {{fixture}} should not appear in the error — it should have been substituted.
+	if strings.Contains(r.Detail, "{{fixture}}") {
+		t.Errorf("fixture placeholder leaked into error: %s", r.Detail)
+	}
+}
+
+// --- Progress capture tests ---
+
+func TestRunAssertion_Progress_CounterInitializedToZero(t *testing.T) {
+	// A server that doesn't exist: the assertion fails at server startup,
+	// not at the progress check. This confirms capture_progress doesn't add
+	// a spurious progress-check failure before the tool is even called.
+	a := assertion.Assertion{
+		Name:   "progress counter zero",
+		Server: assertion.ServerConfig{Command: "nonexistent-capture-progress-binary"},
+		Assert: assertion.AssertBlock{
+			Tool:            "echo",
+			Args:            map[string]any{"message": "hello"},
+			CaptureProgress: true,
+			Expect:          assertion.Expect{},
+		},
+	}
+	r := runAssertion(a, "", 2*time.Second, "")
+	// Should fail because the server doesn't exist, not because of a progress count check.
+	if r.Status != assertion.StatusFail {
+		t.Errorf("expected FAIL for bad server, got %s", r.Status)
+	}
+	// The error should be about the server startup, not "progress notification".
+	if strings.Contains(r.Detail, "progress notification") {
+		t.Errorf("progress check should not fire before tool call, got: %s", r.Detail)
+	}
+}
+
+func TestRunAssertion_Progress_DoesNotBreakExistingAssertions(t *testing.T) {
+	// Without capture_progress, existing assertions are unaffected.
+	a := assertion.Assertion{
+		Name: "no capture flag",
+		Server: assertion.ServerConfig{
+			Command: "nonexistent-no-capture-binary",
+		},
+		Assert: assertion.AssertBlock{
+			Tool:   "echo",
+			Args:   map[string]any{},
+			Expect: assertion.Expect{},
+			// CaptureProgress not set (default false)
+		},
+	}
+	r := runAssertion(a, "", 2*time.Second, "")
+	if r.Status != assertion.StatusFail {
+		t.Errorf("expected FAIL for bad server, got %s", r.Status)
+	}
+	// Error should be about server startup, not about progress notifications.
+	if strings.Contains(r.Detail, "progress notification") {
+		t.Errorf("unexpected progress notification mention: %s", r.Detail)
+	}
+}

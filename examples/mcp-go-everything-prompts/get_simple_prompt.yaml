@@ -1,0 +1,12 @@
+# Test prompts/get — retrieve a static prompt (no arguments required).
+name: prompts/get returns simple_prompt content
+server:
+  command: /tmp/mcp-go-everything-server
+assert_prompts:
+  get:
+    name: "simple_prompt"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["simple prompt"]
+timeout: 15s

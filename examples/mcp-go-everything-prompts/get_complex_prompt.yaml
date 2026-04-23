@@ -1,0 +1,15 @@
+# Test prompts/get with arguments — retrieve a template prompt with parameter substitution.
+name: prompts/get returns complex_prompt with arguments
+server:
+  command: /tmp/mcp-go-everything-server
+assert_prompts:
+  get:
+    name: "complex_prompt"
+    arguments:
+      temperature: "0.7"
+      style: "concise"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["temperature=0.7", "style=concise"]
+timeout: 15s

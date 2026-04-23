@@ -1,0 +1,31 @@
+# Pagination pattern: the everything server returns all prompts in a single page
+# (no nextCursor in the response). When a server DOES paginate, use json_path to
+# assert on the cursor value:
+#
+#   assert_prompts:
+#     list: {}
+#     expect:
+#       json_path:
+#         "$.nextCursor": "page2-cursor"
+#
+# The list response is marshaled as JSON, so all json_path assertions work.
+# Pass cursor: "value" in the list block to request a specific page:
+#
+#   assert_prompts:
+#     list:
+#       cursor: "page2-cursor"
+#     expect:
+#       contains: ["page2-prompt"]
+#
+# This assertion verifies the everything server returns all prompts without pagination.
+name: prompts/list returns all prompts without pagination
+server:
+  command: /tmp/mcp-go-everything-server
+assert_prompts:
+  list: {}
+  expect:
+    not_error: true
+    not_empty: true
+    json_path:
+      "$.prompts[0].name": "complex_prompt"
+timeout: 15s

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
@@ -239,6 +240,11 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 		return runResourceAssertion(a, fixture, timeout, dockerImage, start)
 	}
 
+	// Prompt assertions call prompts/list or prompts/get instead of tools/call.
+	if a.AssertPrompts != nil {
+		return runPromptAssertion(a, fixture, timeout, dockerImage, start)
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -263,6 +269,16 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 			Detail:   fmt.Sprintf("MCP initialize failed: %v", err),
 			Duration: time.Since(start),
 		}
+	}
+
+	// Register progress notification handler before setup so it's active for the full lifetime.
+	var progressCount int32
+	if a.Assert.CaptureProgress {
+		mcpClient.OnNotification(func(n mcp.JSONRPCNotification) {
+			if n.Method == "notifications/progress" {
+				atomic.AddInt32(&progressCount, 1)
+			}
+		})
 	}
 
 	// Run setup steps with variable capture.
@@ -339,6 +355,18 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 			Status:   assertion.StatusFail,
 			Detail:   detail,
 			Duration: time.Since(start),
+		}
+	}
+
+	// Check progress notification count if capture_progress was requested.
+	if a.Assert.CaptureProgress {
+		if err := assertion.CheckProgress(a.Assert.Expect, int(atomic.LoadInt32(&progressCount))); err != nil {
+			return assertion.Result{
+				Name:     a.Name,
+				Status:   assertion.StatusFail,
+				Detail:   err.Error(),
+				Duration: time.Since(start),
+			}
 		}
 	}
 
@@ -803,6 +831,141 @@ func runResourceAssertion(a assertion.Assertion, fixture string, timeout time.Du
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
 			Detail:   detail,
+			Duration: time.Since(start),
+		}
+	}
+
+	return assertion.Result{
+		Name:     a.Name,
+		Status:   assertion.StatusPass,
+		Duration: time.Since(start),
+	}
+}
+
+// runPromptAssertion tests MCP prompts (prompts/list or prompts/get).
+func runPromptAssertion(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string, start time.Time) assertion.Result {
+	// Validate up front — avoids starting the server for a malformed assertion.
+	pb := a.AssertPrompts
+	if pb.List == nil && pb.Get == nil {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   "assert_prompts requires either 'list' or 'get'",
+			Duration: time.Since(start),
+		}
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	mcpClient, err := createMCPClient(a.Server, fixture, dockerImage)
+	if err != nil {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   fmt.Sprintf("failed to start MCP server: %v", err),
+			Duration: time.Since(start),
+		}
+	}
+	defer mcpClient.Close()
+
+	initReq := mcp.InitializeRequest{}
+	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
+	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
+	if _, err := mcpClient.Initialize(ctx, initReq); err != nil {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   fmt.Sprintf("MCP initialize failed: %v", err),
+			Duration: time.Since(start),
+		}
+	}
+
+	// Run setup steps.
+	captured := make(map[string]string)
+	for _, step := range a.Setup {
+		stepArgs := substituteAll(step.Args, fixture, captured)
+		req := mcp.CallToolRequest{}
+		req.Params.Name = step.Tool
+		req.Params.Arguments = stepArgs
+		if _, err := mcpClient.CallTool(ctx, req); err != nil {
+			return assertion.Result{
+				Name:     a.Name,
+				Status:   assertion.StatusFail,
+				Detail:   fmt.Sprintf("setup step %s failed: %v", step.Tool, err),
+				Duration: time.Since(start),
+			}
+		}
+	}
+
+	var resultText string
+
+	if pb.List != nil {
+		// prompts/list
+		listReq := mcp.ListPromptsRequest{}
+		if pb.List.Cursor != "" {
+			listReq.Params.Cursor = mcp.Cursor(strings.ReplaceAll(pb.List.Cursor, "{{fixture}}", fixture))
+		}
+		result, err := mcpClient.ListPrompts(ctx, listReq)
+		if err != nil {
+			return assertion.Result{
+				Name:     a.Name,
+				Status:   assertion.StatusFail,
+				Detail:   fmt.Sprintf("prompts/list failed: %v", err),
+				Duration: time.Since(start),
+			}
+		}
+		data, _ := json.Marshal(result)
+		resultText = string(data)
+	} else if pb.Get != nil {
+		// prompts/get
+		name := strings.ReplaceAll(pb.Get.Name, "{{fixture}}", fixture)
+		for k, v := range captured {
+			name = strings.ReplaceAll(name, "{{"+k+"}}", v)
+		}
+		// Substitute captured variables in arguments too.
+		args := make(map[string]string, len(pb.Get.Arguments))
+		for k, v := range pb.Get.Arguments {
+			v = strings.ReplaceAll(v, "{{fixture}}", fixture)
+			for varName, varVal := range captured {
+				v = strings.ReplaceAll(v, "{{"+varName+"}}", varVal)
+			}
+			args[k] = v
+		}
+		getReq := mcp.GetPromptRequest{}
+		getReq.Params.Name = name
+		getReq.Params.Arguments = args
+		result, err := mcpClient.GetPrompt(ctx, getReq)
+		if err != nil {
+			return assertion.Result{
+				Name:     a.Name,
+				Status:   assertion.StatusFail,
+				Detail:   fmt.Sprintf("prompts/get failed for %q: %v", name, err),
+				Duration: time.Since(start),
+			}
+		}
+		// Build result text from messages.
+		var parts []string
+		if result.Description != "" {
+			parts = append(parts, result.Description)
+		}
+		for _, msg := range result.Messages {
+			switch c := msg.Content.(type) {
+			case mcp.TextContent:
+				parts = append(parts, c.Text)
+			default:
+				data, _ := json.Marshal(msg.Content)
+				parts = append(parts, string(data))
+			}
+		}
+		resultText = strings.Join(parts, "\n")
+	}
+
+	if err := assertion.Check(pb.Expect, resultText, false); err != nil {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   err.Error(),
 			Duration: time.Since(start),
 		}
 	}

@@ -1,0 +1,11 @@
+# Test prompts/list — assert the server exposes its prompt templates.
+name: prompts/list returns server prompts
+server:
+  command: /tmp/mcp-go-everything-server
+assert_prompts:
+  list: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["simple_prompt", "complex_prompt"]
+timeout: 15s

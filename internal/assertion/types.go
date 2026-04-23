@@ -11,12 +11,14 @@ type Suite struct {
 // Assertion defines a single test: call a tool with known inputs, check the output.
 // For trajectory assertions, set Trace and Trajectory instead of Assert.
 // For resource assertions, set AssertResources instead of Assert.
+// For prompt assertions, set AssertPrompts instead of Assert.
 type Assertion struct {
 	Name            string                `yaml:"name"`
 	Server          ServerConfig          `yaml:"server"`
 	Setup           []ToolCall            `yaml:"setup"`
 	Assert          AssertBlock           `yaml:"assert"`
 	AssertResources *ResourceAssertBlock  `yaml:"assert_resources,omitempty"`
+	AssertPrompts   *PromptAssertBlock    `yaml:"assert_prompts,omitempty"`
 	Timeout         string                `yaml:"timeout"`
 	Trace           []TraceEntry          `yaml:"trace,omitempty"`      // inline tool call sequence
 	AuditLog        string                `yaml:"audit_log,omitempty"`  // path to agent-lsp JSONL audit log
@@ -34,6 +36,25 @@ type ResourceAssertBlock struct {
 // ResourceListArgs holds parameters for resources/list (cursor for pagination).
 type ResourceListArgs struct {
 	Cursor string `yaml:"cursor,omitempty"`
+}
+
+// PromptAssertBlock tests MCP prompts (prompts/list or prompts/get).
+// Set exactly one of List or Get.
+type PromptAssertBlock struct {
+	List   *PromptListArgs `yaml:"list,omitempty"` // call prompts/list
+	Get    *PromptGetArgs  `yaml:"get,omitempty"`  // call prompts/get
+	Expect Expect          `yaml:"expect"`
+}
+
+// PromptListArgs holds parameters for prompts/list (cursor for pagination).
+type PromptListArgs struct {
+	Cursor string `yaml:"cursor,omitempty"`
+}
+
+// PromptGetArgs holds parameters for prompts/get.
+type PromptGetArgs struct {
+	Name      string            `yaml:"name"`                // prompt name (required)
+	Arguments map[string]string `yaml:"arguments,omitempty"` // prompt arguments
 }
 
 // TraceEntry is a single tool call in a recorded sequence.
@@ -87,9 +108,10 @@ type ToolCall struct {
 
 // AssertBlock defines the tool to call and the expected results.
 type AssertBlock struct {
-	Tool   string         `yaml:"tool"`
-	Args   map[string]any `yaml:"args"`
-	Expect Expect         `yaml:"expect"`
+	Tool            string         `yaml:"tool"`
+	Args            map[string]any `yaml:"args"`
+	Expect          Expect         `yaml:"expect"`
+	CaptureProgress bool           `yaml:"capture_progress,omitempty"` // collect notifications/progress during tool execution
 }
 
 // Expect defines deterministic assertions on the tool result.
@@ -108,6 +130,7 @@ type Expect struct {
 	FileUnchanged []string          `yaml:"file_unchanged"`
 	NetDelta      *int              `yaml:"net_delta"`
 	InOrder       []string          `yaml:"in_order"`
+	MinProgress   *int              `yaml:"min_progress,omitempty"` // minimum number of notifications/progress received
 }
 
 // Result is the outcome of running a single assertion.
