@@ -13,8 +13,10 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **pass@k / pass^k in structured reports** — reliability metrics now included in JUnit XML (`<properties>`) and markdown (table section) when `--trials > 1`. Previously terminal-only.
 - **`generate` command** — `mcp-assert generate --server <cmd> --output <dir>` queries `tools/list`, reads input schemas, creates one YAML stub per tool with sensible defaults (path params get `{{fixture}}/TODO`, integers default to 1). Combined with snapshot: `generate` + `snapshot --update` = zero-effort 100% coverage.
 - **Setup output capture** — setup steps can capture values from responses via jsonpath and inject them into subsequent steps using `{{variable}}` syntax. Unlocks real session lifecycle testing (create → edit → evaluate → commit/discard → destroy) instead of negative-only tests.
-- **3 session lifecycle assertions** using capture: full lifecycle (create→edit→evaluate→discard→destroy), commit path, and evaluate with net_delta verification.
+- **9 multi-step workflow assertions** using capture: session lifecycle (create→edit→evaluate→discard→destroy), session commit, session evaluate with net_delta, simulate_chain multi-edit, commit-verify-file, rename-verify-references, diagnostics-after-error, code-actions-for-error, open-close-reopen.
 - **`mcp-assert init`** — scaffolds a commented assertion template and fixture directory for new users.
+- **Docs site** — mkdocs with Material theme. README slimmed from 553→103 lines. 8 pages: getting-started, writing-assertions, cli reference, examples, ci-integration, architecture, roadmap, dogfooding.
+- **85 total assertions** across 4 servers: filesystem (14), memory (5), sqlite (6), agent-lsp (60).
 - **100 unit tests** (up from 49). Runner: 42 tests (substitution, capture, extractJSONPath, overrides, error paths, timeout, Docker, generate). Race-detector clean.
 
 ## [0.1.1] - 2026-04-23
