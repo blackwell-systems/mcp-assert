@@ -5,8 +5,18 @@ repo_url: https://github.com/blackwell-systems/mcp-assert
 theme:
   name: material
   palette:
-    scheme: default
-    primary: green
+    - scheme: slate
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light mode
+    - scheme: default
+      primary: green
+      accent: green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
