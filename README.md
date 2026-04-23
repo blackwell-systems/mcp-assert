@@ -12,6 +12,16 @@ When `read_file` is called with a known path, the correct answer is the file's c
 
 mcp-assert tests MCP server tools the way you test code: given this input, assert this output.
 
+## Why not just write tests in Go/Python/etc?
+
+You could. The assertion logic is straightforward. What you'd have to build yourself:
+
+- **MCP protocol bootstrapping** — stdio transport, JSON-RPC framing, initialize/initialized handshake, tool call request/response lifecycle. This is ~200 lines of boilerplate per test suite, and easy to get wrong.
+- **Server-agnostic test runner** — your Go tests are coupled to your Go server. mcp-assert tests any server from any language with the same YAML. Switch `server.command` from `npx my-ts-server` to `python -m my_server` and the assertions don't change.
+- **Eval-framework features** — pass@k/pass^k reliability metrics, baseline regression detection, JUnit XML output, Docker isolation, cross-language matrix mode. These are eval concerns, not unit test concerns. Go's `testing` package doesn't have opinions about them.
+
+The value isn't in the assertion logic. It's in not writing MCP client boilerplate, having one tool that works across every MCP server regardless of implementation language, and getting CI-grade reporting for free.
+
 ## Quick Start
 
 ```bash
