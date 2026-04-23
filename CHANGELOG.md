@@ -20,4 +20,8 @@ The format is based on Keep a Changelog, Semantic Versioning.
   - `--badge <path>`: shields.io endpoint JSON for README badges
 - **36 unit tests** across checker (14), loader (8), report (14). All assertion types and report formats tested.
 - **End-to-end verified** against real agent-lsp + gopls. All 7 example assertions pass: hover, definition, references, diagnostics, symbols, completions, speculative execution.
+- **Example suites for 3 MCP servers** — not just agent-lsp:
+  - `examples/filesystem/` — 5 assertions for `@modelcontextprotocol/server-filesystem` (read, list, info, search, path traversal rejection)
+  - `examples/memory/` — 5 assertions for `@modelcontextprotocol/server-memory` (entities, relations, observations, graph, empty search)
+  - `examples/agent-lsp-go/` — 7 assertions for agent-lsp + gopls
 - **CI workflow** for build, vet, and test.
