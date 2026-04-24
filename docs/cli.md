@@ -143,7 +143,7 @@ mcp-assert version
 ```
 
 ```
-mcp-assert v0.1.1
+mcp-assert v0.1.3
 ```
 
 ## Server Override
@@ -185,6 +185,20 @@ server:
 
 See [Writing Assertions](writing-assertions.md#client-capabilities-bidirectional-mcp) for full examples of each capability type.
 
+## Resource Assertions
+
+`assert_resources:` is a YAML-level feature with no CLI flag equivalent. It replaces `assert:` to test `resources/list` or `resources/read` instead of tools/call:
+
+```yaml
+assert_resources:
+  list: {}          # or: read: "uri://resource"
+  expect:
+    not_empty: true
+    contains: ["expected-resource"]
+```
+
+See [Writing Assertions](writing-assertions.md#resource-assertions) for full examples.
+
 ## Prompt Assertions
 
 `assert_prompts:` is a YAML-level feature with no CLI flag equivalent. It replaces `assert:` to test `prompts/list` or `prompts/get` instead of tools/call:
@@ -198,6 +212,27 @@ assert_prompts:
 ```
 
 See [Writing Assertions](writing-assertions.md#prompt-assertions) for full examples including pagination.
+
+## Trajectory Assertions
+
+`trace:` and `audit_log:` are YAML-level features that replace `server:` for trajectory-based assertions. No CLI flag equivalent. No server is started.
+
+```yaml
+trace:
+  - tool: prepare_rename
+    args: { file_path: "main.go", line: 6, column: 6 }
+  - tool: rename_symbol
+    args: { file_path: "main.go", new_name: "Entity" }
+trajectory:
+  - type: order
+    tools: ["prepare_rename", "rename_symbol"]
+  - type: absence
+    tools: ["apply_edit"]
+```
+
+Replace `trace:` with `audit_log: path/to/agent.jsonl` to validate real agent behavior from a recorded JSONL log.
+
+See [Writing Assertions](writing-assertions.md#trajectory-assertions) for the full format and all four assertion types.
 
 ## Progress Capture
 

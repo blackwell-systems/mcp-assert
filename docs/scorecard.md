@@ -7,10 +7,10 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Metric | Count |
 |--------|-------|
 | Servers scanned | 9 |
-| Server suites | 13 (including HTTP transport variant and prompts suite) |
+| Server suites | 14 (including HTTP transport variant, prompts suite, and resources suite) |
 | Languages tested | 3 (Go, TypeScript, Python) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 144 (127 server + 20 trajectory) |
+| Total assertions | 144 (124 server + 20 trajectory) |
 | Upstream bugs found | 2 |
 | Upstream issues filed | 2 |
 | Clean scans (no bugs) | 6 |
@@ -33,6 +33,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | `mark3labs/mcp-go` everything | Go | stdio | 9 | 100% | 1 | [mark3labs/mcp-go#826](https://github.com/mark3labs/mcp-go/issues/826). `longRunningOperation` crashes stdio transport (fmt.Printf to stdout corrupts JSON-RPC) |
 | `mark3labs/mcp-go` everything | Go | HTTP | 5 | 100% | 0 | Transport conformance: same tools pass over HTTP |
 | `mark3labs/mcp-go` everything (prompts) | Go | stdio | 4 | 100% | 0 | Clean. `prompts/list` (2 prompts), `prompts/get` for static and template prompts, pagination pattern documented. |
+| `mark3labs/mcp-go` everything (resources) | Go | stdio | 2 | 100% | 0 | Clean. `resources/list` (verifies `test://static/resource` exposed), `resources/read` for static resource URI. |
 | `mark3labs/mcp-go` typed_tools | Go | stdio | 3 | 100% | 0 | Clean |
 | `mark3labs/mcp-go` structured | Go | stdio | 6 | 100% | 0 | Clean |
 | `mark3labs/mcp-go` roots_server | Go | stdio | 1 | 100% | 0 | Clean. Verified bidirectional roots/list via `client_capabilities.roots` |

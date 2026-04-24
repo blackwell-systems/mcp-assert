@@ -22,7 +22,7 @@ mcp-assert is a single Go binary that tests MCP servers by starting them as subp
 ```
 YAML files ──> Loader ──> Assertions ──> Runner ──> MCP Client ──> Server
                                            │
-                                           ├──> Checker (14 assertion types)
+                                           ├──> Checker (15 assertion types + 4 trajectory types)
                                            │
                                            └──> Reporter (terminal, JUnit, markdown, badge)
 ```
@@ -66,6 +66,8 @@ The checker evaluates expectations in a fixed order:
 10. `in_order`: ordered substring search
 
 `file_unchanged` is handled separately via `CheckWithSnapshots` which compares post-execution file content against pre-execution snapshots.
+
+`min_progress` is evaluated by `CheckProgress` after the tool call returns. It receives the notification count collected by the `OnNotification` handler registered before the tool call (when `capture_progress: true` is set).
 
 First failure short-circuits: only the first failing expectation is reported.
 

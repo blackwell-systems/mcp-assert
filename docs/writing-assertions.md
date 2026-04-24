@@ -419,6 +419,136 @@ server:
     LOG_LEVEL: "debug"
 ```
 
+## Resource Assertions
+
+MCP servers can expose resources via `resources/list` and `resources/read`. Use `assert_resources:` instead of `assert:` to test them.
+
+### List resources
+
+```yaml
+name: server exposes expected resources
+server:
+  command: /path/to/mcp-server
+assert_resources:
+  list: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["test://static/resource"]
+timeout: 15s
+```
+
+The `list: {}` value calls `resources/list` and marshals the result as JSON. All `expect` assertions work on the JSON response, including `json_path`. Pass `cursor:` in the `list:` block to request a specific page:
+
+```yaml
+assert_resources:
+  list:
+    cursor: "page2-cursor"
+  expect:
+    contains: ["page2-resource"]
+```
+
+### Read a resource
+
+Use `read:` with the resource URI to call `resources/read` and assert on the content:
+
+```yaml
+name: static resource returns expected content
+server:
+  command: /path/to/mcp-server
+assert_resources:
+  read: "test://static/resource"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["expected content"]
+timeout: 15s
+```
+
+`{{fixture}}` and captured variables are substituted in the URI string.
+
+### Parameterized (template) resources
+
+Template resources have URIs with variable segments. Pass the filled-in URI to `read:`:
+
+```yaml
+assert_resources:
+  read: "demo://greeting/Alice"
+  expect:
+    not_error: true
+    contains: ["Alice"]
+```
+
+## Trajectory Assertions
+
+Trajectory assertions validate that an agent (or a recorded tool call sequence) calls MCP tools in the correct order, with the correct arguments, without calling forbidden tools. They run without a live server.
+
+### Inline trace
+
+Use `trace:` to define the sequence inline in YAML:
+
+```yaml
+name: lsp-rename follows skill protocol
+trace:
+  - tool: prepare_rename
+    args:
+      file_path: "fixtures/go/main.go"
+      line: 6
+      column: 6
+  - tool: rename_symbol
+    args:
+      file_path: "fixtures/go/main.go"
+      line: 6
+      column: 6
+      new_name: "Entity"
+      dry_run: false
+  - tool: get_diagnostics
+    args:
+      file_path: "fixtures/go/main.go"
+trajectory:
+  - type: order
+    tools: ["prepare_rename", "rename_symbol", "get_diagnostics"]
+  - type: presence
+    tools: ["prepare_rename", "rename_symbol", "get_diagnostics"]
+  - type: absence
+    tools: ["apply_edit"]
+  - type: args_contain
+    tool: rename_symbol
+    args:
+      new_name: "Entity"
+```
+
+### Audit log source
+
+Replace `trace:` with `audit_log:` to validate real agent behavior from a recorded JSONL log:
+
+```yaml
+name: lsp-rename follows skill protocol (live agent)
+audit_log: /path/to/agent-audit.jsonl
+trajectory:
+  - type: order
+    tools: ["prepare_rename", "rename_symbol", "get_diagnostics"]
+  - type: presence
+    tools: ["prepare_rename"]
+  - type: absence
+    tools: ["apply_edit"]
+```
+
+The JSONL file should contain one JSON object per line with a `tool` field (and optionally an `args` object) for each tool call the agent made.
+
+### Trajectory assertion types
+
+| Type | What it checks | Required fields |
+|------|----------------|----------------|
+| `order` | Listed tools appear in this sequence (not necessarily adjacent) | `tools: [...]` |
+| `presence` | All listed tools appear at least once | `tools: [...]` |
+| `absence` | None of the listed tools appear | `tools: [...]` |
+| `args_contain` | A specific tool was called with these argument values (partial match) | `tool: "..."`, `args: {...}` |
+
+Multiple trajectory assertions can be combined in a single YAML file. All must pass for the assertion to pass.
+
+Trajectory assertions run in 0ms (no server startup, no MCP protocol). They are designed for validating skill protocols: the required sequence of tools that an agent must call for a workflow to be correct.
+
 ## Assertion Types
 
 Each assertion can combine multiple `expect` checks. All must pass for the assertion to pass.
@@ -461,3 +591,4 @@ Each assertion can combine multiple `expect` checks. All must pass for the asser
 | Assertion | What it checks | Example |
 |---|---|---|
 | `net_delta` | Speculative edit diagnostic delta equals N | `net_delta: 0` |
+| `min_progress` | At least N progress notifications received | `min_progress: 3` (requires `capture_progress: true`) |

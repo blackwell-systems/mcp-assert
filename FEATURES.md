@@ -152,7 +152,7 @@ MCP is bidirectional: servers can request things from the client (roots, samplin
 
 ---
 
-## Example Suites (14 suites, 3 languages, 144 assertions)
+## Example Suites (15 suites, 3 languages, 144 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|
@@ -164,10 +164,11 @@ MCP is bidirectional: servers can request things from the client (roots, samplin
 | `examples/mcp-go-typed-tools/` | mark3labs/mcp-go typed_tools | Go | stdio | 3 | Typed greeting with required/optional params, error case |
 | `examples/mcp-go-structured/` | mark3labs/mcp-go structured | Go | stdio | 6 | Weather, user profile, assets, manual structured result |
 | `examples/mcp-go-everything-http/` | mark3labs/mcp-go everything | Go | HTTP | 5 | Same tools as stdio suite, transport conformance test |
+| `examples/mcp-go-everything-prompts/` | mark3labs/mcp-go everything | Go | stdio | 4 | `prompts/list`, `prompts/get` (static + with arguments), pagination pattern documentation |
+| `examples/mcp-go-everything-resources/` | mark3labs/mcp-go everything | Go | stdio | 2 | `resources/list`, `resources/read` static resource by URI |
 | `examples/mcp-go-roots/` | mark3labs/mcp-go roots_server | Go | stdio | 1 | `roots` tool calls back to client; mcp-assert responds via `client_capabilities.roots` |
 | `examples/mcp-go-sampling/` | mark3labs/mcp-go sampling_server | Go | stdio | 3 | `ask_llm` (with/without system prompt), `greet`; mock LLM response via `client_capabilities.sampling` (100% tool coverage) |
 | `examples/mcp-go-elicitation/` | mark3labs/mcp-go elicitation | Go | stdio | 1 | `create_project`; form-based elicitation via `client_capabilities.elicitation` |
-| `examples/mcp-go-everything-prompts/` | mark3labs/mcp-go everything | Go | stdio | 4 | `prompts/list`, `prompts/get` (static + with arguments), pagination pattern documentation |
 | `examples/fastmcp-testing-demo/` | PrefectHQ/fastmcp testing_demo | Python | stdio | 16 | add, greet, async_multiply: edge cases, defaults, negative tests, missing-arg error (100% tool coverage); resources (list, read static, read parameterized), prompts (list, get with arguments) — all three MCP feature categories |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 | All 20 agent-lsp skill protocols: required tool call sequences, safety gates (e.g. get_references before apply_edit), absence checks (e.g. no apply_edit in simulate), order constraints |
 
@@ -253,6 +254,35 @@ assert_prompts:
       language: "go"
   expect:
     contains: ["review"]
+
+# OR: test MCP resources
+assert_resources:
+  list: {}                           # call resources/list
+  expect:
+    not_empty: true
+    contains: ["test://static/resource"]
+
+# OR: read a specific resource by URI
+assert_resources:
+  read: "test://static/resource"
+  expect:
+    not_empty: true
+
+# OR: trajectory assertion (no server; uses trace: or audit_log:)
+trace:
+  - tool: prepare_rename
+    args: { file_path: "main.go", line: 6, column: 6 }
+  - tool: rename_symbol
+    args: { file_path: "main.go", new_name: "Entity" }
+trajectory:
+  - type: order
+    tools: ["prepare_rename", "rename_symbol"]
+  - type: absence
+    tools: ["apply_edit"]
+  - type: args_contain
+    tool: rename_symbol
+    args:
+      new_name: "Entity"
 ```
 
 `{{fixture}}` in args is replaced with `--fixture` directory at runtime.
@@ -266,7 +296,7 @@ cmd/mcp-assert/main.go     CLI entry, command dispatch
 internal/assertion/
   types.go                  Suite, Assertion, Expect, Result types
   loader.go                 YAML file loading, subdirectory recursion
-  checker.go                14 assertion type implementations
+  checker.go                15 assertion type implementations (+ 4 trajectory types)
 internal/runner/
   runner.go                 Run, Matrix, CI commands, MCP client lifecycle
   runner_test.go            31 tests: substitution, overrides, error paths, timeout, Docker, generate

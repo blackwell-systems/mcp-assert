@@ -50,3 +50,5 @@ See [Getting Started](getting-started.md) for a full walkthrough.
 | Regression | Not supported | Baseline comparison, fail on backslide |
 | Docker | Not supported | Per-assertion container isolation |
 | Multi-language | Not supported | Same assertion across N language servers |
+| Bidirectional MCP | Not supported | Client capabilities: roots, sampling, elicitation |
+| Trajectory testing | Not supported | Tool call sequence validation (no server needed) |
