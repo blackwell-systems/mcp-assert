@@ -1,0 +1,12 @@
+name: search_code finds Go files in mcp-assert
+server:
+  command: /Users/dayna.blackwell/code/github-mcp-server/github-mcp-server
+  args: [stdio]
+assert:
+  tool: search_code
+  args:
+    query: "repo:blackwell-systems/mcp-assert language:go CheckLogging"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

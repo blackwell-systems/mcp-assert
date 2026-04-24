@@ -1,0 +1,12 @@
+name: list_issues returns issues for agent-lsp
+server:
+  command: /Users/dayna.blackwell/code/github-mcp-server/github-mcp-server
+  args: [stdio]
+assert:
+  tool: list_issues
+  args:
+    owner: blackwell-systems
+    repo: agent-lsp
+  expect:
+    not_error: true
+timeout: 30s

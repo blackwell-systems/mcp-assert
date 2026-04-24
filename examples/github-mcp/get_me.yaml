@@ -1,0 +1,12 @@
+name: get_me returns authenticated user info
+server:
+  command: /Users/dayna.blackwell/code/github-mcp-server/github-mcp-server
+  args: [stdio]
+assert:
+  tool: get_me
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["login"]
+timeout: 30s

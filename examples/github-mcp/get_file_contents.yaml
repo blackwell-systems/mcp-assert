@@ -1,0 +1,15 @@
+name: get_file_contents reads README from mcp-assert
+server:
+  command: /Users/dayna.blackwell/code/github-mcp-server/github-mcp-server
+  args: [stdio]
+assert:
+  tool: get_file_contents
+  args:
+    owner: blackwell-systems
+    repo: mcp-assert
+    path: README.md
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["downloaded"]
+timeout: 30s

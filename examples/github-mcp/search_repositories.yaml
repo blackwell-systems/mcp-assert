@@ -1,0 +1,13 @@
+name: search_repositories finds mcp-assert by name
+server:
+  command: /Users/dayna.blackwell/code/github-mcp-server/github-mcp-server
+  args: [stdio]
+assert:
+  tool: search_repositories
+  args:
+    query: "blackwell-systems/mcp-assert"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["mcp-assert"]
+timeout: 30s
