@@ -1,0 +1,14 @@
+name: create_project handles user decline gracefully
+server:
+  command: go
+  args: ["run", "github.com/mark3labs/mcp-go/examples/elicitation@v0.49.0"]
+  client_capabilities:
+    elicitation:
+      action: decline
+assert:
+  tool: create_project
+  args: {}
+  expect:
+    not_error: true
+    contains: ["cancelled", "declined"]
+timeout: 15s
