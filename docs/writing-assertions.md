@@ -586,6 +586,62 @@ Multiple trajectory assertions can be combined in a single YAML file. All must p
 
 Trajectory assertions run in 0ms (no server startup, no MCP protocol). They are designed for validating skill protocols: the required sequence of tools that an agent must call for a workflow to be correct.
 
+## Position Fix Mode
+
+When a position-sensitive assertion fails with an error like "no identifier found" or "column is beyond end of line", pass `--fix` to the `run` or `ci` command to get a suggested correction:
+
+```bash
+mcp-assert run --suite evals/ --fix
+```
+
+When `--fix` is active and a position-sensitive assertion fails, mcp-assert re-runs the tool call scanning nearby line and column values. If a nearby position succeeds, it emits a suggested YAML patch showing exactly what to change:
+
+```
+FAIL  hover returns type info
+      no identifier found at line 10, column 5
+
+Fix suggestion for "hover returns type info":
+--- a/evals/hover.yaml
++++ b/evals/hover.yaml
+@@ -4,7 +4,7 @@
+ assert:
+   tool: get_info_on_location
+   args:
+-    line: 10
+-    column: 5
++    line: 10
++    column: 8
+```
+
+Apply the patch to update your assertion YAML. The fix scanner checks a configurable range of nearby positions (default: ±5 lines, ±10 columns) and returns the first position that passes. If no nearby position succeeds, no patch is emitted and the assertion reports the original failure.
+
+## Live Trajectory Capture
+
+The `intercept` command is an alternative to `trace:` and `audit_log:` sources for trajectory assertions. Instead of supplying a pre-recorded trace, you proxy a real agent session through mcp-assert and capture tool calls live:
+
+```bash
+mcp-assert intercept --server "agent-lsp go:gopls" --trajectory evals/trajectory/rename.yaml
+```
+
+mcp-assert sits between your agent and the MCP server, forwarding all JSON-RPC messages transparently while recording every `tools/call` invocation. When the agent disconnects, it validates the captured sequence against the trajectory assertions in the `--trajectory` file.
+
+The trajectory YAML uses the same format as `trace:` assertions, but omit the `trace:` block (the live captured calls take its place):
+
+```yaml
+name: lsp-rename follows skill protocol (live)
+trajectory:
+  - type: order
+    tools: ["prepare_rename", "rename_symbol"]
+  - type: absence
+    tools: ["apply_edit"]
+  - type: args_contain
+    tool: rename_symbol
+    args:
+      new_name: "Entity"
+```
+
+Use `intercept` when you want to validate a real agent session without modifying the agent, or when building a trajectory assertion for the first time and you want to record a golden run.
+
 ## Assertion Types
 
 Each assertion can combine multiple `expect` checks. All must pass for the assertion to pass.
