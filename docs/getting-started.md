@@ -26,6 +26,14 @@ PASS  read_file returns file contents  1203ms
 1 passed
 ```
 
+You can also run a single YAML file directly instead of an entire directory:
+
+```bash
+mcp-assert run --suite evals/read_file.yaml --fixture evals/fixtures
+```
+
+This is useful for iterating on one assertion at a time during development.
+
 ## Write an assertion by hand
 
 If you already know which server you want to test, write the assertion directly:
@@ -83,6 +91,24 @@ mcp-assert run --suite evals/ --server "my-mcp-server"
 ```
 
 `generate` queries `tools/list`, reads input schemas, and creates one YAML per tool with sensible defaults. `snapshot --update` captures real outputs. `run` asserts against them. Edit the generated YAMLs to replace `TODO` placeholders with real values.
+
+## Auto-generate assertion stubs
+
+Instead of writing every assertion by hand, generate stubs from your server's tool list:
+
+```bash
+mcp-assert generate --server "my-mcp-server" --output evals/ --fixture ./fixtures
+```
+
+This queries `tools/list`, reads each tool's input schema, and creates one YAML file per tool with sensible defaults. Tools detected as destructive (annotated with `destructiveHint: true` or not marked read-only) are generated with `skip: true` so they won't run until you review them.
+
+To include all tools without skipping destructive ones:
+
+```bash
+mcp-assert generate --server "my-mcp-server" --output evals/ --include-writes
+```
+
+Edit the generated YAMLs to replace `TODO` placeholders with real values, then run them normally with `mcp-assert run`.
 
 ## Next steps
 

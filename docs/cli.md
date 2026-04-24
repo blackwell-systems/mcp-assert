@@ -17,12 +17,12 @@ Creates `<dir>/read_file.yaml` (a commented assertion template) and `<dir>/fixtu
 Execute assertions against an MCP server.
 
 ```bash
-mcp-assert run --suite <dir> [flags]
+mcp-assert run --suite <path> [flags]
 ```
 
 | Flag | Description |
 |------|-------------|
-| `--suite <dir>` | Directory containing assertion YAML files (required) |
+| `--suite <path>` | Directory or single YAML file containing assertions (required) |
 | `--fixture <dir>` | Fixture directory for `{{fixture}}` substitution |
 | `--server <cmd>` | Override server command from CLI instead of per-YAML |
 | `--trials <n>` | Run each assertion N times for reliability metrics |
@@ -42,7 +42,7 @@ mcp-assert run --suite <dir> [flags]
 Run with CI-specific exit codes and reporting. Supports all `run` flags plus CI-specific flags:
 
 ```bash
-mcp-assert ci --suite <dir> [flags]
+mcp-assert ci --suite <path> [flags]
 ```
 
 | Flag | Description |
@@ -102,10 +102,21 @@ Not covered (0):
 Auto-generate stub assertions from a server's `tools/list` response.
 
 ```bash
-mcp-assert generate --server <cmd> --output <dir> [--fixture <dir>]
+mcp-assert generate --server <cmd> --output <dir> [--fixture <dir>] [--include-writes]
 ```
 
+| Flag | Description |
+|------|-------------|
+| `--server <cmd>` | Server command to query for `tools/list` (required) |
+| `--output <dir>` | Directory to write generated YAML files (required) |
+| `--fixture <dir>` | Fixture directory for `{{fixture}}` substitution in generated stubs |
+| `--include-writes` | Include destructive/write tools that are skipped by default |
+
 Queries `tools/list`, reads input schemas, and creates one YAML per tool with sensible defaults. Edit the generated YAMLs to replace `TODO` placeholders with real values.
+
+**Destructive tool handling:** Tools annotated as destructive (`destructiveHint: true`) or not explicitly read-only (`readOnlyHint: false`) are skipped by default. This prevents accidentally running tools that modify state during testing. The skipped tools are generated with `skip: true` in their YAML. Pass `--include-writes` to include all tools without the skip marker.
+
+**Auth detection:** If a tool's input schema includes properties with names like `token`, `api_key`, or `password`, the generated YAML includes a comment hinting that authentication may be required. Review these stubs and configure credentials via environment variables before running.
 
 ### `mcp-assert snapshot`
 
@@ -153,6 +164,26 @@ Override the server config from CLI instead of repeating it in every YAML file:
 ```bash
 mcp-assert run --suite evals/ --server "agent-lsp go:gopls" --fixture test/fixtures/go
 ```
+
+## Skipping Assertions
+
+Add `skip: true` to any assertion YAML to exclude it from `run` and `ci` execution:
+
+```yaml
+name: dangerous tool that modifies state
+skip: true
+server:
+  command: my-server
+assert:
+  tool: delete_everything
+  args: {}
+  expect:
+    not_error: true
+```
+
+Skipped assertions appear as `SKIP` in output and do not count toward pass or fail totals. This is useful for temporarily disabling flaky tests, for assertions that require external services, or for destructive tools that should not run in CI.
+
+The `generate` command automatically sets `skip: true` on tools detected as destructive. Use `--include-writes` to generate stubs without the skip marker.
 
 ## Docker Isolation
 
