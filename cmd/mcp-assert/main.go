@@ -56,6 +56,11 @@ func main() {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
+	case "intercept":
+		if err := runner.Intercept(os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
 	case "--version", "version":
 		fmt.Printf("mcp-assert %s\n", Version)
 	case "--help", "-h", "help":
@@ -79,6 +84,7 @@ Usage:
   mcp-assert generate  --server <cmd> --output <dir> [--fixture <dir>]
   mcp-assert snapshot  --suite <dir> [--update] [--server <cmd>] [--fixture <dir>]
   mcp-assert watch     --suite <dir> [--server <cmd>] [--interval <duration>]
+  mcp-assert intercept --server <cmd> --trajectory <yaml>
 
 Commands:
   init      Scaffold a template, or generate a complete suite with --server
@@ -89,6 +95,7 @@ Commands:
   generate  Auto-generate stub assertions from a server's tools/list
   snapshot  Capture/compare tool response snapshots (like jest --updateSnapshot)
   watch     Rerun assertions when YAML files change (polling, no dependencies)
+  intercept Proxy stdio, capture tool calls, validate trajectory assertions
 
 Flags:
   --suite <dir>          Directory containing assertion YAML files
