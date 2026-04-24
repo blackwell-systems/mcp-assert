@@ -3,6 +3,7 @@ package assertion
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -140,6 +141,95 @@ assert:
 	}
 	if len(suite.Assertions) != 3 {
 		t.Fatalf("expected 3 assertions, got %d", len(suite.Assertions))
+	}
+}
+
+func TestLoadSuite_SingleFile(t *testing.T) {
+	dir := t.TempDir()
+	yamlContent := `name: single file test
+server:
+  command: test-server
+assert:
+  tool: ping
+  args: {}
+  expect:
+    not_empty: true
+`
+	filePath := filepath.Join(dir, "single.yaml")
+	os.WriteFile(filePath, []byte(yamlContent), 0644)
+
+	suite, err := LoadSuite(filePath)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(suite.Assertions) != 1 {
+		t.Fatalf("expected 1 assertion, got %d", len(suite.Assertions))
+	}
+	if suite.Assertions[0].Name != "single file test" {
+		t.Errorf("expected name 'single file test', got %q", suite.Assertions[0].Name)
+	}
+}
+
+func TestLoadSuite_SingleFile_NonYAML(t *testing.T) {
+	dir := t.TempDir()
+	filePath := filepath.Join(dir, "notes.txt")
+	os.WriteFile(filePath, []byte("not yaml"), 0644)
+
+	_, err := LoadSuite(filePath)
+	if err == nil {
+		t.Fatal("expected error for non-YAML file")
+	}
+	if !strings.Contains(err.Error(), "not a YAML file") {
+		t.Errorf("expected error containing 'not a YAML file', got %q", err.Error())
+	}
+}
+
+func TestLoadSuite_SingleFile_SetsDir(t *testing.T) {
+	dir := t.TempDir()
+	yamlContent := `name: dir check
+server:
+  command: test-server
+assert:
+  tool: ping
+  args: {}
+  expect:
+    not_empty: true
+`
+	filePath := filepath.Join(dir, "check.yaml")
+	os.WriteFile(filePath, []byte(yamlContent), 0644)
+
+	suite, err := LoadSuite(filePath)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if suite.Dir != dir {
+		t.Errorf("expected Dir to be %q (parent directory), got %q", dir, suite.Dir)
+	}
+}
+
+func TestLoadSuite_SingleFile_YmlExtension(t *testing.T) {
+	dir := t.TempDir()
+	yamlContent := `name: yml extension test
+server:
+  command: test-server
+assert:
+  tool: ping
+  args: {}
+  expect:
+    not_empty: true
+`
+	filePath := filepath.Join(dir, "test.yml")
+	os.WriteFile(filePath, []byte(yamlContent), 0644)
+
+	suite, err := LoadSuite(filePath)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(suite.Assertions) != 1 {
+		t.Fatalf("expected 1 assertion, got %d", len(suite.Assertions))
+	}
+	if suite.Assertions[0].Name != "yml extension test" {
+		t.Errorf("expected name 'yml extension test', got %q", suite.Assertions[0].Name)
 	}
 }
 
