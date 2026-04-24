@@ -9,18 +9,41 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// LoadSuite reads all YAML assertion files from a directory.
-func LoadSuite(dir string) (*Suite, error) {
-	entries, err := os.ReadDir(dir)
+// LoadSuite reads YAML assertion files from a directory or a single YAML file.
+// When given a file path, it loads only that one assertion.
+// When given a directory, it loads all YAML files (recursing one level into subdirectories).
+func LoadSuite(path string) (*Suite, error) {
+	info, err := os.Stat(path)
 	if err != nil {
-		return nil, fmt.Errorf("reading suite dir %s: %w", dir, err)
+		return nil, fmt.Errorf("reading suite path %s: %w", path, err)
 	}
 
-	suite := &Suite{Dir: dir}
+	// Single file mode: load one YAML file directly.
+	if !info.IsDir() {
+		if !isYAML(info.Name()) {
+			return nil, fmt.Errorf("%s is not a YAML file", path)
+		}
+		a, err := loadFile(path)
+		if err != nil {
+			return nil, err
+		}
+		return &Suite{
+			Assertions: []Assertion{*a},
+			Dir:        filepath.Dir(path),
+		}, nil
+	}
+
+	// Directory mode: existing behavior.
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return nil, fmt.Errorf("reading suite dir %s: %w", path, err)
+	}
+
+	suite := &Suite{Dir: path}
 	for _, entry := range entries {
 		if entry.IsDir() {
 			// Recurse one level into subdirectories.
-			subDir := filepath.Join(dir, entry.Name())
+			subDir := filepath.Join(path, entry.Name())
 			subEntries, err := os.ReadDir(subDir)
 			if err != nil {
 				continue
@@ -37,7 +60,7 @@ func LoadSuite(dir string) (*Suite, error) {
 			continue
 		}
 		if isYAML(entry.Name()) {
-			a, err := loadFile(filepath.Join(dir, entry.Name()))
+			a, err := loadFile(filepath.Join(path, entry.Name()))
 			if err != nil {
 				return nil, err
 			}
@@ -46,7 +69,7 @@ func LoadSuite(dir string) (*Suite, error) {
 	}
 
 	if len(suite.Assertions) == 0 {
-		return nil, fmt.Errorf("no assertion files found in %s", dir)
+		return nil, fmt.Errorf("no assertion files found in %s", path)
 	}
 	return suite, nil
 }
