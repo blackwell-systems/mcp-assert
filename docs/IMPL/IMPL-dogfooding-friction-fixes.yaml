@@ -1,0 +1,750 @@
+title: "Dogfooding Friction Fixes: Generate Safety, Env Expansion, Auth Detection, Single-File Suite"
+feature_slug: dogfooding-friction-fixes
+verdict: SUITABLE
+state: WAVE_PENDING
+
+suitability_assessment: |
+  All four friction points map to distinct files with minimal overlap:
+
+  F4 (generate safety) touches generate.go and generate_test.go.
+  F2 (env expansion) touches client.go and a new client_test.go.
+  F1 (auth detection) touches generate.go (same file as F4, but additive: F4 adds
+  annotation-based skip logic in generateStub, F1 adds error detection in Generate).
+  Since F1 and F4 both modify generate.go, they must share an agent or be sequenced.
+  F3 (single-file suite) touches loader.go and loader_test.go.
+  Docs (cli.md, writing-assertions.md, getting-started.md) are independent from code.
+
+  F1 + F4 are combined into one agent (Agent A) since both modify generate.go.
+  F2 is independent (Agent B). F3 is independent (Agent C). Docs are independent (Agent D).
+  All four agents can run in a single wave since file ownership is disjoint.
+
+  Estimated times:
+  - Scout phase: ~8 min
+  - Agent execution: ~8 min (4 agents x 5 min avg, parallel in 1 wave)
+  - Merge and verification: ~3 min
+  Total SAW time: ~19 min
+
+  Sequential baseline: ~25 min (4 agents x ~6 min avg)
+  Time savings: ~6 min (24% faster)
+
+  Recommendation: Clear speedup. The build/test cycle (go test ./...) takes ~10s,
+  and each agent touches 2-4 files with non-trivial logic and tests. Single-wave
+  parallelism provides good value.
+
+test_command: go test ./... -race -count=1
+lint_command: go vet ./...
+
+quality_gates:
+  level: standard
+  gates:
+    - type: build
+      command: go build ./...
+      required: true
+    - type: lint
+      command: go vet ./...
+      required: true
+    - type: test
+      command: go test ./... -race -count=1
+      required: true
+
+scaffolds: []
+
+file_ownership:
+  # Agent A: F4 (generate safety) + F1 (auth detection)
+  - file: internal/runner/generate.go
+    agent: A
+    wave: 1
+    action: modify
+    depends_on: []
+  - file: internal/runner/generate_test.go
+    agent: A
+    wave: 1
+    action: modify
+    depends_on: []
+  - file: internal/assertion/types.go
+    agent: A
+    wave: 1
+    action: modify
+    depends_on: []
+
+  # Agent B: F2 (env var expansion)
+  - file: internal/runner/client.go
+    agent: B
+    wave: 1
+    action: modify
+    depends_on: []
+  - file: internal/runner/client_test.go
+    agent: B
+    wave: 1
+    action: new
+    depends_on: []
+
+  # Agent C: F3 (single-file suite)
+  - file: internal/assertion/loader.go
+    agent: C
+    wave: 1
+    action: modify
+    depends_on: []
+  - file: internal/assertion/loader_test.go
+    agent: C
+    wave: 1
+    action: modify
+    depends_on: []
+
+  # Agent D: Documentation updates
+  - file: docs/cli.md
+    agent: D
+    wave: 1
+    action: modify
+    depends_on: []
+  - file: docs/writing-assertions.md
+    agent: D
+    wave: 1
+    action: modify
+    depends_on: []
+  - file: docs/getting-started.md
+    agent: D
+    wave: 1
+    action: modify
+    depends_on: []
+
+interface_contracts:
+  - name: isDestructiveTool
+    description: |
+      Checks whether an MCP tool has destructive annotations.
+      Returns true if DestructiveHint is true or ReadOnlyHint is false (explicitly set).
+      Used by generateStub to set skip:true on generated YAML.
+    definition: |
+      func isDestructiveTool(tool mcp.Tool) bool
+    location: internal/runner/generate.go
+
+  - name: stubAssertion.Skip
+    description: |
+      New field on stubAssertion struct for generated YAML output.
+      When true, the assertion is skipped during run/ci execution.
+    definition: |
+      type stubAssertion struct {
+          // ... existing fields ...
+          Skip    bool           `yaml:"skip,omitempty"`
+      }
+    location: internal/runner/generate.go
+
+  - name: Assertion.Skip
+    description: |
+      New field on the Assertion type. When true, the runner skips
+      execution and reports StatusSkip.
+    definition: |
+      type Assertion struct {
+          // ... existing fields ...
+          Skip            bool                  `yaml:"skip,omitempty"`
+      }
+    location: internal/assertion/types.go
+
+  - name: expandEnvVars
+    description: |
+      Expands shell variable patterns in a string value by looking up
+      the variable name in os.Getenv. Returns the original string
+      if the variable is not set. Handles both ${VAR} and $VAR syntax.
+    definition: |
+      func expandEnvVars(value string) string
+    location: internal/runner/client.go
+
+  - name: LoadSuite (updated)
+    description: |
+      Updated to accept either a directory path or a single YAML file path.
+      When given a file, loads only that one assertion. When given a directory,
+      behaves as before.
+    definition: |
+      func LoadSuite(path string) (*Suite, error)
+    location: internal/assertion/loader.go
+
+waves:
+  - number: 1
+    agents:
+      - id: A
+        task: |
+          ## What to implement
+
+          Two friction fixes in the generate command:
+
+          ### F4: Skip destructive tools by default
+
+          1. Add a `Skip` field to `stubAssertion` in generate.go. Insert after the Timeout field:
+
+          ```go
+          Skip    bool           `yaml:"skip,omitempty"`
+          ```
+
+          The existing struct context:
+          ```go
+          type stubAssertion struct {
+          	Name    string         `yaml:"name"`
+          	Server  stubServer     `yaml:"server"`
+          	Setup   []stubToolCall `yaml:"setup,omitempty"`
+          	Assert  stubAssert     `yaml:"assert"`
+          	Timeout string         `yaml:"timeout"`
+          }
+          ```
+
+          2. Add a `Skip` field to `Assertion` in `internal/assertion/types.go`.
+          Insert after the Timeout field, before Trace:
+
+          ```go
+          Skip            bool                  `yaml:"skip,omitempty"`
+          ```
+
+          The existing context:
+          ```go
+          	Timeout         string                `yaml:"timeout"`
+          	Trace           []TraceEntry          `yaml:"trace,omitempty"`      // inline tool call sequence
+          ```
+
+          3. Add an `isDestructiveTool` function in generate.go:
+
+          ```go
+          // isDestructiveTool returns true if the tool's MCP annotations indicate
+          // it performs write or destructive operations.
+          func isDestructiveTool(tool mcp.Tool) bool {
+          	a := tool.Annotations
+          	if a.DestructiveHint != nil && *a.DestructiveHint {
+          		return true
+          	}
+          	if a.ReadOnlyHint != nil && !*a.ReadOnlyHint {
+          		return true
+          	}
+          	return false
+          }
+          ```
+
+          4. Add `--include-writes` flag to `Generate`. Insert after the existing
+          `overwrite` flag:
+
+          ```go
+          overwrite := fs.Bool("overwrite", false, "Overwrite existing YAML files")
+          ```
+
+          Add:
+          ```go
+          includeWrites := fs.Bool("include-writes", false, "Include write/destructive tools (skipped by default)")
+          ```
+
+          5. Update `generateStub` to accept a `skip bool` parameter:
+
+          Change signature from:
+          ```go
+          func generateStub(tool mcp.Tool, serverSpec string, fixture string) stubAssertion {
+          ```
+          To:
+          ```go
+          func generateStub(tool mcp.Tool, serverSpec string, fixture string, skip bool) stubAssertion {
+          ```
+
+          And set `stub.Skip = skip` before the return statement.
+
+          6. In the `Generate` function's tool loop, determine skip status and pass
+          it to generateStub. Find:
+          ```go
+          stub := generateStub(tool, *serverSpec, *fixture)
+          ```
+
+          Change to:
+          ```go
+          skip := !*includeWrites && isDestructiveTool(tool)
+          stub := generateStub(tool, *serverSpec, *fixture, skip)
+          ```
+
+          7. Add a summary of skipped tools at the end of Generate. After the
+          existing summary line:
+          ```go
+          fmt.Printf("\n%d tools discovered, %d assertions created, %d skipped (already exist)\n", len(toolsResult.Tools), created, skipped)
+          ```
+
+          Count destructive tools that were auto-skipped and print:
+          ```go
+          if !*includeWrites {
+          	destructive := 0
+          	for _, tool := range toolsResult.Tools {
+          		if isDestructiveTool(tool) {
+          			destructive++
+          		}
+          	}
+          	if destructive > 0 {
+          		fmt.Printf("  %d tool(s) marked skip:true (destructive). Use --include-writes to include them.\n", destructive)
+          	}
+          }
+          ```
+
+          ### F1: Auth detection in generate
+
+          When `mcpClient.Initialize` or `mcpClient.ListTools` fails with an error
+          containing "transport closed", "EOF", or "connection refused", add a
+          helpful hint to the error message.
+
+          Find the Initialize error handling:
+          ```go
+          if _, err := mcpClient.Initialize(ctx, initReq); err != nil {
+          	return fmt.Errorf("MCP initialize failed: %w", err)
+          }
+          ```
+
+          Change to:
+          ```go
+          if _, err := mcpClient.Initialize(ctx, initReq); err != nil {
+          	if isTransportError(err) {
+          		return fmt.Errorf("MCP initialize failed: %w\n\nhint: the server exited immediately. Check that any required environment variables (API keys, tokens) are set", err)
+          	}
+          	return fmt.Errorf("MCP initialize failed: %w", err)
+          }
+          ```
+
+          Find the ListTools error handling:
+          ```go
+          toolsResult, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
+          if err != nil {
+          	return fmt.Errorf("tools/list failed: %w", err)
+          }
+          ```
+
+          Change to:
+          ```go
+          toolsResult, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
+          if err != nil {
+          	if isTransportError(err) {
+          		return fmt.Errorf("tools/list failed: %w\n\nhint: the server exited immediately. Check that any required environment variables (API keys, tokens) are set", err)
+          	}
+          	return fmt.Errorf("tools/list failed: %w", err)
+          }
+          ```
+
+          Add the helper function:
+          ```go
+          // isTransportError checks if an error indicates the server exited
+          // or failed to start, which often means missing auth credentials.
+          func isTransportError(err error) bool {
+          	msg := err.Error()
+          	return strings.Contains(msg, "transport closed") ||
+          		strings.Contains(msg, "EOF") ||
+          		strings.Contains(msg, "connection refused")
+          }
+          ```
+
+          ## Tests to write (in generate_test.go)
+
+          1. `TestIsDestructiveTool_DestructiveTrue`: tool with DestructiveHint=true returns true.
+          2. `TestIsDestructiveTool_ReadOnlyFalse`: tool with ReadOnlyHint=false returns true.
+          3. `TestIsDestructiveTool_ReadOnlyTrue`: tool with ReadOnlyHint=true returns false.
+          4. `TestIsDestructiveTool_NoAnnotations`: tool with zero-value annotations returns false.
+          5. `TestIsDestructiveTool_BothSet`: tool with DestructiveHint=true and ReadOnlyHint=true returns true.
+          6. `TestGenerateStub_SkipTrue`: when skip=true, stub.Skip is true.
+          7. `TestGenerateStub_SkipFalse`: when skip=false, stub.Skip is false.
+          8. `TestIsTransportError`: verify error matching for "transport closed", "EOF", "connection refused", and non-matching.
+
+          Use `boolPtr` helper for creating *bool values:
+          ```go
+          func boolPtr(b bool) *bool { return &b }
+          ```
+
+          Update the existing `TestGenerateStub` call to pass `false` for the new skip parameter.
+
+          ## Verification
+
+          ```bash
+          go build ./...
+          go vet ./...
+          go test ./internal/runner/ -run "TestIsDestructive|TestGenerateStub|TestIsTransport" -v
+          go test ./internal/assertion/ -v
+          ```
+
+          Postconditions:
+          ```bash
+          grep -c 'func isDestructiveTool' internal/runner/generate.go
+          # Expected: 1
+          grep -c 'func isTransportError' internal/runner/generate.go
+          # Expected: 1
+          grep -c 'include-writes' internal/runner/generate.go
+          # Expected: 1
+          grep -c 'Skip.*bool.*yaml:"skip' internal/runner/generate.go
+          # Expected: 1
+          grep -c 'Skip.*bool.*yaml:"skip' internal/assertion/types.go
+          # Expected: 1
+          ```
+
+          ## Constraints
+
+          - Do NOT modify commands.go, execute.go, client.go, or loader.go.
+          - Do NOT rename any existing functions or types.
+          - Only modify types.go to add the Skip field to Assertion.
+        files:
+          - internal/runner/generate.go
+          - internal/runner/generate_test.go
+          - internal/assertion/types.go
+        dependencies: []
+
+      - id: B
+        task: |
+          ## What to implement
+
+          ### F2: Shell variable expansion in YAML env: blocks
+
+          When a YAML `env:` block contains values matching `${VAR}` or `$VAR`
+          patterns, resolve them from the parent process environment using
+          `os.Getenv`.
+
+          1. Add an `expandEnvVars` function in `client.go`:
+
+          ```go
+          // expandEnvVars resolves ${VAR} and $VAR patterns in a string
+          // from the parent process environment. Unset variables are replaced
+          // with empty string, matching shell behavior.
+          func expandEnvVars(value string) string {
+          	return os.ExpandEnv(value)
+          }
+          ```
+
+          Note: `os.ExpandEnv` handles both `${VAR}` and `$VAR` syntax natively.
+
+          2. In `createMCPClient`, in the stdio case where env is converted to
+          a slice, apply expansion. Find this exact code:
+
+          ```go
+          		var envSlice []string
+          		for k, v := range server.Env {
+          			envSlice = append(envSlice, k+"="+v)
+          		}
+          ```
+
+          Change to:
+          ```go
+          		var envSlice []string
+          		for k, v := range server.Env {
+          			envSlice = append(envSlice, k+"="+expandEnvVars(v))
+          		}
+          ```
+
+          3. Add the `"os"` import to client.go. The current imports are:
+
+          ```go
+          import (
+          	"context"
+          	"fmt"
+          	"path/filepath"
+          	"strings"
+
+          	"github.com/blackwell-systems/mcp-assert/internal/assertion"
+          	"github.com/mark3labs/mcp-go/client"
+          	clienttransport "github.com/mark3labs/mcp-go/client/transport"
+          	"github.com/mark3labs/mcp-go/mcp"
+          )
+          ```
+
+          Add `"os"` to the stdlib imports block.
+
+          ## Tests to write
+
+          Create a new file `internal/runner/client_test.go` with these tests:
+
+          1. `TestExpandEnvVars_DollarBrace`: set env var TEST_TOKEN=secret123, verify
+             `expandEnvVars("${TEST_TOKEN}")` returns "secret123".
+          2. `TestExpandEnvVars_DollarNoBrace`: set env var TEST_VAR=hello, verify
+             `expandEnvVars("$TEST_VAR")` returns "hello".
+          3. `TestExpandEnvVars_UnsetVar`: verify `expandEnvVars("${UNSET_VAR_12345}")`
+             returns "" (empty string).
+          4. `TestExpandEnvVars_NoVars`: verify `expandEnvVars("literal-value")`
+             returns "literal-value" unchanged.
+          5. `TestExpandEnvVars_MixedContent`: set env var TEST_HOST=example.com,
+             verify `expandEnvVars("https://${TEST_HOST}/api")` returns
+             "https://example.com/api".
+          6. `TestExpandEnvVars_MultipleVars`: set TEST_A=foo and TEST_B=bar,
+             verify `expandEnvVars("${TEST_A}:${TEST_B}")` returns "foo:bar".
+
+          Use `t.Setenv` for setting env vars (automatically cleaned up after test).
+
+          Note: existing client tests are in runner_test.go (TestCreateMCPClient_*).
+          The new file client_test.go tests the expandEnvVars function specifically.
+
+          ## Verification
+
+          ```bash
+          go build ./...
+          go vet ./...
+          go test ./internal/runner/ -run "TestExpandEnvVars" -v
+          ```
+
+          Postconditions:
+          ```bash
+          grep -c 'func expandEnvVars' internal/runner/client.go
+          # Expected: 1
+          grep -c 'expandEnvVars' internal/runner/client.go
+          # Expected: 2 (definition + call site)
+          ```
+
+          ## Constraints
+
+          - Do NOT modify generate.go, loader.go, commands.go, or any docs files.
+          - Do NOT modify runner_test.go (existing client tests stay there).
+          - Do NOT modify files outside your ownership list.
+        files:
+          - internal/runner/client.go
+          - internal/runner/client_test.go
+        dependencies: []
+
+      - id: C
+        task: |
+          ## What to implement
+
+          ### F3: Accept single file path for --suite flag
+
+          Update `LoadSuite` to accept either a directory path or a single YAML
+          file path. When given a file, load only that one assertion.
+
+          1. In `loader.go`, modify `LoadSuite`. The current function signature and
+          opening lines:
+
+          ```go
+          func LoadSuite(dir string) (*Suite, error) {
+          	entries, err := os.ReadDir(dir)
+          	if err != nil {
+          		return nil, fmt.Errorf("reading suite dir %s: %w", dir, err)
+          	}
+
+          	suite := &Suite{Dir: dir}
+          ```
+
+          Replace with:
+
+          ```go
+          func LoadSuite(path string) (*Suite, error) {
+          	info, err := os.Stat(path)
+          	if err != nil {
+          		return nil, fmt.Errorf("reading suite path %s: %w", path, err)
+          	}
+
+          	// Single file mode: load one YAML file directly.
+          	if !info.IsDir() {
+          		if !isYAML(info.Name()) {
+          			return nil, fmt.Errorf("%s is not a YAML file", path)
+          		}
+          		a, err := loadFile(path)
+          		if err != nil {
+          			return nil, err
+          		}
+          		return &Suite{
+          			Assertions: []Assertion{*a},
+          			Dir:        filepath.Dir(path),
+          		}, nil
+          	}
+
+          	// Directory mode: existing behavior.
+          	entries, err := os.ReadDir(path)
+          	if err != nil {
+          		return nil, fmt.Errorf("reading suite dir %s: %w", path, err)
+          	}
+
+          	suite := &Suite{Dir: path}
+          ```
+
+          Then update all remaining references to `dir` inside the function body
+          to use `path`. The variable was renamed from `dir` to `path` in the
+          function parameter. Specifically:
+
+          The "no assertion files found" error:
+          ```go
+          return nil, fmt.Errorf("no assertion files found in %s", dir)
+          ```
+          becomes:
+          ```go
+          return nil, fmt.Errorf("no assertion files found in %s", path)
+          ```
+
+          The subdir join:
+          ```go
+          subDir := filepath.Join(dir, entry.Name())
+          ```
+          becomes:
+          ```go
+          subDir := filepath.Join(path, entry.Name())
+          ```
+
+          The file join:
+          ```go
+          a, err := loadFile(filepath.Join(dir, entry.Name()))
+          ```
+          becomes:
+          ```go
+          a, err := loadFile(filepath.Join(path, entry.Name()))
+          ```
+
+          ## Tests to write (in loader_test.go)
+
+          1. `TestLoadSuite_SingleFile`: create a temp dir with a valid YAML,
+             call LoadSuite with the file path directly. Verify 1 assertion
+             loaded and name is correct.
+
+          2. `TestLoadSuite_SingleFile_NonYAML`: call LoadSuite with a .txt file
+             path. Verify it returns an error containing "not a YAML file".
+
+          3. `TestLoadSuite_SingleFile_SetsDir`: verify Dir is set to the parent
+             directory of the file, not the file itself.
+
+          4. `TestLoadSuite_SingleFile_YmlExtension`: verify .yml extension also
+             works for single file mode.
+
+          ## Verification
+
+          ```bash
+          go build ./...
+          go vet ./...
+          go test ./internal/assertion/ -run "TestLoadSuite" -v
+          ```
+
+          Postconditions:
+          ```bash
+          grep -c 'os.Stat' internal/assertion/loader.go
+          # Expected: 1
+          grep -c 'IsDir' internal/assertion/loader.go
+          # Expected: 1
+          grep -c 'filepath.Dir' internal/assertion/loader.go
+          # Expected: 1
+          ```
+
+          ## Constraints
+
+          - Do NOT modify generate.go, client.go, commands.go, or any docs files.
+          - Do NOT modify types.go (Agent A owns the Skip field addition).
+          - Do NOT modify files outside your ownership list.
+        files:
+          - internal/assertion/loader.go
+          - internal/assertion/loader_test.go
+        dependencies: []
+
+      - id: D
+        task: |
+          ## What to implement
+
+          Update three documentation files to cover all four friction fixes.
+
+          ### docs/cli.md
+
+          1. Update the `generate` command section. Find:
+
+          ````
+          ### `mcp-assert generate`
+
+          Auto-generate stub assertions from a server's `tools/list` response.
+
+          ```bash
+          mcp-assert generate --server <cmd> --output <dir> [--fixture <dir>]
+          ```
+
+          Queries `tools/list`, reads input schemas, and creates one YAML per tool with sensible defaults. Edit the generated YAMLs to replace `TODO` placeholders with real values.
+          ````
+
+          Replace with content that adds a flags table, documents `--include-writes`,
+          describes the destructive tool skip behavior, and mentions the auth
+          detection hint. Use this structure:
+
+          - Update the synopsis to include `[--include-writes]`
+          - Add a flags table with all generate flags
+          - Add a paragraph explaining destructive tool handling
+          - Add a paragraph about auth detection
+
+          2. Update the `run` command section. Find:
+
+          ```
+          | `--suite <dir>` | Directory containing assertion YAML files (required) |
+          ```
+
+          Change to:
+
+          ```
+          | `--suite <path>` | Directory or single YAML file containing assertions (required) |
+          ```
+
+          Apply the same change to the `ci` command section if it has a similar
+          `--suite` row.
+
+          3. Add a "Skipping Assertions" section after the existing "Server Override"
+          section. Document the `skip: true` YAML field and its interaction with
+          generate.
+
+          ### docs/writing-assertions.md
+
+          1. Add an "Environment variable expansion" section. Insert after the
+          paragraph about `{{fixture}}` substitution (near line 45 which reads:
+          "`{{fixture}}` in any argument is replaced with the `--fixture` directory at runtime.").
+          Document `${VAR}` and `$VAR` syntax in env: blocks, with a YAML example.
+
+          2. Add a "Skipping assertions" section after the timeout documentation.
+          Show the skip: true field with an example.
+
+          ### docs/getting-started.md
+
+          1. After the initial `mcp-assert run --suite evals/ --fixture evals/fixtures`
+          example (around line 18-19), add a note about single-file usage.
+
+          Find:
+          ```
+          mcp-assert run --suite evals/ --fixture evals/fixtures
+          ```
+
+          After the output block that follows, add a paragraph showing single-file usage.
+
+          2. Add an "Auto-generate assertion stubs" section near the end. Document
+          the generate command with the safety default and --include-writes flag.
+
+          ## Verification
+
+          Verify files contain expected content:
+
+          ```bash
+          grep -c 'include-writes' docs/cli.md
+          # Expected: at least 2
+          grep -c 'skip.*true' docs/writing-assertions.md
+          # Expected: at least 1
+          grep -c 'single.*file\|file.*directly\|single YAML' docs/getting-started.md
+          # Expected: at least 1
+          grep -c 'variable expansion' docs/writing-assertions.md
+          # Expected: at least 1
+          ```
+
+          ## Constraints
+
+          - Do NOT modify any .go files.
+          - Do NOT modify files outside your ownership list.
+          - Use consistent formatting with existing doc sections.
+          - Do not use em dashes; use colons, commas, or semicolons instead.
+        files:
+          - docs/cli.md
+          - docs/writing-assertions.md
+          - docs/getting-started.md
+        dependencies: []
+
+pre_mortem:
+  overall_risk: low
+  rows:
+    - scenario: Agent A adds Skip field to types.go while Agent C modifies loader.go in the same package
+      likelihood: low
+      impact: low
+      mitigation: |
+        types.go and loader.go are separate files. Agent A only adds one field to the
+        Assertion struct; Agent C only modifies the LoadSuite function. No overlap.
+    - scenario: os.ExpandEnv expands unintended variables in env values
+      likelihood: low
+      impact: medium
+      mitigation: |
+        os.ExpandEnv is the standard Go approach. Users who write literal dollar signs
+        in env values would need to escape them ($$). This matches shell conventions
+        and is documented behavior.
+    - scenario: The ToolAnnotation struct does not have DestructiveHint in the mcp-go version used
+      likelihood: low
+      impact: high
+      mitigation: |
+        Verified: mcp-go v0.49.0 has ToolAnnotation with DestructiveHint *bool and
+        ReadOnlyHint *bool at tools.go:757-768. No risk.
+    - scenario: LoadSuite parameter rename from dir to path breaks callers
+      likelihood: low
+      impact: low
+      mitigation: |
+        Parameter names are not part of Go's public API. The function signature type
+        is unchanged (string -> *Suite, error). All callers pass a string and continue
+        to work.
