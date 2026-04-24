@@ -1,5 +1,17 @@
 {
   "entries": {
+    "52962c32f41f4ca8cd4c84a170e3cbca": {
+      "test": {
+        "gate_type": "test",
+        "command": "go test ./... -v -race -count=1",
+        "passed": false,
+        "exit_code": 1,
+        "stdout": "FAIL\t./... [setup failed]\nFAIL\n",
+        "stderr": "# ./...\npattern ./...: directory prefix . does not contain modules listed in go.work or their selected dependencies\n",
+        "from_cache": true,
+        "cached_at": "2026-04-23T18:13:22.718032-07:00"
+      }
+    },
     "8c10d7a351c2ffcb1ea4df8415337be5": {
       "build": {
         "gate_type": "build",
@@ -10,6 +22,30 @@
         "stderr": "pattern ./...: directory prefix . does not contain modules listed in go.work or their selected dependencies\n",
         "from_cache": true,
         "cached_at": "2026-04-23T18:12:33.937717-07:00"
+      }
+    },
+    "8f635cb6dc58a86683f1096c0b3b3069": {
+      "build": {
+        "gate_type": "build",
+        "command": "go build ./...",
+        "passed": false,
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "pattern ./...: directory prefix . does not contain modules listed in go.work or their selected dependencies\n",
+        "from_cache": true,
+        "cached_at": "2026-04-23T18:13:22.436102-07:00"
+      }
+    },
+    "b3d4c2002f7edbdcddf5ae03bf8e0cf0": {
+      "lint": {
+        "gate_type": "lint",
+        "command": "go vet ./...",
+        "passed": false,
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "pattern ./...: directory prefix . does not contain modules listed in go.work or their selected dependencies\n",
+        "from_cache": true,
+        "cached_at": "2026-04-23T18:13:22.584337-07:00"
       }
     },
     "ca0321ac8093829a288a3f551798d00b": {
