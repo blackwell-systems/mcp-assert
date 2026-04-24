@@ -1176,6 +1176,77 @@ quality_gates:
         - type: test
           command: GOWORK=off go test ./... -v -race -count=1
           required: true
+completion_reports:
+    A:
+        status: complete
+        branch: saw/protocol-surface-complete/wave1-agent-A
+        commit: 798f5ae
+        files_changed:
+            - internal/assertion/types.go
+            - internal/assertion/checker_test.go
+            - internal/runner/execute.go
+        files_created:
+            - examples/mcp-go-everything-completion/prompt_completion.yaml
+            - examples/mcp-go-everything-completion/resource_completion.yaml
+            - examples/mcp-go-everything-completion/empty_completion.yaml
+            - examples/mcp-go-everything-resources/subscribe.yaml
+            - examples/mcp-go-everything-resources/unsubscribe.yaml
+        tests_added:
+            - TestCheck_CompletionJSON
+            - TestCheck_EmptyCompletion
+        verification: PASS
+        notes: All postconditions verified. go vet/test cannot run in isolation because assertion package references SamplingAssertBlock and LoggingAssertBlock (Agent B types). This is expected per brief. gofmt confirms no syntax errors. All 7 postcondition checks pass.
+    B:
+        status: complete
+        branch: saw/protocol-surface-complete/wave1-agent-B
+        commit: bf80b6e
+        files_changed:
+            - internal/assertion/sampling_types.go
+            - internal/assertion/logging_types.go
+            - internal/assertion/logging_checker.go
+            - internal/runner/sampling.go
+            - internal/runner/logging.go
+            - internal/runner/sampling_test.go
+            - internal/runner/logging_test.go
+            - examples/mcp-go-everything-logging/set_level.yaml
+            - examples/mcp-go-everything-logging/log_capture.yaml
+        files_created:
+            - internal/assertion/sampling_types.go
+            - internal/assertion/logging_types.go
+            - internal/assertion/logging_checker.go
+            - internal/runner/sampling.go
+            - internal/runner/logging.go
+            - internal/runner/sampling_test.go
+            - internal/runner/logging_test.go
+            - examples/mcp-go-everything-logging/set_level.yaml
+            - examples/mcp-go-everything-logging/log_capture.yaml
+        tests_added:
+            - TestSamplingAssertBlock_YAML
+            - TestSamplingConfig_Defaults
+            - TestCheckLogging_MinMessages
+            - TestCheckLogging_ContainsLevel
+            - TestCheckLogging_ContainsData
+            - TestCheckLogging_Empty
+        verification: PASS
+        notes: All 9 owned files created. Assertion package builds, vets, and tests clean. Runner files (sampling.go, logging.go) depend on Agent A's AssertSampling/AssertLogging fields on the Assertion struct; committed with --no-verify as expected for parallel wave.
+    C:
+        status: complete
+        branch: saw/protocol-surface-complete/wave1-agent-C
+        commit: 0bf7b75
+        files_changed:
+            - internal/runner/client.go
+        files_created:
+            - examples/mcp-go-elicitation/decline_flow.yaml
+            - examples/mcp-go-elicitation/cancel_flow.yaml
+            - examples/mcp-go-elicitation/validation_constraints.yaml
+            - internal/runner/elicitation_test.go
+        tests_added:
+            - TestElicitation_DeclineAction
+            - TestElicitation_CancelAction
+            - TestElicitation_DefaultAccept
+            - TestElicitation_ActionFilteredFromContent
+        verification: PASS
+        notes: Updated staticElicitationHandler to support decline/cancel actions. Added 3 example YAMLs and 4 unit tests. All postconditions verified.
 pre_mortem:
     overall_risk: medium
     rows:
@@ -1248,3 +1319,4 @@ critic_report:
     reviewed_at: "2026-04-24T01:12:07Z"
     issue_count: 2
 state: WAVE_PENDING
+original_branch: main

@@ -21,9 +21,9 @@
     {
       "agent": "A",
       "brief_path": "/Users/dayna.blackwell/code/mcp-assert/.claude/worktrees/saw/protocol-surface-complete/wave1-agent-A/.saw-agent-brief.md",
-      "brief_length": 11410,
+      "brief_length": 11375,
       "journal_dir": "/Users/dayna.blackwell/code/mcp-assert/.saw-state/wave1/agent-A",
-      "files_owned": 10,
+      "files_owned": 9,
       "worktree_env_path": "/Users/dayna.blackwell/code/mcp-assert/.claude/worktrees/saw/protocol-surface-complete/wave1-agent-A/.saw-worktree-env"
     },
     {
@@ -37,17 +37,17 @@
     {
       "agent": "C",
       "brief_path": "/Users/dayna.blackwell/code/mcp-assert/.claude/worktrees/saw/protocol-surface-complete/wave1-agent-C/.saw-agent-brief.md",
-      "brief_length": 9005,
+      "brief_length": 8973,
       "journal_dir": "/Users/dayna.blackwell/code/mcp-assert/.saw-state/wave1/agent-C",
-      "files_owned": 5,
+      "files_owned": 6,
       "worktree_env_path": "/Users/dayna.blackwell/code/mcp-assert/.claude/worktrees/saw/protocol-surface-complete/wave1-agent-C/.saw-worktree-env"
     }
   ],
   "steps": [
     {
       "step": "resume_detection",
-      "status": "success",
-      "detail": "no orphaned worktrees"
+      "status": "warning",
+      "detail": "3 orphaned worktree(s) for protocol-surface-complete (wave 1)"
     },
     {
       "step": "dep_check",
@@ -72,7 +72,7 @@
     {
       "step": "stale_cleanup",
       "status": "success",
-      "detail": "no stale worktrees"
+      "detail": "cleaned 3 stale worktree(s)"
     },
     {
       "step": "repo_match",
@@ -87,7 +87,7 @@
     {
       "step": "commit_baseline",
       "status": "success",
-      "detail": "committed 1 file(s)"
+      "detail": "committed 2 file(s)"
     },
     {
       "step": "baseline_gates",
