@@ -7,10 +7,10 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Metric | Count |
 |--------|-------|
 | Servers scanned | 9 |
-| Server suites | 14 (including HTTP transport variant, prompts suite, and resources suite) |
+| Server suites | 17 (including HTTP transport variant, prompts, resources, completion, and logging suites) |
 | Languages tested | 3 (Go, TypeScript, Python) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 144 (124 server + 20 trajectory) |
+| Total assertions | 169 (149 server + 20 trajectory) |
 | Upstream bugs found | 2 |
 | Upstream issues filed | 2 |
 | Clean scans (no bugs) | 6 |
@@ -22,7 +22,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | 92% (13/14) | 1 | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). `read_media_file` returns `type: "blob"`, violating MCP 2025-11-25 spec |
+| `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 15 | 92% (13/14) | 1 | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). `read_media_file` returns `type: "blob"`, violating MCP 2025-11-25 spec |
 | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 | - | 0 | Clean |
 | `mcp-server-sqlite` | Python | stdio | 6 | - | 0 | Clean |
 
@@ -33,19 +33,21 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | `mark3labs/mcp-go` everything | Go | stdio | 9 | 100% | 1 | [mark3labs/mcp-go#826](https://github.com/mark3labs/mcp-go/issues/826). `longRunningOperation` crashes stdio transport (fmt.Printf to stdout corrupts JSON-RPC) |
 | `mark3labs/mcp-go` everything | Go | HTTP | 5 | 100% | 0 | Transport conformance: same tools pass over HTTP |
 | `mark3labs/mcp-go` everything (prompts) | Go | stdio | 4 | 100% | 0 | Clean. `prompts/list` (2 prompts), `prompts/get` for static and template prompts, pagination pattern documented. |
-| `mark3labs/mcp-go` everything (resources) | Go | stdio | 2 | 100% | 0 | Clean. `resources/list` (verifies `test://static/resource` exposed), `resources/read` for static resource URI. |
+| `mark3labs/mcp-go` everything (resources) | Go | stdio | 4 | 100% | 0 | Clean. `resources/list`, `resources/read`, `resources/subscribe`, `resources/unsubscribe`. |
 | `mark3labs/mcp-go` typed_tools | Go | stdio | 3 | 100% | 0 | Clean |
 | `mark3labs/mcp-go` structured | Go | stdio | 6 | 100% | 0 | Clean |
 | `mark3labs/mcp-go` roots_server | Go | stdio | 1 | 100% | 0 | Clean. Verified bidirectional roots/list via `client_capabilities.roots` |
 | `mark3labs/mcp-go` sampling_server | Go | stdio | 3 | 100% | 0 | Clean. Verified bidirectional sampling/createMessage via `client_capabilities.sampling` |
-| `mark3labs/mcp-go` elicitation | Go | stdio | 1 | 25% (1/4) | 0 | Clean. `create_project` verified via `client_capabilities.elicitation`. `auth_via_url`, `process_data`, `protected_action` require URL elicitation or complex flows not yet covered. |
+| `mark3labs/mcp-go` elicitation | Go | stdio | 4 | 100% | 0 | Clean. `create_project`, `cancel_flow`, `decline_flow`, `validation_constraints` verified via `client_capabilities.elicitation`. |
+| `mark3labs/mcp-go` everything (completion) | Go | stdio | 3 | 100% | 0 | Clean. `completion/complete` for prompt argument, resource URI, and empty prefix. |
+| `mark3labs/mcp-go` everything (logging) | Go | stdio | 2 | 100% | 0 | Clean. `logging/setLevel` with info level, log message capture after tool call. |
 | `PrefectHQ/fastmcp` testing_demo | Python | stdio | 16 | 100% tools + resources + prompts | 0 | Clean. All three MCP feature categories: 11 tool assertions (100% coverage), 3 resource assertions (list, read static, read parameterized), 2 prompt assertions (list, get with argument). |
 
 ### Internal (agent-lsp)
 
 | Server | Language | Transport | Assertions | Coverage | Bugs fixed |
 |--------|----------|-----------|------------|----------|------------|
-| agent-lsp + gopls | Go | stdio | 60 | 100% (50/50 tools) | 5: `character`→`column` param rename, `format_range` 0-indexed docs, undocumented `simulate_edit_atomic` params, missing warmup pattern, shared fixture mutation |
+| agent-lsp + gopls | Go | stdio | 63 | 100% (50/50 tools) | 5: `character`→`column` param rename, `format_range` 0-indexed docs, undocumented `simulate_edit_atomic` params, missing warmup pattern, shared fixture mutation |
 | agent-lsp skill protocols | N/A (inline trace) | N/A | 20 | 20/20 skills | Trajectory assertions: all 20 skills have required tool call sequences, safety gates, and absence checks verified |
 
 ## Bug Details

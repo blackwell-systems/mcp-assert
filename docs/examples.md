@@ -1,25 +1,27 @@
 # Examples
 
-mcp-assert ships with 14 server assertion suites for 9 MCP servers in three languages (Go, TypeScript, Python), plus a trajectory suite that runs without a server. All built-in server suites use stdio transport except the HTTP conformance suite. 144 total assertions.
+mcp-assert ships with 16 server assertion suites for 11 MCP servers in three languages (Go, TypeScript, Python), plus a trajectory suite that runs without a server. All built-in server suites use stdio transport except the HTTP conformance suite. 169 total assertions.
 
 ## Summary
 
 | Suite | Server | Language | Transport | Assertions |
 |-------|--------|----------|-----------|------------|
-| `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 |
+| `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 15 |
 | `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 |
 | `examples/sqlite/` | `mcp-server-sqlite` | Python | stdio | 6 |
 | `examples/fastmcp-testing-demo/` | PrefectHQ/fastmcp testing_demo | Python | stdio | 16 |
-| `examples/agent-lsp-go/` | agent-lsp + gopls | Go | stdio | 60 |
+| `examples/agent-lsp-go/` | agent-lsp + gopls | Go | stdio | 63 |
 | `examples/mcp-go-everything/` | mark3labs/mcp-go everything | Go | stdio | 9 |
 | `examples/mcp-go-everything-http/` | mark3labs/mcp-go everything | Go | HTTP | 5 |
 | `examples/mcp-go-everything-prompts/` | mark3labs/mcp-go everything | Go | stdio | 4 |
-| `examples/mcp-go-everything-resources/` | mark3labs/mcp-go everything | Go | stdio | 2 |
+| `examples/mcp-go-everything-resources/` | mark3labs/mcp-go everything | Go | stdio | 4 |
 | `examples/mcp-go-typed-tools/` | mark3labs/mcp-go typed_tools | Go | stdio | 3 |
 | `examples/mcp-go-structured/` | mark3labs/mcp-go structured | Go | stdio | 6 |
 | `examples/mcp-go-roots/` | mark3labs/mcp-go roots_server | Go | stdio | 1 |
 | `examples/mcp-go-sampling/` | mark3labs/mcp-go sampling_server | Go | stdio | 3 |
-| `examples/mcp-go-elicitation/` | mark3labs/mcp-go elicitation | Go | stdio | 1 |
+| `examples/mcp-go-elicitation/` | mark3labs/mcp-go elicitation | Go | stdio | 4 |
+| `examples/mcp-go-everything-completion/` | mark3labs/mcp-go everything | Go | stdio | 3 |
+| `examples/mcp-go-everything-logging/` | mark3labs/mcp-go everything | Go | stdio | 2 |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 |
 
 ---
@@ -28,7 +30,7 @@ mcp-assert ships with 14 server assertion suites for 9 MCP servers in three lang
 
 **Directory:** `examples/filesystem/`
 
-Tests the official `@modelcontextprotocol/server-filesystem`. 14 assertions: read file, read multiple files, read text file, list directory, list directory with sizes, directory tree, get file info, search files, write file, edit file, create directory, move file, list allowed directories, and a **negative test** that verifies path traversal is rejected. 92% tool coverage (13/14 tools; `read_media_file` excluded due to [upstream spec violation](https://github.com/modelcontextprotocol/servers/issues/4029)).
+Tests the official `@modelcontextprotocol/server-filesystem`. 15 assertions: read file, read multiple files, read text file, list directory, list directory with sizes, directory tree, get file info, search files, write file, edit file, create directory, move file, list allowed directories, resource subscription, and a **negative test** that verifies path traversal is rejected. 92% tool coverage (13/14 tools; `read_media_file` excluded due to [upstream spec violation](https://github.com/modelcontextprotocol/servers/issues/4029)).
 
 ```bash
 npm install -g @modelcontextprotocol/server-filesystem
@@ -79,7 +81,7 @@ mcp-assert run --suite examples/fastmcp-testing-demo
 
 **Directory:** `examples/agent-lsp-go/`
 
-Tests [agent-lsp](https://github.com/blackwell-systems/agent-lsp) with gopls. 60 assertions covering all 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, and build. 100% tool coverage.
+Tests [agent-lsp](https://github.com/blackwell-systems/agent-lsp) with gopls. 63 assertions covering all 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, and build. 100% tool coverage.
 
 ```bash
 mcp-assert run --suite examples/agent-lsp-go --fixture /path/to/go/fixtures
@@ -121,7 +123,7 @@ mcp-assert run --suite examples/mcp-go-everything-prompts
 
 **Directory:** `examples/mcp-go-everything-resources/`
 
-Tests `resources/list` and `resources/read` on the mcp-go everything server. 2 assertions: list resources (verifies `test://static/resource` is exposed) and read a specific resource by URI.
+Tests `resources/list`, `resources/read`, `resources/subscribe`, and `resources/unsubscribe` on the mcp-go everything server. 4 assertions: list resources (verifies `test://static/resource` is exposed), read a specific resource by URI, subscribe to a resource, and subscribe then unsubscribe.
 
 ```bash
 mcp-assert run --suite examples/mcp-go-everything-resources
@@ -171,10 +173,30 @@ mcp-assert run --suite examples/mcp-go-sampling
 
 **Directory:** `examples/mcp-go-elicitation/`
 
-Tests the `mark3labs/mcp-go` elicitation example server. 1 assertion: `create_project` triggers an `elicitation/create` request, and mcp-assert responds with preset field values (`projectName`, `framework`, `includeTests`) via `client_capabilities.elicitation`.
+Tests the `mark3labs/mcp-go` elicitation example server. 4 assertions: `create_project`, `cancel_flow`, `decline_flow`, and `validation_constraints`. Each triggers an `elicitation/create` request, and mcp-assert responds with preset field values via `client_capabilities.elicitation`.
 
 ```bash
 mcp-assert run --suite examples/mcp-go-elicitation
+```
+
+## mcp-go everything completion. Go
+
+**Directory:** `examples/mcp-go-everything-completion/`
+
+Tests `completion/complete` on the mcp-go everything server. 3 assertions: completion for a prompt argument, completion for a resource URI, and completion with an empty prefix.
+
+```bash
+mcp-assert run --suite examples/mcp-go-everything-completion
+```
+
+## mcp-go everything logging. Go
+
+**Directory:** `examples/mcp-go-everything-logging/`
+
+Tests `logging/setLevel` on the mcp-go everything server. 2 assertions: setting the log level and capturing log messages after a tool call.
+
+```bash
+mcp-assert run --suite examples/mcp-go-everything-logging
 ```
 
 ## Trajectory assertions (no server)
