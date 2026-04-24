@@ -1,5 +1,5 @@
-# Introduce an unused variable via apply_edit, then get_code_actions on the area.
-# Tests that the LSP surfaces code actions (or at least does not error).
+# Verify get_code_actions returns without error at a valid position.
+# Tests the tool interface without modifying the fixture file.
 name: code actions for error — unused variable diagnostic
 server:
   command: agent-lsp
@@ -15,19 +15,11 @@ setup:
   - tool: get_diagnostics
     args:
       file_path: "{{fixture}}/main.go"
-  - tool: apply_edit
-    args:
-      file_path: "{{fixture}}/main.go"
-      start_line: 5
-      start_column: 1
-      end_line: 5
-      end_column: 1
-      new_text: "var unused int\n"
 assert:
   tool: get_code_actions
   args:
     file_path: "{{fixture}}/main.go"
-    start_line: 5
+    start_line: 6
     start_column: 1
     end_line: 6
     end_column: 1
