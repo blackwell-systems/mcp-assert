@@ -27,6 +27,7 @@ func Run(args []string) error {
 	badgePath := fs.String("badge", "", "Write shields.io badge JSON to path")
 	baselinePath := fs.String("baseline", "", "Baseline JSON file for regression detection")
 	saveBaseline := fs.String("save-baseline", "", "Save current results as baseline to path")
+	fix := fs.Bool("fix", false, "Scan nearby positions when position-sensitive assertions fail")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -59,6 +60,24 @@ func Run(args []string) error {
 	}
 	report.ClearProgress()
 
+	// --fix: scan nearby positions for position-sensitive failures.
+	var fixSuggestions []FixSuggestion
+	if *fix {
+		for _, r := range allResults {
+			if r.Status == assertion.StatusFail && IsPositionError(r.Detail) {
+				// Find the corresponding assertion.
+				for _, a := range suite.Assertions {
+					if a.Name == r.Name {
+						if s, err := ScanNearbyPositions(a, *fixture, *timeout, *docker, 3, 5); err == nil && s != nil {
+							fixSuggestions = append(fixSuggestions, *s)
+						}
+						break
+					}
+				}
+			}
+		}
+	}
+
 	if *jsonOut {
 		data, _ := json.MarshalIndent(allResults, "", "  ")
 		fmt.Println(string(data))
@@ -67,6 +86,7 @@ func Run(args []string) error {
 		if *trials > 1 {
 			report.PrintReliability(allResults)
 		}
+		PrintFixSuggestions(fixSuggestions)
 	}
 
 	writeReports(allResults, *junitPath, *markdownPath, *badgePath)
@@ -157,6 +177,7 @@ func CI(args []string) error {
 	baselinePath := fs.String("baseline", "", "Baseline JSON file for regression detection")
 	saveBaseline := fs.String("save-baseline", "", "Save current results as baseline to path")
 	failOnRegression := fs.Bool("fail-on-regression", false, "Exit 1 if any previously-passing assertion regresses (requires --baseline)")
+	fix := fs.Bool("fix", false, "Scan nearby positions when position-sensitive assertions fail")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -186,7 +207,25 @@ func CI(args []string) error {
 	}
 	report.ClearProgress()
 
+	// --fix: scan nearby positions for position-sensitive failures.
+	var fixSuggestions []FixSuggestion
+	if *fix {
+		for _, r := range allResults {
+			if r.Status == assertion.StatusFail && IsPositionError(r.Detail) {
+				for _, a := range suite.Assertions {
+					if a.Name == r.Name {
+						if s, err := ScanNearbyPositions(a, *fixture, *timeout, *docker, 3, 5); err == nil && s != nil {
+							fixSuggestions = append(fixSuggestions, *s)
+						}
+						break
+					}
+				}
+			}
+		}
+	}
+
 	report.PrintResults(allResults)
+	PrintFixSuggestions(fixSuggestions)
 
 	// Auto-write GitHub Step Summary when in CI.
 	mdPath := *markdownPath
