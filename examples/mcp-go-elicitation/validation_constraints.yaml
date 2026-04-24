@@ -1,0 +1,15 @@
+name: create_project validates required projectName field
+server:
+  command: go
+  args: ["run", "github.com/mark3labs/mcp-go/examples/elicitation@v0.49.0"]
+  client_capabilities:
+    elicitation:
+      content:
+        projectName: ""
+        framework: "react"
+assert:
+  tool: create_project
+  args: {}
+  expect:
+    is_error: true
+timeout: 15s

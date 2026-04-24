@@ -168,15 +168,35 @@ type staticElicitationHandler struct {
 }
 
 func (h *staticElicitationHandler) Elicit(_ context.Context, _ mcp.ElicitationRequest) (*mcp.ElicitationResult, error) {
+	// Check for explicit action override.
+	action := mcp.ElicitationResponseActionAccept
+	if a, ok := h.values["action"]; ok {
+		if actionStr, ok := a.(string); ok {
+			switch actionStr {
+			case "decline":
+				action = mcp.ElicitationResponseActionDecline
+			case "cancel":
+				action = mcp.ElicitationResponseActionCancel
+			}
+		}
+	}
+
 	var content any
 	if c, ok := h.values["content"]; ok {
 		content = c
 	} else {
-		content = h.values
+		// Filter out the "action" key from values used as content.
+		filtered := make(map[string]any)
+		for k, v := range h.values {
+			if k != "action" {
+				filtered[k] = v
+			}
+		}
+		content = filtered
 	}
 	return &mcp.ElicitationResult{
 		ElicitationResponse: mcp.ElicitationResponse{
-			Action:  mcp.ElicitationResponseActionAccept,
+			Action:  action,
 			Content: content,
 		},
 	}, nil
