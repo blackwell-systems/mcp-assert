@@ -1,3 +1,4 @@
+completion_date: "2026-04-24"
 title: 'Technical Depth Remaining: --fix mode, watch diff view, live intercept'
 feature_slug: technical-depth-remaining
 verdict: SUITABLE
@@ -624,6 +625,17 @@ completion_reports:
             - TestIntercept_TrajectoryFileLoading
         verification: PASS
         notes: Intercept command complete. proxyStdio and extractToolCall implemented. All 15 subtests pass. Full suite clean with -race.
+    D:
+        status: complete
+        branch: saw/technical-depth-remaining/wave2-agent-D
+        commit: d92ef2c
+        files_changed:
+            - docs/cli.md
+            - docs/writing-assertions.md
+            - FEATURES.md
+            - docs/roadmap.md
+        verification: PASS
+        notes: 'All four documentation files updated. roadmap.md: removed three Technical Depth items (--fix, watch diff, intercept) and marked intercept as Supported in scope map. cli.md: added --fix to run/ci flag tables, watch diff paragraph, full intercept section with flags table, top-level usage block. writing-assertions.md: added Position Fix Mode and Live Trajectory Capture sections with examples. FEATURES.md: bumped CLI count 8->9, added intercept row, added --fix to run/ci flags, updated watch description, added fix.go/diff.go/intercept.go to architecture. All verification grep checks pass.'
 pre_mortem:
     overall_risk: low
     rows:
@@ -671,4 +683,4 @@ critic_report:
     summary: Skipped by operator (--skip-critic)
     reviewed_at: "2026-04-24T03:10:21Z"
     issue_count: 0
-state: WAVE_PENDING
+state: COMPLETE
