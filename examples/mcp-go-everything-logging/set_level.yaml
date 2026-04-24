@@ -1,0 +1,12 @@
+name: logging/setLevel accepts info level
+server:
+  command: go
+  args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+assert_logging:
+  set_level: info
+  tool: echo
+  args:
+    message: "test logging"
+  expect:
+    min_messages: 0
+timeout: 15s
