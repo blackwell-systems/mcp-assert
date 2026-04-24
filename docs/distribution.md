@@ -10,7 +10,7 @@ go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
 ```
 
 ### GitHub Action
-[`blackwell-systems/mcp-assert-action@v1`](https://github.com/blackwell-systems/mcp-assert-action): one line in any workflow. Downloads binary, runs assertions, uploads JUnit XML + badge.
+[`blackwell-systems/mcp-assert-action@v1`](https://github.com/blackwell-systems/mcp-assert-action): one line in any workflow. Downloads binary, runs assertions, uploads JUnit XML + badge. Listed on [GitHub Marketplace](https://github.com/marketplace/actions/mcp-assert).
 
 ```yaml
 - uses: blackwell-systems/mcp-assert-action@v1
