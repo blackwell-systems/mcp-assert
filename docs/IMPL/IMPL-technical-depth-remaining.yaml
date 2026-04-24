@@ -1,0 +1,637 @@
+title: "Technical Depth Remaining: --fix mode, watch diff view, live intercept"
+feature_slug: technical-depth-remaining
+verdict: SUITABLE
+state: WAVE_PENDING
+
+suitability_assessment: |
+  All five suitability questions resolve cleanly:
+
+  1. File decomposition: The three features (--fix mode, watch diff view, live intercept)
+     touch largely disjoint files. --fix mode modifies commands.go (flag parsing) and adds
+     new fix logic. Watch diff view modifies watch.go and adds diff formatting in report/.
+     Live intercept is an entirely new command with new files. Disjoint ownership is achievable
+     with 3 agents in wave 1 plus a docs/integration agent in wave 2.
+
+  2. Investigation-first: No unknowns. All three features have clear specifications.
+     The MCP stdio proxy pattern for intercept is well-understood (pipe stdin/stdout,
+     tee the JSON-RPC messages).
+
+  3. Interface discoverability: Cross-agent interfaces are minimal. The main shared
+     type is assertion.Result (already exists). The new FixSuggestion type is only
+     used by Agent A. The diff formatting in report/ is only used by Agent B.
+     The intercept command is self-contained.
+
+  4. Pre-implementation status: All three items are TODO (listed in roadmap.md,
+     no existing code).
+
+  5. Parallelization value: Build+test cycle is ~10s (Go). Three agents with
+     3-6 files each. All agents are independent (wave 1), so maximum parallelization.
+     Clear speedup over sequential.
+
+  Estimated times:
+  - Scout phase: ~8 min
+  - Agent execution: ~8 min (3 agents in parallel, ~8 min each, plus wave 2 ~5 min)
+  - Merge and verification: ~3 min
+  Total SAW time: ~19 min
+
+  Sequential baseline: ~30 min (3 features x 10 min avg)
+  Time savings: ~11 min (37% faster)
+
+  Recommendation: Clear speedup. Proceed.
+
+test_command: go test ./... -race -count=1
+lint_command: go vet ./...
+
+quality_gates:
+  level: standard
+  gates:
+    - type: build
+      command: go build ./...
+      required: true
+    - type: lint
+      command: go vet ./...
+      required: true
+    - type: test
+      command: go test ./... -race -count=1
+      required: true
+
+scaffolds: []
+
+interface_contracts:
+  - name: RunWithFix
+    description: |
+      Extended Run and CI commands that accept a --fix flag. When --fix is set
+      and a position-sensitive assertion fails with "no identifier found" or
+      "column is beyond end of line", the runner re-runs the tool call scanning
+      nearby positions and emits a suggested YAML patch.
+    definition: |
+      // FixSuggestion holds a suggested correction for a position-sensitive assertion.
+      type FixSuggestion struct {
+          AssertionName string
+          OriginalArgs  map[string]any
+          FixedArgs     map[string]any
+          YAMLPatch     string // unified diff showing the YAML change
+      }
+
+      // ScanNearbyPositions re-runs a tool call with nearby line/column values
+      // and returns the first position that succeeds.
+      func ScanNearbyPositions(
+          a assertion.Assertion,
+          fixture string,
+          timeout time.Duration,
+          dockerImage string,
+          lineRange int,
+          colRange int,
+      ) (*FixSuggestion, error)
+    location: internal/runner/fix.go
+
+  - name: WatchDiffView
+    description: |
+      When watch mode detects an assertion flip from PASS to FAIL (or FAIL to PASS),
+      show a unified diff of the expected vs actual response alongside the normal output.
+    definition: |
+      // FormatDiff produces a unified diff string between two text values.
+      func FormatDiff(label, expected, actual string) string
+
+      // FormatStatusChange returns a formatted status change indicator.
+      func FormatStatusChange(name string, prevStatus, currStatus assertion.Status, detail string) string
+    location: internal/report/diff.go
+
+  - name: InterceptCommand
+    description: |
+      New "intercept" command that proxies stdio between an agent and an MCP server,
+      captures every tool call in real time, and validates trajectory assertions
+      against the live stream on disconnect.
+    definition: |
+      // Intercept starts a stdio proxy between stdin/stdout and the given server command.
+      func Intercept(args []string) error
+
+      // proxyStdio runs the stdio proxy loop.
+      func proxyStdio(
+          serverCmd string,
+          serverArgs []string,
+          serverEnv []string,
+          onToolCall func(entry assertion.TraceEntry),
+      ) error
+
+      // extractToolCall parses a JSON-RPC line and returns a TraceEntry if it is a tools/call.
+      func extractToolCall(line []byte) *assertion.TraceEntry
+    location: internal/runner/intercept.go
+
+file_ownership:
+  - file: internal/runner/fix.go
+    agent: A
+    wave: 1
+    action: new
+    depends_on: []
+  - file: internal/runner/fix_test.go
+    agent: A
+    wave: 1
+    action: new
+    depends_on: []
+  - file: internal/runner/commands.go
+    agent: A
+    wave: 1
+    action: modify
+    depends_on: []
+
+  - file: internal/report/diff.go
+    agent: B
+    wave: 1
+    action: new
+    depends_on: []
+  - file: internal/report/diff_test.go
+    agent: B
+    wave: 1
+    action: new
+    depends_on: []
+  - file: internal/runner/watch.go
+    agent: B
+    wave: 1
+    action: modify
+    depends_on: []
+
+  - file: internal/runner/intercept.go
+    agent: C
+    wave: 1
+    action: new
+    depends_on: []
+  - file: internal/runner/intercept_test.go
+    agent: C
+    wave: 1
+    action: new
+    depends_on: []
+  - file: cmd/mcp-assert/main.go
+    agent: C
+    wave: 1
+    action: modify
+    depends_on: []
+
+  - file: docs/cli.md
+    agent: D
+    wave: 2
+    action: modify
+    depends_on: []
+  - file: docs/writing-assertions.md
+    agent: D
+    wave: 2
+    action: modify
+    depends_on: []
+  - file: FEATURES.md
+    agent: D
+    wave: 2
+    action: modify
+    depends_on: []
+  - file: docs/roadmap.md
+    agent: D
+    wave: 2
+    action: modify
+    depends_on: []
+
+waves:
+  - number: 1
+    agents:
+      - id: A
+        task: |
+          ## Agent A: --fix mode for position errors
+
+          ### What to implement
+
+          Add a `--fix` flag to the `run` and `ci` commands. When enabled and a position-sensitive
+          assertion fails with an error message containing "no identifier found" or
+          "column is beyond end of line", automatically re-run the tool call scanning nearby
+          positions (line +/-3, column +/-5) to find the nearest position that succeeds.
+          Emit a suggested YAML patch showing the corrected line/column values.
+
+          ### Files to create/modify
+
+          1. **`internal/runner/fix.go`** (new): Core fix logic.
+             - Define `FixSuggestion` struct with fields: `AssertionName string`,
+               `OriginalArgs map[string]any`, `FixedArgs map[string]any`, `YAMLPatch string`.
+             - Implement `IsPositionError(detail string) bool` that checks if the error message
+               contains "no identifier found" or "column is beyond end of line" (case-insensitive).
+             - Implement `ScanNearbyPositions(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string, lineRange int, colRange int) (*FixSuggestion, error)`:
+               - Extract `line` and `column` from `a.Assert.Args` (they may be int or float64 from YAML).
+               - Try positions in a spiral pattern outward from the original: first try original line
+                 with columns +/-1..5, then adjacent lines with columns +/-0..5.
+               - For each candidate position, clone the assertion, set the new line/column in args,
+                 call `runAssertion()`, and check if it passes.
+               - If a passing position is found, build a `FixSuggestion` with a YAML patch string
+                 showing the change (unified diff format):
+                 ```
+                 --- original
+                 +++ suggested
+                 @@ fix @@
+                 -    line: 10
+                 -    column: 15
+                 +    line: 11
+                 +    column: 8
+                 ```
+               - Return nil if no nearby position passes.
+             - Implement `PrintFixSuggestions(suggestions []FixSuggestion)` that prints each
+               suggestion to stdout with the assertion name and the YAML patch.
+
+          2. **`internal/runner/commands.go`** (modify): Add `--fix` flag to `Run` and `CI`.
+             - In `Run()`, add: `fix := fs.Bool("fix", false, "Scan nearby positions when position-sensitive assertions fail")`
+             - After the main assertion loop (after line 59, before the `if *jsonOut` block),
+               if `*fix` is true, iterate over `allResults` to find failures where
+               `IsPositionError(r.Detail)` is true. For each, call `ScanNearbyPositions`
+               and collect suggestions. After the normal output, call `PrintFixSuggestions`.
+             - In `CI()`, add the same `--fix` flag with identical behavior, inserted after
+               the main assertion loop (after line 187, before `report.PrintResults`).
+
+             Insert the `fix` flag definition in `Run()` after this exact text:
+             ```go
+             	badgePath := fs.String("badge", "", "Write shields.io badge JSON to path")
+             	baselinePath := fs.String("baseline", "", "Baseline JSON file for regression detection")
+             	saveBaseline := fs.String("save-baseline", "", "Save current results as baseline to path")
+             ```
+
+             Insert the `fix` flag definition in `CI()` after this exact text:
+             ```go
+             	saveBaseline := fs.String("save-baseline", "", "Save current results as baseline to path")
+             	failOnRegression := fs.Bool("fail-on-regression", false, "Exit 1 if any previously-passing assertion regresses (requires --baseline)")
+             ```
+
+          3. **`internal/runner/fix_test.go`** (new): Unit tests.
+             - `TestIsPositionError`: test with matching messages ("no identifier found at position",
+               "column is beyond end of line"), non-matching messages, and empty string.
+             - `TestScanNearbyPositions_NoLineColumn`: verify graceful handling when args lack
+               line/column fields (returns nil, nil).
+             - `TestFixSuggestion_YAMLPatch`: verify the YAML patch output format is correct
+               unified diff.
+             - `TestPrintFixSuggestions`: verify output formatting with 0 and 1+ suggestions.
+
+          ### Interfaces
+
+          Uses existing `assertion.Assertion`, `assertion.Result`, `runAssertion()` (same package).
+          No cross-agent dependencies.
+
+          ### Verification gate
+
+          ```bash
+          go build ./... && go vet ./... && go test ./internal/runner/ -run "TestIsPositionError|TestScanNearby|TestFixSuggestion|TestPrintFix" -v -count=1
+          ```
+
+          Postconditions:
+          ```bash
+          # FixSuggestion type exists
+          grep -c 'type FixSuggestion struct' internal/runner/fix.go  # expect: 1
+          # --fix flag is in both Run and CI
+          grep -c '"fix"' internal/runner/commands.go  # expect: 2
+          ```
+
+          ### Constraints
+          - Do NOT modify watch.go, intercept.go, or any files in internal/report/.
+          - Do NOT modify main.go. The --fix flag is on the run/ci subcommands, not a new command.
+          - Do NOT import packages beyond the standard library and existing project imports.
+        files:
+          - internal/runner/fix.go
+          - internal/runner/fix_test.go
+          - internal/runner/commands.go
+
+      - id: B
+        task: |
+          ## Agent B: Watch mode diff view
+
+          ### What to implement
+
+          Enhance watch mode to show a unified diff when an assertion's status changes
+          between iterations. When an assertion flips from PASS to FAIL (or FAIL to PASS),
+          display a diff of the expected vs actual response next to the normal output.
+
+          ### Files to create/modify
+
+          1. **`internal/report/diff.go`** (new): Diff formatting utilities.
+             - Implement `FormatDiff(label, expected, actual string) string`:
+               - Split both strings by newlines.
+               - Produce a simple unified diff format:
+                 ```
+                 --- expected (assertion: <label>)
+                 +++ actual
+                 @@ @@
+                 -expected line
+                 +actual line
+                  context line
+                 ```
+               - Use a basic line-by-line diff algorithm (longest common subsequence or
+                 simpler: iterate both sequences, mark added/removed lines).
+               - Keep it simple: no need for Myers diff. A line-by-line comparison with
+                 context lines is sufficient.
+             - Implement `FormatStatusChange(name string, prevStatus, currStatus assertion.Status, detail string) string`:
+               - Returns a formatted string like:
+                 `"  status changed: PASS -> FAIL"` (with color if terminal supports it).
+
+          2. **`internal/report/diff_test.go`** (new): Unit tests.
+             - `TestFormatDiff_IdenticalStrings`: returns empty string (no diff).
+             - `TestFormatDiff_AddedLines`: lines in actual not in expected show with `+`.
+             - `TestFormatDiff_RemovedLines`: lines in expected not in actual show with `-`.
+             - `TestFormatDiff_MixedChanges`: combination of adds, removes, and context.
+             - `TestFormatStatusChange_PassToFail`: verify output format.
+             - `TestFormatStatusChange_FailToPass`: verify output format.
+
+          3. **`internal/runner/watch.go`** (modify): Track previous results and show diffs.
+             - Add a `prevResults map[string]assertion.Result` variable in the `Watch` function,
+               initialized to empty. After each run iteration, compare current results against
+               previous results. For assertions whose status changed, print the diff.
+             - Refactor the watch loop to call a new internal function `runAndCollect` instead of
+               delegating to `Run()`. `runAndCollect` should run the assertions and return
+               `[]assertion.Result` (similar to Run but without printing or exiting on failure).
+               This is needed because `Run()` prints results and returns an error, but watch
+               needs access to the raw results to compare.
+             - After printing normal results via `report.PrintResults(results)`, iterate over
+               results and check against `prevResults`:
+               - If a result's status differs from the previous iteration, call
+                 `report.FormatStatusChange(name, prevStatus, currStatus, detail)` and print it.
+               - If the assertion flipped from PASS to FAIL and both iterations have detail text,
+                 call `report.FormatDiff(name, prevDetail, currDetail)` and print it.
+             - Update `prevResults` at the end of each iteration.
+
+             The current `Watch` function delegates to `Run(buildRunArgs())` on line 81 and 105.
+             Replace these calls with the new `runAndCollect` function. The `runAndCollect` function
+             should duplicate the core loop from `Run()` (lines 38-58 of commands.go) but return
+             `[]assertion.Result` instead of printing.
+
+             Current watch loop body (lines 103-106):
+             ```go
+             		lastMtimes = currentMtimes
+             		clearScreen()
+             		fmt.Printf("[watch] Change detected, rerunning at %s\n\n", time.Now().Format("15:04:05"))
+             		_ = Run(buildRunArgs())
+             ```
+
+          ### Interfaces
+
+          Uses existing `assertion.Result`, `assertion.Status`, `assertion.LoadSuite`,
+          `report.PrintResults`. The new `FormatDiff` and `FormatStatusChange` functions
+          are in the `report` package, called from `runner/watch.go`.
+
+          ### Verification gate
+
+          ```bash
+          go build ./... && go vet ./... && go test ./internal/report/ -run "TestFormatDiff|TestFormatStatus" -v -count=1
+          ```
+
+          Postconditions:
+          ```bash
+          # FormatDiff function exists
+          grep -c 'func FormatDiff' internal/report/diff.go  # expect: 1
+          # FormatStatusChange function exists
+          grep -c 'func FormatStatusChange' internal/report/diff.go  # expect: 1
+          # Watch no longer delegates to Run() directly
+          grep -c 'Run(buildRunArgs())' internal/runner/watch.go  # expect: 0
+          ```
+
+          ### Constraints
+          - Do NOT modify commands.go, fix.go, intercept.go, or main.go.
+          - Do NOT modify any files outside internal/report/ and internal/runner/watch.go.
+          - Keep the diff algorithm simple. Do not import external diff libraries.
+        files:
+          - internal/report/diff.go
+          - internal/report/diff_test.go
+          - internal/runner/watch.go
+
+      - id: C
+        task: |
+          ## Agent C: Live agent trajectory capture (intercept command)
+
+          ### What to implement
+
+          Add a new `intercept` command that acts as a stdio proxy between an agent and an
+          MCP server. It captures every tool call (`tools/call` JSON-RPC requests) in real time
+          and validates trajectory assertions against the captured trace when the connection ends.
+
+          Usage: `mcp-assert intercept --server <cmd> --trajectory <yaml>`
+
+          ### Files to create/modify
+
+          1. **`internal/runner/intercept.go`** (new): The intercept command and proxy logic.
+             - Implement `Intercept(args []string) error`:
+               - Parse flags: `--server` (required, server command string), `--trajectory` (required,
+                 path to YAML file with trajectory assertions), `--timeout` (optional, default 0 = no timeout).
+               - Parse the `--server` string into command and args (split on whitespace, like `applyServerOverride`).
+               - Load trajectory assertions from the YAML file using `assertion.LoadSingle` or
+                 by reading the file and unmarshaling the `trajectory:` field.
+               - Start the server subprocess with stdin/stdout pipes.
+               - Run the proxy loop: read JSON-RPC messages from os.Stdin, forward to server stdin.
+                 Read responses from server stdout, forward to os.Stdout.
+               - For each message from the agent, check if it's a `tools/call` request
+                 (method == "tools/call"). If so, extract the tool name and args from
+                 `params.name` and `params.arguments`, and append a `TraceEntry` to the captured trace.
+               - When stdin closes (agent disconnects) or server exits, stop the proxy.
+               - Validate the captured trace against the trajectory assertions using
+                 `assertion.CheckTrajectory(trajectory, trace)`.
+               - Print results: the captured trace summary and pass/fail for each trajectory assertion.
+               - Return error if any trajectory assertion fails.
+
+             - Implement `proxyStdio(serverCmd string, serverArgs []string, serverEnv []string, onToolCall func(assertion.TraceEntry)) error`:
+               - Start the server process.
+               - Use two goroutines:
+                 - Agent-to-server: read from os.Stdin line by line (JSON-RPC messages are
+                   newline-delimited), parse each line to check for tool calls, call onToolCall
+                   if it's a tools/call request, write the line to server stdin.
+                 - Server-to-agent: read from server stdout, write to os.Stdout.
+               - Wait for EOF on stdin or server exit.
+               - Return any error from the server process.
+
+             - JSON-RPC message detection: Parse each line as JSON, check for
+               `{"jsonrpc":"2.0","method":"tools/call","params":{"name":"...","arguments":{...}}}`.
+               Use a lightweight approach: unmarshal into `map[string]any`, check `method` field.
+
+          2. **`internal/runner/intercept_test.go`** (new): Unit tests.
+             - `TestIntercept_MissingFlags`: verify error when --server or --trajectory is missing.
+             - `TestExtractToolCall`: test the JSON-RPC parsing logic that extracts tool name
+               and args from a tools/call message. Test with valid tool call, non-tool-call message,
+               invalid JSON, and notification (no id).
+             - `TestIntercept_TrajectoryValidation`: create a mock captured trace and verify
+               that `assertion.CheckTrajectory` correctly validates it.
+             - Use a helper function `extractToolCall(line []byte) *assertion.TraceEntry` that
+               can be tested independently of the proxy loop.
+
+          3. **`cmd/mcp-assert/main.go`** (modify): Add the `intercept` command to the switch.
+
+             Insert a new case after the `watch` case. Current text at the insertion point:
+             ```go
+             	case "watch":
+             		if err := runner.Watch(os.Args[2:]); err != nil {
+             			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+             			os.Exit(1)
+             		}
+             ```
+
+             Add after it:
+             ```go
+             	case "intercept":
+             		if err := runner.Intercept(os.Args[2:]); err != nil {
+             			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+             			os.Exit(1)
+             		}
+             ```
+
+             Also update `printUsage()` to include the intercept command. Insert after the
+             `watch` line in the usage string:
+             ```
+               mcp-assert intercept --server <cmd> --trajectory <yaml>
+             ```
+             And add to the Commands section:
+             ```
+               intercept Proxy stdio, capture tool calls, validate trajectory assertions
+             ```
+
+          ### Interfaces
+
+          Uses existing `assertion.TraceEntry`, `assertion.TrajectoryAssertion`,
+          `assertion.CheckTrajectory`. No cross-agent dependencies.
+
+          ### Verification gate
+
+          ```bash
+          go build ./... && go vet ./... && go test ./internal/runner/ -run "TestIntercept|TestExtractToolCall" -v -count=1
+          ```
+
+          Postconditions:
+          ```bash
+          # Intercept function exists
+          grep -c 'func Intercept' internal/runner/intercept.go  # expect: 1
+          # extractToolCall helper exists
+          grep -c 'func extractToolCall' internal/runner/intercept.go  # expect: 1
+          # main.go has intercept case
+          grep -c '"intercept"' cmd/mcp-assert/main.go  # expect: 1
+          ```
+
+          ### Constraints
+          - Do NOT modify commands.go, watch.go, fix.go, or any files in internal/report/.
+          - Do NOT modify any files in internal/assertion/. Use existing types and functions.
+          - The proxy must work with newline-delimited JSON-RPC over stdio (the standard
+            MCP stdio transport format).
+          - Do NOT use external dependencies. Use only the standard library plus existing
+            project imports (mcp-go for types if needed, but the proxy itself is raw JSON-RPC).
+        files:
+          - internal/runner/intercept.go
+          - internal/runner/intercept_test.go
+          - cmd/mcp-assert/main.go
+
+  - number: 2
+    agents:
+      - id: D
+        task: |
+          ## Agent D: Documentation updates and roadmap cleanup
+
+          ### What to implement
+
+          Update all documentation to reflect the three new features added in Wave 1.
+          Remove the completed items from the roadmap.
+
+          ### Files to modify
+
+          1. **`docs/cli.md`** (modify):
+             - Add `--fix` flag to the `run` command flags table. Insert after the `--save-baseline` row:
+               ```
+               | `--fix` | Scan nearby positions when position-sensitive assertions fail and suggest corrections |
+               ```
+             - Add `--fix` flag to the `ci` command flags table. Insert after the `--fail-on-regression` row:
+               ```
+               | `--fix` | Scan nearby positions when position-sensitive assertions fail and suggest corrections |
+               ```
+             - Update the watch command section to mention diff view:
+               Add a paragraph after the existing description: "When an assertion's status changes
+               between iterations (e.g., PASS to FAIL), watch mode displays a unified diff of the
+               expected vs actual response to help diagnose the change."
+             - Add a new `### mcp-assert intercept` section after the watch section.
+               Include the command syntax, flags table (--server, --trajectory, --timeout),
+               and a brief description of the proxy behavior.
+             - Update the usage block at the top to include intercept and --fix.
+
+          2. **`docs/writing-assertions.md`** (modify):
+             - Add a new section `## Position Fix Mode` near the end:
+               Explain that `--fix` scans nearby positions when assertions fail with position errors,
+               and show an example of the suggested YAML patch output.
+             - Add a new section `## Live Trajectory Capture` explaining the intercept command
+               as an alternative to `trace:` and `audit_log:` sources for trajectory assertions.
+
+          3. **`FEATURES.md`** (modify):
+             - Update the CLI Commands count from 8 to 9 and add `intercept` to the table.
+             - Add `--fix` to the `run` and `ci` key flags columns.
+             - In the watch description, mention diff view.
+             - Update the Architecture section to mention fix.go, diff.go, and intercept.go.
+
+          4. **`docs/roadmap.md`** (modify):
+             - Remove the three Technical Depth items that are now implemented:
+               "--fix mode for position errors", "Watch mode diff view", and
+               "Live agent trajectory capture".
+             - If the Technical Depth section becomes empty, remove the section header and
+               table entirely.
+
+          ### Interfaces
+
+          No code interfaces. This agent only modifies documentation files.
+
+          ### Verification gate
+
+          ```bash
+          grep -c 'intercept' docs/cli.md
+          grep -c '\-\-fix' docs/cli.md
+          grep -c 'intercept' FEATURES.md
+          grep -c 'Position Fix' docs/writing-assertions.md
+          grep -c 'Live Trajectory' docs/writing-assertions.md
+          grep -c 'Watch mode diff view' docs/roadmap.md  # expect: 0
+          ```
+
+          ### Constraints
+          - Do NOT modify any Go source files.
+          - Do NOT add new documentation files. Only modify existing ones.
+          - Read each file before modifying to get accurate content.
+        files:
+          - docs/cli.md
+          - docs/writing-assertions.md
+          - FEATURES.md
+          - docs/roadmap.md
+        dependencies:
+          - A
+          - B
+          - C
+
+pre_mortem:
+  overall_risk: low
+  rows:
+    - scenario: |
+        Agent A's ScanNearbyPositions calls runAssertion which starts a real MCP server.
+        Tests may try to start a server and fail. Agent should mock or test only the
+        position error detection and YAML patch formatting, not the full scan.
+      likelihood: medium
+      impact: medium
+      mitigation: |
+        Agent A's tests should focus on IsPositionError (string matching),
+        FixSuggestion formatting, and PrintFixSuggestions output. The
+        ScanNearbyPositions integration is tested via the existing e2e suite.
+
+    - scenario: |
+        Agent C's intercept proxy may have JSON-RPC framing issues. MCP stdio
+        transport uses newline-delimited JSON, but some implementations may send
+        multi-line JSON or use Content-Length headers.
+      likelihood: low
+      impact: medium
+      mitigation: |
+        Agent C should use bufio.Scanner with a large buffer and handle both
+        newline-delimited and potential Content-Length framing. Tests should
+        cover both formats.
+
+    - scenario: |
+        Agent B's watch refactor breaks the existing watch behavior by not
+        properly replicating the Run() logic in runAndCollect.
+      likelihood: medium
+      impact: medium
+      mitigation: |
+        Agent B should keep runAndCollect as close to Run() as possible,
+        extracting only the assertion execution loop. The existing watch
+        behavior (clear screen, rerun on change) must be preserved.
+
+    - scenario: |
+        Agent D writes docs that don't match the actual implementation
+        because it runs in wave 2 but doesn't see the wave 1 code.
+      likelihood: low
+      impact: low
+      mitigation: |
+        Agent D's task prompt includes detailed specifications of all three
+        features. The docs should be written from the spec, not from reading
+        the implementation code.
