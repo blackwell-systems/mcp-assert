@@ -44,6 +44,20 @@ timeout: 30s
 
 `{{fixture}}` in any argument is replaced with the `--fixture` directory at runtime. Substitution works recursively in strings, arrays, and nested maps.
 
+## Environment variable expansion
+
+Environment variables in `env:` blocks support shell-style expansion. Use `${VAR}` or `$VAR` syntax to reference variables from the host environment:
+
+```yaml
+server:
+  command: my-mcp-server
+  env:
+    DATABASE_URL: "postgres://${DB_USER}:${DB_PASS}@localhost/testdb"
+    API_KEY: "$MY_API_KEY"
+```
+
+If the referenced variable is not set in the host environment, the original string is preserved unchanged (e.g., `${DB_USER}` remains literal). This lets you share assertion files across environments without hardcoding secrets.
+
 ## Minimal assertion
 
 The simplest assertion calls one tool and checks the result:
@@ -365,6 +379,27 @@ timeout: 30s
 If `capture_progress: true` is set but `min_progress` is absent, progress notifications are collected but not checked — useful for ensuring the feature doesn't break existing assertions.
 
 Note: progress capture requires the server to properly send `notifications/progress` notifications. The mcp-go `everything` server's `longRunningOperation` has a known stdio transport bug (`fmt.Printf` to stdout corrupts the JSON-RPC stream) that prevents reliable testing with that server. Test against servers that send progress correctly.
+
+## Skipping assertions
+
+Add `skip: true` at the top level of an assertion YAML to exclude it from execution:
+
+```yaml
+name: write tool that modifies external state
+skip: true
+server:
+  command: my-mcp-server
+assert:
+  tool: delete_record
+  args:
+    id: "123"
+  expect:
+    not_error: true
+```
+
+Skipped assertions are reported as `SKIP` and do not affect pass/fail counts. Use this for destructive tools, tests that depend on external services, or temporarily flaky assertions.
+
+The `generate` command sets `skip: true` automatically on tools detected as destructive. Remove the field (or set it to `false`) when the assertion is ready to run.
 
 ## HTTP/SSE Transport
 
