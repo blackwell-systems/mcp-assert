@@ -10,6 +10,9 @@
 Pick one:
 
 ```bash
+# npm (no Go required)
+npx @blackwell-systems/mcp-assert
+
 # Go
 go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
 

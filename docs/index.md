@@ -28,8 +28,9 @@ Most MCP servers are heavy on the first three and light on the last two. If your
 
 ```bash
 # Install (pick one)
-go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
-brew install blackwell-systems/tap/mcp-assert
+npx @blackwell-systems/mcp-assert                                          # npm (no Go required)
+go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest   # Go
+brew install blackwell-systems/tap/mcp-assert                               # Homebrew
 curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/install.sh | sh
 
 # Scaffold your first assertion

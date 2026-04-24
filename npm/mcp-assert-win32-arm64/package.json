@@ -1,0 +1,13 @@
+{
+  "name": "@blackwell-systems/mcp-assert-win32-arm64",
+  "version": "0.2.0",
+  "description": "mcp-assert binary for Windows ARM64",
+  "os": ["win32"],
+  "cpu": ["arm64"],
+  "files": ["bin/"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blackwell-systems/mcp-assert.git"
+  }
+}

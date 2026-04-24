@@ -1,0 +1,13 @@
+{
+  "name": "@blackwell-systems/mcp-assert-darwin-x64",
+  "version": "0.2.0",
+  "description": "mcp-assert binary for macOS x64 (Intel)",
+  "os": ["darwin"],
+  "cpu": ["x64"],
+  "files": ["bin/"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blackwell-systems/mcp-assert.git"
+  }
+}

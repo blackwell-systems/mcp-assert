@@ -30,6 +30,12 @@ curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/i
 ```
 Detects OS and architecture, downloads the matching binary from GitHub Releases, installs to `/usr/local/bin`. Set `INSTALL_DIR` to override.
 
+### npm
+```bash
+npx @blackwell-systems/mcp-assert
+```
+Uses the platform-specific optional dependency pattern (same as esbuild, turbo). npm resolves the correct binary for the user's OS/arch automatically. No Go toolchain required. Published via `scripts/npm-publish.sh` on each release tag.
+
 ### Awesome MCP DevTools
 PR submitted ([punkpeye/awesome-mcp-devtools#144](https://github.com/punkpeye/awesome-mcp-devtools/pull/144)). Pending maintainer review. Listed under Testing Tools.
 
@@ -38,7 +44,6 @@ PR submitted ([punkpeye/awesome-mcp-devtools#144](https://github.com/punkpeye/aw
 | Channel | Priority | Description |
 |---------|----------|-------------|
 | PyPI wrapper | High | `pip install mcp-assert`: downloads Go binary. Python MCP server authors won't `go install`. |
-| npm wrapper | High | `npx mcp-assert`: same pattern, TypeScript audience. Most common MCP server language. |
 | Scoop (Windows) | Medium | `scoop install mcp-assert`: manifest in repo, same as agent-lsp. |
 | Nix flake | Low | Nix users are quality-focused and vocal. High signal in a niche community. |
 | MCP registry integration | Low | Test badge on Glama and Smithery listings. |
