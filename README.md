@@ -3,6 +3,7 @@
 [![Blackwell Systems](https://raw.githubusercontent.com/blackwell-systems/blackwell-docs-theme/main/badge-trademark.svg)](https://github.com/blackwell-systems)
 [![Go](https://img.shields.io/badge/go-1.23+-blue.svg)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![SafeSkill 92/100](https://img.shields.io/badge/SafeSkill-92%2F100_Verified%20Safe-brightgreen)](https://safeskill.dev/scan/blackwell-systems-mcp-assert)
 
 The testing standard for deterministic MCP tools. Works with any language, any transport.
 
