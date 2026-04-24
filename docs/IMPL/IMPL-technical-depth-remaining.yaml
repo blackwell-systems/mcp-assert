@@ -36,8 +36,8 @@ suitability_assessment: |
     Time savings: ~11 min (37% faster)
 
     Recommendation: Clear speedup. Proceed.
-test_command: go test ./... -race -count=1
-lint_command: go vet ./...
+test_command: GOWORK=off go test ./... -race -count=1
+lint_command: GOWORK=off go vet ./...
 file_ownership:
     - file: internal/runner/fix.go
       agent: A
@@ -552,13 +552,13 @@ quality_gates:
     level: standard
     gates:
         - type: build
-          command: go build ./...
+          command: GOWORK=off go build ./...
           required: true
         - type: lint
-          command: go vet ./...
+          command: GOWORK=off go vet ./...
           required: true
         - type: test
-          command: go test ./... -race -count=1
+          command: GOWORK=off go test ./... -race -count=1
           required: true
 pre_mortem:
     overall_risk: low
