@@ -29,6 +29,21 @@ archives:
 checksum:
   name_template: checksums.txt
 
+brews:
+  - name: mcp-assert
+    repository:
+      owner: blackwell-systems
+      name: homebrew-tap
+      token: "{{ .Env.GORELEASER_TAP_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/blackwell-systems/mcp-assert"
+    description: "Deterministic correctness testing for MCP servers"
+    license: "MIT"
+    install: |
+      bin.install "mcp-assert"
+    test: |
+      assert_match "mcp-assert", shell_output("#{bin}/mcp-assert version 2>&1", 0)
+
 changelog:
   sort: asc
   filters:
