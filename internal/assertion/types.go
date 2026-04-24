@@ -23,6 +23,7 @@ type Assertion struct {
 	AssertSampling   *SamplingAssertBlock   `yaml:"assert_sampling,omitempty"`
 	AssertLogging    *LoggingAssertBlock    `yaml:"assert_logging,omitempty"`
 	Timeout         string                `yaml:"timeout"`
+	Skip            bool                  `yaml:"skip,omitempty"`
 	Trace           []TraceEntry          `yaml:"trace,omitempty"`      // inline tool call sequence
 	AuditLog        string                `yaml:"audit_log,omitempty"`  // path to agent-lsp JSONL audit log
 	Trajectory      []TrajectoryAssertion `yaml:"trajectory,omitempty"` // sequence checks
