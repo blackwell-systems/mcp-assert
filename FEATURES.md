@@ -202,11 +202,21 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 
 ---
 
+## Install Methods (3)
+
+| Method | Command |
+|--------|---------|
+| Go | `go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest` |
+| Homebrew | `brew install blackwell-systems/tap/mcp-assert` |
+| curl\|sh | `curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/install.sh \| sh` |
+
+---
+
 ## CI Pipeline (5 jobs)
 
 | Job | What | Depends on |
 |-----|------|------------|
-| `build-and-test` | Build, vet, 218 unit tests with `-race` | - |
+| `build-and-test` | Build, vet, 218 unit tests with `-race`, 20 trajectory assertions | - |
 | `e2e-filesystem` | 14 assertions against filesystem server | build-and-test |
 | `e2e-memory` | 5 assertions against memory server | build-and-test |
 | `e2e-sqlite` | 6 assertions against SQLite server (Python/uv) | build-and-test |
