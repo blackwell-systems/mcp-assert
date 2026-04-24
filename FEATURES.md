@@ -4,18 +4,19 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 
 ---
 
-## CLI Commands (8)
+## CLI Commands (9)
 
 | Command | Description | Key flags |
 |---------|-------------|-----------|
 | `init` | Scaffold template or one-step suite generation from a live server | `[dir]`, `--server`, `--fixture`, `--timeout` |
-| `run` | Execute assertions against an MCP server | `--suite` (dir or file), `--server`, `--fixture`, `--trials`, `--docker`, `--json`, `--junit`, `--markdown`, `--badge`, `--baseline`, `--save-baseline` |
-| `ci` | Run with CI-specific exit codes and reporting | All `run` flags + `--threshold`, `--fail-on-regression` |
+| `run` | Execute assertions against an MCP server | `--suite` (dir or file), `--server`, `--fixture`, `--trials`, `--docker`, `--json`, `--junit`, `--markdown`, `--badge`, `--baseline`, `--save-baseline`, `--fix` |
+| `ci` | Run with CI-specific exit codes and reporting | All `run` flags + `--threshold`, `--fail-on-regression`, `--fix` |
 | `matrix` | Run assertions across multiple language servers | `--suite`, `--languages`, `--fixture` |
 | `coverage` | Report which server tools have assertions | `--suite`, `--server`, `--coverage-json` |
 | `generate` | Auto-generate stub assertions from a server's tools/list (destructive tools skipped by default) | `--server`, `--output`, `--fixture`, `--include-writes` |
 | `snapshot` | Capture/compare tool response snapshots | `--suite`, `--server`, `--fixture`, `--update`, `--docker` |
-| `watch` | Rerun assertions on YAML file change | Same as `run` + polling interval |
+| `watch` | Rerun assertions on YAML file change; shows unified diff when assertion status flips | Same as `run` + polling interval |
+| `intercept` | Proxy stdio between agent and MCP server, capturing tool calls for live trajectory validation | `--server`, `--trajectory`, `--timeout` |
 
 ---
 
@@ -312,13 +313,16 @@ internal/runner/
   runner.go                 Run, Matrix, CI commands, MCP client lifecycle
   runner_test.go            31 tests: substitution, overrides, error paths, timeout, Docker, generate
   coverage.go               Coverage command, tools/list query, --coverage-json
+  fix.go                    --fix mode: ScanNearbyPositions, FixSuggestion, YAML patch generation
   generate.go               Auto-generate stub assertions from tools/list
   init.go                   Scaffold assertion template and fixture directory
+  intercept.go              intercept command: stdio proxy, live tool call capture, trajectory validation
   snapshot.go               Snapshot capture/compare command
   watch.go                  File-watching rerun loop
 internal/report/
   report.go                 Terminal output (color-aware)
   color.go                  ANSI color, TTY detection, progress
+  diff.go                   FormatDiff, FormatStatusChange: unified diff for watch mode status flips
   junit.go                  JUnit XML generation (with pass@k properties)
   markdown.go               GitHub Step Summary (with reliability table)
   badge.go                  shields.io endpoint JSON
