@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- **npm distribution**: `npx @blackwell-systems/mcp-assert`. Platform-specific optional dependencies (same pattern as esbuild). No Go toolchain required. 7 packages (1 root + 6 platform) auto-published on each release tag.
+- **PyPI distribution**: `pip install mcp-assert`. Platform-specific wheels with Go binary embedded. Tagged with correct platform (macosx, manylinux, win). Auto-published via twine on each release tag.
+
 ## [0.2.0] - 2026-04-24
 
 ### Added
