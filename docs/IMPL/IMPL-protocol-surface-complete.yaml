@@ -1,0 +1,1250 @@
+title: MCP Protocol Surface Complete (13/13 coverage)
+feature_slug: protocol-surface-complete
+verdict: SUITABLE
+suitability_assessment: |
+    All five suitability questions resolve cleanly:
+
+    1. File decomposition: The 5 protocol areas (resource subscriptions, sampling,
+       elicitation, logging, completion) each require changes to distinct files.
+       New assertion block types go in types.go (shared, but append-only additions
+       of new struct fields). Execution dispatchers are in execute.go. New runner
+       functions can be added per-feature. New example YAML suites are per-directory.
+       Documentation files are append-only (each agent adds its own section).
+       Minimum 4 agents with disjoint file ownership achievable.
+
+    2. Investigation-first items: None. All 5 protocol areas have well-documented
+       MCP spec methods, the mcp-go SDK v0.49.0 already exposes client methods
+       (Subscribe, Unsubscribe, SetLevel, Complete) and types (SubscribeRequest,
+       CompleteRequest, SetLevelRequest, LoggingLevel, etc.), and the mcp-go
+       "everything" example server supports all 5 features (WithResourceCapabilities,
+       WithLogging, WithCompletions).
+
+    3. Interface discoverability: Yes. The mcp-go SDK defines all request/response
+       types. The existing assertion pattern (types.go struct -> loader.go YAML parse
+       -> execute.go dispatch -> checker.go validation) is well-established with
+       assert_resources and assert_prompts as templates.
+
+    4. Pre-implementation status check: All 5 features are TODO (not partially
+       implemented). The roadmap.md "Next coverage targets" section lists them
+       explicitly as gaps.
+
+    5. Parallelization value: High. 4 agents, each touching 5-10 files, with a Go
+       build+test cycle of ~15s. All agents are independent (Wave 1 only) because
+       each protocol area is self-contained. One integration agent in Wave 2 wires
+       documentation cross-references and updates the coverage table.
+
+    Estimated times:
+    - Scout phase: ~10 min (dependency mapping, interface contracts, IMPL doc)
+    - Agent execution: ~15 min (4 agents x 10 min avg, fully parallel in wave 1,
+      plus 1 integration agent ~5 min in wave 2)
+    - Merge and verification: ~5 min
+    Total SAW time: ~30 min
+
+    Sequential baseline: ~55 min (5 agents x 10 min + overhead)
+    Time savings: ~25 min (45% faster)
+
+    Recommendation: Clear speedup. Proceed.
+test_command: go test ./... -v -race -count=1
+lint_command: go vet ./...
+file_ownership:
+    - file: internal/assertion/types.go
+      agent: A
+      wave: 1
+      action: modify
+    - file: internal/assertion/checker.go
+      agent: A
+      wave: 1
+      action: modify
+    - file: internal/assertion/checker_test.go
+      agent: A
+      wave: 1
+      action: modify
+    - file: internal/runner/execute.go
+      agent: A
+      wave: 1
+      action: modify
+    - file: internal/runner/runner_test.go
+      agent: A
+      wave: 1
+      action: modify
+    - file: examples/mcp-go-everything-resources/subscribe.yaml
+      agent: A
+      wave: 1
+      action: new
+    - file: examples/mcp-go-everything-resources/unsubscribe.yaml
+      agent: A
+      wave: 1
+      action: new
+    - file: examples/mcp-go-everything-completion/prompt_completion.yaml
+      agent: A
+      wave: 1
+      action: new
+    - file: examples/mcp-go-everything-completion/resource_completion.yaml
+      agent: A
+      wave: 1
+      action: new
+    - file: examples/mcp-go-everything-completion/empty_completion.yaml
+      agent: A
+      wave: 1
+      action: new
+    - file: internal/assertion/sampling_types.go
+      agent: B
+      wave: 1
+      action: new
+    - file: internal/assertion/logging_types.go
+      agent: B
+      wave: 1
+      action: new
+    - file: internal/assertion/logging_checker.go
+      agent: B
+      wave: 1
+      action: new
+    - file: internal/runner/sampling.go
+      agent: B
+      wave: 1
+      action: new
+    - file: internal/runner/logging.go
+      agent: B
+      wave: 1
+      action: new
+    - file: internal/runner/sampling_test.go
+      agent: B
+      wave: 1
+      action: new
+    - file: internal/runner/logging_test.go
+      agent: B
+      wave: 1
+      action: new
+    - file: examples/mcp-go-everything-logging/set_level.yaml
+      agent: B
+      wave: 1
+      action: new
+    - file: examples/mcp-go-everything-logging/log_capture.yaml
+      agent: B
+      wave: 1
+      action: new
+    - file: internal/runner/client.go
+      agent: C
+      wave: 1
+      action: modify
+    - file: internal/runner/elicitation_test.go
+      agent: C
+      wave: 1
+      action: new
+    - file: examples/mcp-go-elicitation/decline_flow.yaml
+      agent: C
+      wave: 1
+      action: new
+    - file: examples/mcp-go-elicitation/cancel_flow.yaml
+      agent: C
+      wave: 1
+      action: new
+    - file: examples/mcp-go-elicitation/validation_constraints.yaml
+      agent: C
+      wave: 1
+      action: new
+    - file: docs/writing-assertions.md
+      agent: D
+      wave: 2
+      action: modify
+    - file: docs/cli.md
+      agent: D
+      wave: 2
+      action: modify
+    - file: docs/examples.md
+      agent: D
+      wave: 2
+      action: modify
+    - file: docs/scorecard.md
+      agent: D
+      wave: 2
+      action: modify
+    - file: docs/roadmap.md
+      agent: D
+      wave: 2
+      action: modify
+    - file: docs/architecture.md
+      agent: D
+      wave: 2
+      action: modify
+    - file: FEATURES.md
+      agent: D
+      wave: 2
+      action: modify
+interface_contracts:
+    - name: SamplingAssertBlock
+      description: |
+        New assertion block type for testing sampling as a first-class subject.
+        Combines mock sampling config + tool call + assertions into one block.
+      definition: |
+        type SamplingAssertBlock struct {
+            Tool       string         `yaml:"tool"`
+            Args       map[string]any `yaml:"args,omitempty"`
+            MockText   string         `yaml:"mock_text"`
+            MockModel  string         `yaml:"mock_model,omitempty"`
+            Expect     Expect         `yaml:"expect"`
+        }
+      location: internal/assertion/sampling_types.go
+    - name: LoggingAssertBlock
+      description: |
+        New assertion block type for testing MCP logging.
+        Calls logging/setLevel, then captures notifications/message during execution.
+      definition: |
+        type LoggingAssertBlock struct {
+            SetLevel string         `yaml:"set_level"`
+            Tool     string         `yaml:"tool,omitempty"`
+            Args     map[string]any `yaml:"args,omitempty"`
+            Expect   LoggingExpect  `yaml:"expect"`
+        }
+        type LoggingExpect struct {
+            MinMessages   *int     `yaml:"min_messages,omitempty"`
+            ContainsLevel []string `yaml:"contains_level,omitempty"`
+            ContainsData  []string `yaml:"contains_data,omitempty"`
+        }
+        type LogMessage struct {
+            Level  string
+            Logger string
+            Data   string
+        }
+      location: internal/assertion/logging_types.go
+    - name: CompletionAssertBlock
+      description: |
+        New assertion block type for testing MCP completion/complete.
+      definition: |
+        type CompletionAssertBlock struct {
+            Ref      CompletionRef  `yaml:"ref"`
+            Argument CompletionArg  `yaml:"argument"`
+            Expect   Expect         `yaml:"expect"`
+        }
+        type CompletionRef struct {
+            Type string `yaml:"type"`
+            Name string `yaml:"name"`
+        }
+        type CompletionArg struct {
+            Name  string `yaml:"name"`
+            Value string `yaml:"value"`
+        }
+      location: internal/assertion/types.go
+    - name: ResourceSubscriptionFields
+      description: |
+        New fields on ResourceAssertBlock for subscription testing.
+      definition: |
+        // Added to existing ResourceAssertBlock:
+        Subscribe          string `yaml:"subscribe,omitempty"`
+        Unsubscribe        string `yaml:"unsubscribe,omitempty"`
+        ExpectNotification *bool  `yaml:"expect_notification,omitempty"`
+      location: internal/assertion/types.go
+    - name: runSamplingAssertion
+      description: Execution function for sampling assertions
+      definition: |
+        func runSamplingAssertion(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string, start time.Time) assertion.Result
+      location: internal/runner/sampling.go
+    - name: runLoggingAssertion
+      description: Execution function for logging assertions
+      definition: |
+        func runLoggingAssertion(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string, start time.Time) assertion.Result
+      location: internal/runner/logging.go
+    - name: runCompletionAssertion
+      description: Execution function for completion assertions
+      definition: |
+        func runCompletionAssertion(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string, start time.Time) assertion.Result
+      location: internal/runner/execute.go
+    - name: CheckLogging
+      description: Checker function for logging expectations
+      definition: |
+        func CheckLogging(expect LoggingExpect, messages []LogMessage) error
+      location: internal/assertion/logging_checker.go
+waves:
+    - number: 1
+      agents:
+        - id: A
+          task: |
+            ## Agent A: Resource Subscriptions, Completion, and Types Coordinator
+
+            ### What to implement
+
+            You own types.go and execute.go. You are responsible for:
+            1. Adding resource subscription fields to ResourceAssertBlock
+            2. Adding the CompletionAssertBlock type and its sub-types
+            3. Adding Assertion struct fields for ALL new block types (including
+               AssertSampling and AssertLogging for Agent B)
+            4. Adding dispatch calls in execute.go for all new block types
+            5. Adding runCompletionAssertion to execute.go
+            6. Updating runResourceAssertion for subscription support
+
+            **1. Resource subscriptions**
+
+            Add three fields to the existing ResourceAssertBlock struct in types.go.
+            The current struct definition starts at line 31:
+
+            ```go
+            type ResourceAssertBlock struct {
+            	List   *ResourceListArgs  `yaml:"list,omitempty"`
+            	Read   string             `yaml:"read,omitempty"`
+            	Expect Expect             `yaml:"expect"`
+            }
+            ```
+
+            Add after Expect:
+            ```go
+            	Subscribe          string `yaml:"subscribe,omitempty"`
+            	Unsubscribe        string `yaml:"unsubscribe,omitempty"`
+            	ExpectNotification *bool  `yaml:"expect_notification,omitempty"`
+            ```
+
+            Update runResourceAssertion in execute.go to handle subscriptions.
+            After the initialize call (around line 203), add subscription handling:
+            - If rb.Subscribe is set: register OnNotification handler for
+              "notifications/resources/updated", call mcpClient.Subscribe()
+            - After list/read execution, check notification count if ExpectNotification
+            - If rb.Unsubscribe is set: call mcpClient.Unsubscribe()
+
+            Also update the validation check at line 171. Currently it requires list
+            or read; update to also allow subscribe-only assertions:
+            ```go
+            if rb.List == nil && rb.Read == "" && rb.Subscribe == "" {
+            ```
+
+            **2. Completion**
+
+            Add to types.go:
+            ```go
+            type CompletionAssertBlock struct {
+            	Ref      CompletionRef  `yaml:"ref"`
+            	Argument CompletionArg  `yaml:"argument"`
+            	Expect   Expect         `yaml:"expect"`
+            }
+
+            type CompletionRef struct {
+            	Type string `yaml:"type"` // "ref/prompt" or "ref/resource"
+            	Name string `yaml:"name"` // prompt name or resource URI
+            }
+
+            type CompletionArg struct {
+            	Name  string `yaml:"name"`  // argument name
+            	Value string `yaml:"value"` // partial value for completion
+            }
+            ```
+
+            Add AssertCompletion *CompletionAssertBlock to the Assertion struct with
+            yaml tag `assert_completion,omitempty`.
+
+            Add runCompletionAssertion to execute.go:
+            1. Initialize MCP client (use createMCPClient, same pattern as runResourceAssertion)
+            2. Build mcp.CompleteRequest. The mcp-go SDK types:
+               - mcp.CompleteRequest has Params of type mcp.CompleteParams
+               - mcp.CompleteParams has Argument (CompleteArgument) and Context (CompleteContext)
+               - mcp.CompleteArgument has Name and Value
+               - For the ref context, set it based on ref.Type:
+                 "ref/prompt": use the prompt reference mechanism
+                 "ref/resource": use the resource reference mechanism
+               Note: The CompleteParams struct has a custom UnmarshalJSON. Check the
+               mcp-go source for how to set the reference context field properly.
+            3. Call mcpClient.Complete(ctx, req) which returns (*mcp.CompleteResult, error)
+            4. Marshal the CompleteResult to JSON
+            5. Run assertion.Check() on the JSON
+
+            **3. Agent B integration fields**
+
+            Add to the Assertion struct in types.go:
+            ```go
+            	AssertSampling  *SamplingAssertBlock  `yaml:"assert_sampling,omitempty"`
+            	AssertLogging   *LoggingAssertBlock   `yaml:"assert_logging,omitempty"`
+            ```
+
+            These types are defined by Agent B in internal/assertion/sampling_types.go
+            and internal/assertion/logging_types.go. They are in the same package so
+            no import is needed. Your branch will not compile in isolation (the types
+            don't exist until Agent B's branch is merged). This is expected.
+
+            Add dispatch in runAssertion() in execute.go after the completion dispatch:
+            ```go
+            // Sampling assertions call a tool that triggers server-side sampling.
+            if a.AssertSampling != nil {
+            	return runSamplingAssertion(a, fixture, timeout, dockerImage, start)
+            }
+
+            // Logging assertions test logging/setLevel and notifications/message.
+            if a.AssertLogging != nil {
+            	return runLoggingAssertion(a, fixture, timeout, dockerImage, start)
+            }
+            ```
+
+            These functions are defined by Agent B in sampling.go and logging.go
+            (same runner package, no import needed).
+
+            **4. Example assertions**
+
+            Create examples/mcp-go-everything-completion/ directory with 3 YAML files:
+
+            prompt_completion.yaml:
+            ```yaml
+            name: completion for prompt argument returns suggestions
+            server:
+              command: go
+              args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+            assert_completion:
+              ref:
+                type: "ref/prompt"
+                name: "complex_prompt"
+              argument:
+                name: "style"
+                value: "f"
+              expect:
+                not_empty: true
+                contains: ["formal"]
+            timeout: 30s
+            ```
+
+            resource_completion.yaml:
+            ```yaml
+            name: completion for resource template returns ID suggestions
+            server:
+              command: go
+              args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+            assert_completion:
+              ref:
+                type: "ref/resource"
+                name: "test://dynamic/resource/{id}"
+              argument:
+                name: "id"
+                value: "1"
+              expect:
+                not_empty: true
+            timeout: 30s
+            ```
+
+            empty_completion.yaml:
+            ```yaml
+            name: completion for unknown argument returns empty
+            server:
+              command: go
+              args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+            assert_completion:
+              ref:
+                type: "ref/prompt"
+                name: "simple_prompt"
+              argument:
+                name: "nonexistent"
+                value: "x"
+              expect:
+                not_error: true
+            timeout: 30s
+            ```
+
+            Create examples/mcp-go-everything-resources/subscribe.yaml:
+            ```yaml
+            name: resource subscribe succeeds without error
+            server:
+              command: go
+              args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+            assert_resources:
+              subscribe: "test://static/resource"
+              list: {}
+              expect:
+                not_empty: true
+                contains: ["test://static/resource"]
+            timeout: 30s
+            ```
+
+            Create examples/mcp-go-everything-resources/unsubscribe.yaml:
+            ```yaml
+            name: resource subscribe then unsubscribe succeeds
+            server:
+              command: go
+              args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+            assert_resources:
+              subscribe: "test://static/resource"
+              unsubscribe: "test://static/resource"
+              list: {}
+              expect:
+                not_empty: true
+            timeout: 30s
+            ```
+
+            ### Unit tests
+
+            In checker_test.go, add:
+            - TestCheck_CompletionJSON: test Check() on a marshaled CompleteResult JSON
+              using contains and json_path assertions
+            - TestCheck_EmptyCompletion: test Check() on empty completion result
+
+            In runner_test.go, add:
+            - TestCompletionAssertBlock_YAML: round-trip YAML marshal/unmarshal of
+              CompletionAssertBlock
+            - TestResourceSubscription_YAML: round-trip with new subscription fields
+              on ResourceAssertBlock
+
+            ### Verification gate
+
+            ```bash
+            go vet ./internal/assertion/... && go test ./internal/assertion/... -v -race -count=1
+            ```
+
+            Note: Full go build will fail until Agent B's types are merged.
+            Run go vet and tests only on assertion package which you fully own.
+
+            Postconditions:
+            - `grep -c 'CompletionAssertBlock' internal/assertion/types.go` returns 1
+            - `grep -c 'AssertCompletion' internal/assertion/types.go` returns 1
+            - `grep -c 'AssertSampling' internal/assertion/types.go` returns 1
+            - `grep -c 'AssertLogging' internal/assertion/types.go` returns 1
+            - `grep -c 'runCompletionAssertion' internal/runner/execute.go` returns at least 2
+            - `grep -c 'Subscribe' internal/assertion/types.go` returns at least 1
+            - `ls examples/mcp-go-everything-completion/*.yaml | wc -l` returns 3
+
+            ### Constraints
+            - Do NOT modify internal/runner/client.go (owned by Agent C).
+            - Do NOT create sampling_types.go or logging_types.go (Agent B creates those).
+            - Your branch will have compilation errors due to missing Agent B types.
+              This is acceptable; post-merge build validates everything.
+          files:
+            - internal/assertion/types.go
+            - internal/assertion/checker.go
+            - internal/assertion/checker_test.go
+            - internal/runner/execute.go
+            - internal/runner/runner_test.go
+            - examples/mcp-go-everything-resources/subscribe.yaml
+            - examples/mcp-go-everything-resources/unsubscribe.yaml
+            - examples/mcp-go-everything-completion/prompt_completion.yaml
+            - examples/mcp-go-everything-completion/resource_completion.yaml
+            - examples/mcp-go-everything-completion/empty_completion.yaml
+        - id: B
+          task: |
+            ## Agent B: Sampling as First-Class Test Subject + Logging
+
+            ### What to implement
+
+            Create new files for sampling and logging assertion support. Agent A
+            owns types.go and execute.go and will add fields to the Assertion struct
+            and dispatch calls that reference your types and functions.
+
+            **1. Sampling types and runner**
+
+            Create internal/assertion/sampling_types.go:
+            ```go
+            package assertion
+
+            // SamplingAssertBlock tests MCP sampling as a first-class test subject.
+            // Combines mock sampling config + tool call + assertions into one block.
+            // The runner configures client_capabilities.sampling automatically from
+            // MockText/MockModel, calls the specified tool (which triggers the
+            // server's sampling request), and asserts on the final tool result.
+            type SamplingAssertBlock struct {
+            	Tool      string         `yaml:"tool"`
+            	Args      map[string]any `yaml:"args,omitempty"`
+            	MockText  string         `yaml:"mock_text"`
+            	MockModel string         `yaml:"mock_model,omitempty"`
+            	Expect    Expect         `yaml:"expect"`
+            }
+            ```
+
+            Create internal/runner/sampling.go with runSamplingAssertion.
+            Follow the exact pattern of runPromptAssertion in execute.go (lines
+            300-431). The key differences:
+
+            1. Extract sb := a.AssertSampling
+            2. Build a modified server config that includes sampling capability:
+               ```go
+               server := a.Server
+               model := sb.MockModel
+               if model == "" {
+               	model = "mock"
+               }
+               if server.ClientCapabilities.Sampling == nil {
+               	server.ClientCapabilities.Sampling = &assertion.SamplingConfig{
+               		Text:       sb.MockText,
+               		Model:      model,
+               		StopReason: "end_turn",
+               	}
+               }
+               ```
+            3. Use createMCPClient(server, fixture, dockerImage) with the modified config
+            4. Initialize the client (same pattern as runPromptAssertion lines 328-337)
+            5. Run setup steps (same pattern as lines 340-354)
+            6. Call the tool: req.Params.Name = sb.Tool, req.Params.Arguments = substituteAll(sb.Args, fixture, captured)
+            7. Extract result text with extractText(result) and check with assertion.Check(sb.Expect, resultText, result.IsError)
+
+            The existing functions createMCPClient, substituteAll, and extractText
+            are all in the runner package so you can call them directly.
+
+            **2. Logging types, checker, and runner**
+
+            Create internal/assertion/logging_types.go:
+            ```go
+            package assertion
+
+            // LoggingAssertBlock tests MCP logging (logging/setLevel + notifications/message).
+            type LoggingAssertBlock struct {
+            	SetLevel string         `yaml:"set_level"`
+            	Tool     string         `yaml:"tool,omitempty"`
+            	Args     map[string]any `yaml:"args,omitempty"`
+            	Expect   LoggingExpect  `yaml:"expect"`
+            }
+
+            // LoggingExpect defines assertions on captured log messages.
+            type LoggingExpect struct {
+            	MinMessages   *int     `yaml:"min_messages,omitempty"`
+            	ContainsLevel []string `yaml:"contains_level,omitempty"`
+            	ContainsData  []string `yaml:"contains_data,omitempty"`
+            }
+
+            // LogMessage represents a captured notifications/message event.
+            type LogMessage struct {
+            	Level  string
+            	Logger string
+            	Data   string
+            }
+            ```
+
+            Create internal/assertion/logging_checker.go:
+            ```go
+            package assertion
+
+            import (
+            	"fmt"
+            	"strings"
+            )
+
+            // CheckLogging evaluates logging expectations against captured log messages.
+            func CheckLogging(expect LoggingExpect, messages []LogMessage) error {
+            	if expect.MinMessages != nil && len(messages) < *expect.MinMessages {
+            		return fmt.Errorf("expected at least %d log message(s), got %d",
+            			*expect.MinMessages, len(messages))
+            	}
+            	for _, level := range expect.ContainsLevel {
+            		found := false
+            		for _, msg := range messages {
+            			if msg.Level == level {
+            				found = true
+            				break
+            			}
+            		}
+            		if !found {
+            			return fmt.Errorf("expected log message at level %q, not found", level)
+            		}
+            	}
+            	for _, substr := range expect.ContainsData {
+            		found := false
+            		for _, msg := range messages {
+            			if strings.Contains(msg.Data, substr) {
+            				found = true
+            				break
+            			}
+            		}
+            		if !found {
+            			return fmt.Errorf("expected log data containing %q, not found", substr)
+            		}
+            	}
+            	return nil
+            }
+            ```
+
+            Create internal/runner/logging.go with runLoggingAssertion:
+            1. Extract lb := a.AssertLogging
+            2. Create MCP client and initialize (same pattern as other run functions)
+            3. Call mcpClient.SetLevel with the configured level:
+               ```go
+               levelReq := mcp.SetLevelRequest{}
+               levelReq.Params.Level = mcp.LoggingLevel(lb.SetLevel)
+               if err := mcpClient.SetLevel(ctx, levelReq); err != nil {
+               	return fail result
+               }
+               ```
+            4. Register notification handler for "notifications/message":
+               ```go
+               var mu sync.Mutex
+               var logMessages []assertion.LogMessage
+               mcpClient.OnNotification(func(n mcp.JSONRPCNotification) {
+               	if n.Method == "notifications/message" {
+               		// Parse params from the notification
+               		data, _ := json.Marshal(n.Params.AdditionalFields)
+               		var params struct {
+               			Level  string `json:"level"`
+               			Logger string `json:"logger"`
+               			Data   any    `json:"data"`
+               		}
+               		json.Unmarshal(data, &params)
+               		mu.Lock()
+               		logMessages = append(logMessages, assertion.LogMessage{
+               			Level:  params.Level,
+               			Logger: params.Logger,
+               			Data:   fmt.Sprintf("%v", params.Data),
+               		})
+               		mu.Unlock()
+               	}
+               })
+               ```
+            5. If lb.Tool is set, call the tool (same pattern as other run functions)
+            6. Check assertions: assertion.CheckLogging(lb.Expect, logMessages)
+
+            NOTE: Check the actual mcp.JSONRPCNotification Params structure. The
+            notification handler in execute.go (line 63) just checks n.Method.
+            For log messages, the params may be in n.Params.AdditionalFields or
+            you may need to marshal/unmarshal n.Params. Look at how the mcp-go
+            SDK structures JSONRPCNotification.
+
+            ### Example assertions
+
+            Create examples/mcp-go-everything-logging/ directory with 2 YAML files.
+
+            set_level.yaml:
+            ```yaml
+            name: logging/setLevel accepts info level
+            server:
+              command: go
+              args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+            assert_logging:
+              set_level: info
+              tool: echo
+              args:
+                message: "test logging"
+              expect:
+                min_messages: 0
+            timeout: 15s
+            ```
+
+            log_capture.yaml:
+            ```yaml
+            name: logging captures notifications/message at debug level
+            server:
+              command: go
+              args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+            assert_logging:
+              set_level: debug
+              tool: echo
+              args:
+                message: "test debug logging"
+              expect:
+                min_messages: 0
+            timeout: 15s
+            ```
+
+            ### Unit tests
+
+            Create internal/runner/sampling_test.go:
+            ```go
+            package runner
+
+            import (
+            	"testing"
+
+            	"github.com/blackwell-systems/mcp-assert/internal/assertion"
+            	"gopkg.in/yaml.v3"
+            )
+
+            func TestSamplingAssertBlock_YAML(t *testing.T) {
+            	input := `
+            tool: ask_llm
+            args:
+              question: "What is 2+2?"
+            mock_text: "The answer is 4."
+            mock_model: "test-model"
+            expect:
+              not_error: true
+              contains: ["4"]
+            `
+            	var sb assertion.SamplingAssertBlock
+            	if err := yaml.Unmarshal([]byte(input), &sb); err != nil {
+            		t.Fatalf("unmarshal failed: %v", err)
+            	}
+            	if sb.Tool != "ask_llm" {
+            		t.Errorf("expected tool ask_llm, got %s", sb.Tool)
+            	}
+            	if sb.MockText != "The answer is 4." {
+            		t.Errorf("expected mock text, got %s", sb.MockText)
+            	}
+            	if sb.MockModel != "test-model" {
+            		t.Errorf("expected test-model, got %s", sb.MockModel)
+            	}
+            }
+
+            func TestSamplingConfig_Defaults(t *testing.T) {
+            	sb := assertion.SamplingAssertBlock{
+            		Tool:     "ask_llm",
+            		MockText: "response",
+            	}
+            	if sb.MockModel != "" {
+            		t.Errorf("expected empty model default, got %s", sb.MockModel)
+            	}
+            	// The runner fills in "mock" as default at runtime
+            }
+            ```
+
+            Create internal/runner/logging_test.go:
+            ```go
+            package runner
+
+            import (
+            	"testing"
+
+            	"github.com/blackwell-systems/mcp-assert/internal/assertion"
+            )
+
+            func intPtr(i int) *int { return &i }
+
+            func TestCheckLogging_MinMessages(t *testing.T) {
+            	msgs := []assertion.LogMessage{{Level: "info", Data: "hello"}}
+            	err := assertion.CheckLogging(assertion.LoggingExpect{MinMessages: intPtr(1)}, msgs)
+            	if err != nil {
+            		t.Errorf("expected pass, got: %v", err)
+            	}
+            	err = assertion.CheckLogging(assertion.LoggingExpect{MinMessages: intPtr(5)}, msgs)
+            	if err == nil {
+            		t.Error("expected fail for min_messages=5 with 1 message")
+            	}
+            }
+
+            func TestCheckLogging_ContainsLevel(t *testing.T) {
+            	msgs := []assertion.LogMessage{
+            		{Level: "info", Data: "msg1"},
+            		{Level: "debug", Data: "msg2"},
+            	}
+            	err := assertion.CheckLogging(assertion.LoggingExpect{
+            		ContainsLevel: []string{"info"},
+            	}, msgs)
+            	if err != nil {
+            		t.Errorf("expected pass: %v", err)
+            	}
+            	err = assertion.CheckLogging(assertion.LoggingExpect{
+            		ContainsLevel: []string{"error"},
+            	}, msgs)
+            	if err == nil {
+            		t.Error("expected fail for missing error level")
+            	}
+            }
+
+            func TestCheckLogging_ContainsData(t *testing.T) {
+            	msgs := []assertion.LogMessage{{Level: "info", Data: "hello world"}}
+            	err := assertion.CheckLogging(assertion.LoggingExpect{
+            		ContainsData: []string{"hello"},
+            	}, msgs)
+            	if err != nil {
+            		t.Errorf("expected pass: %v", err)
+            	}
+            }
+
+            func TestCheckLogging_Empty(t *testing.T) {
+            	err := assertion.CheckLogging(assertion.LoggingExpect{}, nil)
+            	if err != nil {
+            		t.Errorf("expected pass for empty expectations: %v", err)
+            	}
+            }
+            ```
+
+            NOTE: The intPtr helper may conflict with the one in checker_test.go
+            if tests are in the same package. Since logging_test.go is in the
+            runner package (not assertion), this is fine.
+
+            ### Verification gate
+
+            ```bash
+            go build ./internal/assertion/... && go vet ./internal/... && go test ./internal/assertion/... -v -race -count=1
+            ```
+
+            Note: The runner package tests may not compile in isolation because
+            runSamplingAssertion references a.AssertSampling which is an Assertion
+            struct field added by Agent A. Build and test only assertion package
+            in isolation. After merge, full build passes.
+
+            REVISED: Your runner files (sampling.go, logging.go) reference the
+            Assertion struct's AssertSampling and AssertLogging fields which Agent A
+            adds. Your branch WILL NOT compile in isolation. This is acceptable.
+            Run only: go test ./internal/assertion/... (your checker tests work
+            independently since they test CheckLogging and type definitions).
+
+            Postconditions:
+            - `grep -c 'SamplingAssertBlock' internal/assertion/sampling_types.go` returns 1
+            - `grep -c 'LoggingAssertBlock' internal/assertion/logging_types.go` returns 1
+            - `grep -c 'CheckLogging' internal/assertion/logging_checker.go` returns at least 1
+            - `grep -c 'runSamplingAssertion' internal/runner/sampling.go` returns at least 1
+            - `grep -c 'runLoggingAssertion' internal/runner/logging.go` returns at least 1
+            - `ls examples/mcp-go-everything-logging/*.yaml | wc -l` returns 2
+
+            ### Constraints
+            - Do NOT modify internal/assertion/types.go (owned by Agent A).
+            - Do NOT modify internal/runner/execute.go (owned by Agent A).
+            - Do NOT modify internal/runner/runner_test.go (owned by Agent A).
+            - Do NOT modify internal/runner/client.go (owned by Agent C).
+            - ALL your types go in NEW files within internal/assertion/.
+            - ALL your runner functions go in NEW files within internal/runner/.
+          files:
+            - internal/assertion/sampling_types.go
+            - internal/assertion/logging_types.go
+            - internal/assertion/logging_checker.go
+            - internal/runner/sampling.go
+            - internal/runner/logging.go
+            - internal/runner/sampling_test.go
+            - internal/runner/logging_test.go
+            - examples/mcp-go-everything-logging/set_level.yaml
+            - examples/mcp-go-everything-logging/log_capture.yaml
+        - id: C
+          task: |
+            ## Agent C: Elicitation Breadth Examples
+
+            ### What to implement
+
+            Add 3 new elicitation examples and update the elicitation handler to
+            support decline and cancel flows.
+
+            **1. Update staticElicitationHandler in client.go**
+
+            The current implementation is at lines 170-183 of client.go:
+            ```go
+            func (h *staticElicitationHandler) Elicit(_ context.Context, _ mcp.ElicitationRequest) (*mcp.ElicitationResult, error) {
+            	var content any
+            	if c, ok := h.values["content"]; ok {
+            		content = c
+            	} else {
+            		content = h.values
+            	}
+            	return &mcp.ElicitationResult{
+            		ElicitationResponse: mcp.ElicitationResponse{
+            			Action:  mcp.ElicitationResponseActionAccept,
+            			Content: content,
+            		},
+            	}, nil
+            }
+            ```
+
+            Replace with:
+            ```go
+            func (h *staticElicitationHandler) Elicit(_ context.Context, _ mcp.ElicitationRequest) (*mcp.ElicitationResult, error) {
+            	// Check for explicit action override.
+            	action := mcp.ElicitationResponseActionAccept
+            	if a, ok := h.values["action"]; ok {
+            		if actionStr, ok := a.(string); ok {
+            			switch actionStr {
+            			case "decline":
+            				action = mcp.ElicitationResponseActionDecline
+            			case "cancel":
+            				action = mcp.ElicitationResponseActionCancel
+            			}
+            		}
+            	}
+
+            	var content any
+            	if c, ok := h.values["content"]; ok {
+            		content = c
+            	} else {
+            		// Filter out the "action" key from values used as content.
+            		filtered := make(map[string]any)
+            		for k, v := range h.values {
+            			if k != "action" {
+            				filtered[k] = v
+            			}
+            		}
+            		content = filtered
+            	}
+            	return &mcp.ElicitationResult{
+            		ElicitationResponse: mcp.ElicitationResponse{
+            			Action:  action,
+            			Content: content,
+            		},
+            	}, nil
+            }
+            ```
+
+            **2. Example assertions**
+
+            Create examples/mcp-go-elicitation/decline_flow.yaml:
+            ```yaml
+            name: create_project handles user decline gracefully
+            server:
+              command: go
+              args: ["run", "github.com/mark3labs/mcp-go/examples/elicitation@v0.49.0"]
+              client_capabilities:
+                elicitation:
+                  action: decline
+            assert:
+              tool: create_project
+              args: {}
+              expect:
+                not_error: true
+                contains: ["cancelled", "declined"]
+            timeout: 15s
+            ```
+
+            Create examples/mcp-go-elicitation/cancel_flow.yaml:
+            ```yaml
+            name: create_project handles user cancel
+            server:
+              command: go
+              args: ["run", "github.com/mark3labs/mcp-go/examples/elicitation@v0.49.0"]
+              client_capabilities:
+                elicitation:
+                  action: cancel
+            assert:
+              tool: create_project
+              args: {}
+              expect:
+                is_error: true
+            timeout: 15s
+            ```
+
+            Create examples/mcp-go-elicitation/validation_constraints.yaml:
+            ```yaml
+            name: create_project validates required projectName field
+            server:
+              command: go
+              args: ["run", "github.com/mark3labs/mcp-go/examples/elicitation@v0.49.0"]
+              client_capabilities:
+                elicitation:
+                  content:
+                    projectName: ""
+                    framework: "react"
+            assert:
+              tool: create_project
+              args: {}
+              expect:
+                is_error: true
+            timeout: 15s
+            ```
+
+            **3. Unit tests**
+
+            Create internal/runner/elicitation_test.go:
+            ```go
+            package runner
+
+            import (
+            	"context"
+            	"testing"
+
+            	"github.com/mark3labs/mcp-go/mcp"
+            )
+
+            func TestElicitation_DeclineAction(t *testing.T) {
+            	h := &staticElicitationHandler{values: map[string]any{"action": "decline"}}
+            	result, err := h.Elicit(context.Background(), mcp.ElicitationRequest{})
+            	if err != nil {
+            		t.Fatalf("unexpected error: %v", err)
+            	}
+            	if result.Action != mcp.ElicitationResponseActionDecline {
+            		t.Errorf("expected decline, got %s", result.Action)
+            	}
+            }
+
+            func TestElicitation_CancelAction(t *testing.T) {
+            	h := &staticElicitationHandler{values: map[string]any{"action": "cancel"}}
+            	result, err := h.Elicit(context.Background(), mcp.ElicitationRequest{})
+            	if err != nil {
+            		t.Fatalf("unexpected error: %v", err)
+            	}
+            	if result.Action != mcp.ElicitationResponseActionCancel {
+            		t.Errorf("expected cancel, got %s", result.Action)
+            	}
+            }
+
+            func TestElicitation_DefaultAccept(t *testing.T) {
+            	h := &staticElicitationHandler{values: map[string]any{
+            		"content": map[string]any{"name": "test"},
+            	}}
+            	result, err := h.Elicit(context.Background(), mcp.ElicitationRequest{})
+            	if err != nil {
+            		t.Fatalf("unexpected error: %v", err)
+            	}
+            	if result.Action != mcp.ElicitationResponseActionAccept {
+            		t.Errorf("expected accept, got %s", result.Action)
+            	}
+            }
+
+            func TestElicitation_ActionFilteredFromContent(t *testing.T) {
+            	h := &staticElicitationHandler{values: map[string]any{
+            		"action": "accept",
+            		"name":   "test",
+            	}}
+            	result, err := h.Elicit(context.Background(), mcp.ElicitationRequest{})
+            	if err != nil {
+            		t.Fatalf("unexpected error: %v", err)
+            	}
+            	content, ok := result.Content.(map[string]any)
+            	if !ok {
+            		t.Fatalf("expected map content, got %T", result.Content)
+            	}
+            	if _, hasAction := content["action"]; hasAction {
+            		t.Error("action key should be filtered from content")
+            	}
+            	if _, hasName := content["name"]; !hasName {
+            		t.Error("name key should be present in content")
+            	}
+            }
+            ```
+
+            ### Verification gate
+
+            ```bash
+            go build ./... && go vet ./... && go test ./internal/runner/... -v -race -count=1 -run TestElicitation
+            ```
+
+            Postconditions:
+            - `grep -c 'decline' internal/runner/client.go` returns at least 1
+            - `grep -c 'cancel' internal/runner/client.go` returns at least 1
+            - `ls examples/mcp-go-elicitation/*.yaml | wc -l` returns 4
+
+            ### Constraints
+            - Do NOT modify internal/assertion/types.go (owned by Agent A).
+            - Do NOT modify internal/runner/execute.go (owned by Agent A).
+            - Do NOT modify internal/runner/runner_test.go (owned by Agent A).
+            - Only modify the staticElicitationHandler.Elicit() method in client.go.
+            - Do not change staticRootsHandler, staticSamplingHandler, or
+              createStdioClientWithCapabilities.
+            - Do NOT modify the existing create_project.yaml file.
+          files:
+            - internal/runner/client.go
+            - internal/runner/elicitation_test.go
+            - examples/mcp-go-elicitation/decline_flow.yaml
+            - examples/mcp-go-elicitation/cancel_flow.yaml
+            - examples/mcp-go-elicitation/validation_constraints.yaml
+    - number: 2
+      type: integration
+      agents:
+        - id: D
+          task: |
+            ## Agent D: Documentation Updates and Coverage Table
+
+            ### What to implement
+
+            Update all documentation files to reflect the new protocol surface areas
+            added in Wave 1. This is a documentation-only agent.
+
+            **1. docs/writing-assertions.md**: Add sections after "Progress Notifications"
+            (ends around line 367) for:
+            - Resource Subscriptions (subscribe/unsubscribe fields, YAML examples)
+            - Completion Assertions (assert_completion block, YAML example)
+            - Sampling Assertions (assert_sampling block, YAML example)
+            - Logging Assertions (assert_logging block, YAML example)
+            - Elicitation Action Override (action field for decline/cancel)
+            - Update Assertion Types table at bottom
+
+            **2. docs/cli.md**: Add note about new YAML-level assertion block types.
+
+            **3. docs/examples.md**: Add new suite entries, update counts.
+            New suites: mcp-go-everything-completion (3), mcp-go-everything-logging (2).
+            Update mcp-go-elicitation from 1 to 4. Update total.
+
+            **4. docs/scorecard.md**: Update elicitation coverage, add completion
+            and logging entries for everything server.
+
+            **5. docs/roadmap.md**: Update protocol surface coverage tables.
+            Resources (advanced): Not covered -> Covered.
+            Logging: Not covered -> Covered.
+            Completion: Not covered -> Covered.
+            Utilities: 2/7 -> 4/7. Total: 8/13 -> 11/13.
+            Update "Next coverage targets" to mark shipped items.
+
+            **6. docs/architecture.md**: Update assertion type count, routing
+            section, CheckLogging mention.
+
+            **7. FEATURES.md**: Update assertion type count, add new types to
+            table, update example suite count/table, update unit test numbers.
+
+            ### Verification gate
+
+            Documentation only, no build gate.
+
+            Postconditions:
+            - `grep -c 'assert_completion' docs/writing-assertions.md` returns at least 1
+            - `grep -c 'assert_logging' docs/writing-assertions.md` returns at least 1
+            - `grep -c '11/13' docs/roadmap.md` returns at least 1
+
+            ### Constraints
+            - Do NOT modify any Go source files or example YAML files.
+            - Do NOT use em dashes; use colons, commas, semicolons, or parentheses.
+            - Read actual merged code from Wave 1 for accurate counts.
+          files:
+            - docs/writing-assertions.md
+            - docs/cli.md
+            - docs/examples.md
+            - docs/scorecard.md
+            - docs/roadmap.md
+            - docs/architecture.md
+            - FEATURES.md
+          dependencies:
+            - A
+            - B
+            - C
+quality_gates:
+    level: standard
+    gates:
+        - type: build
+          command: go build ./...
+          required: true
+        - type: lint
+          command: go vet ./...
+          required: true
+        - type: test
+          command: go test ./... -v -race -count=1
+          required: true
+pre_mortem:
+    overall_risk: medium
+    rows:
+        - scenario: |
+            Agent A and Agent B both need types in the Assertion struct.
+            Agent A owns types.go and must add fields referencing Agent B's types.
+            Agent A's branch won't compile in isolation.
+          likelihood: high
+          impact: high
+          mitigation: |
+            Agent B defines types in separate files. Agent A adds Assertion struct
+            fields and dispatch calls. Both merge in the same wave. Post-merge
+            build gate validates compilation. Individual branch compilation
+            failure is expected and acceptable.
+        - scenario: |
+            The mcp-go everything server may not support resource subscriptions
+            in a way that triggers notifications/resources/updated during tests.
+          likelihood: medium
+          impact: medium
+          mitigation: |
+            Resource subscription examples test that subscribe/unsubscribe calls
+            succeed without error, not that notifications are fired.
+        - scenario: |
+            The elicitation server cancel flow returns fmt.Errorf which may
+            surface as an MCP transport error vs tool error.
+          likelihood: medium
+          impact: low
+          mitigation: |
+            cancel_flow.yaml uses is_error: true to catch any error form.
+        - scenario: |
+            The mcp-go everything server logging may not emit capturable
+            notifications/message events.
+          likelihood: medium
+          impact: medium
+          mitigation: |
+            Logging examples use min_messages: 0. Value is proving the
+            setLevel + notification capture infrastructure works.
+        - scenario: |
+            Completion examples may fail if the everything server completion
+            provider returns different values than expected.
+          likelihood: low
+          impact: medium
+          mitigation: |
+            Pin to @v0.49.0. Completion values are visible in SDK source
+            (formal, casual, technical, creative for style argument).
+critic_report:
+    verdict: PASS
+    agent_reviews:
+        A:
+            agent_id: A
+            verdict: ISSUES
+            issues:
+                - check: complexity_balance
+                  severity: warning
+                  description: Agent A owns 10 files, exceeds 8-file threshold; consider splitting
+        B:
+            agent_id: B
+            verdict: ISSUES
+            issues:
+                - check: complexity_balance
+                  severity: warning
+                  description: Agent B owns 9 files, exceeds 8-file threshold; consider splitting
+        C:
+            agent_id: C
+            verdict: PASS
+        D:
+            agent_id: D
+            verdict: PASS
+    summary: 'All four agent briefs verified against the codebase. File existence checks pass: all modify-target files exist, all new-file targets do not. Symbol accuracy verified for SDK methods (Subscribe, SetLevel, Complete, OnNotification, ElicitationResponseAction variants) and internal functions (createMCPClient, substituteAll, extractText, Check). Pattern accuracy confirmed: line numbers for ResourceAssertBlock (line 31), validation check (line 171), runPromptAssertion (line 300), and staticElicitationHandler.Elicit (lines 170-183) all match actual code. Interface contracts use valid Go types with packages present in go.mod (mcp-go v0.49.0). Import chains verified for all new files. I1 disjoint ownership holds across both waves. Two advisory warnings for complexity balance: agents A and B each exceed the 8-file threshold.'
+    reviewed_at: "2026-04-24T01:12:07Z"
+    issue_count: 2
+state: REVIEWED
