@@ -17,8 +17,11 @@ type Assertion struct {
 	Server          ServerConfig          `yaml:"server"`
 	Setup           []ToolCall            `yaml:"setup"`
 	Assert          AssertBlock           `yaml:"assert"`
-	AssertResources *ResourceAssertBlock  `yaml:"assert_resources,omitempty"`
-	AssertPrompts   *PromptAssertBlock    `yaml:"assert_prompts,omitempty"`
+	AssertResources  *ResourceAssertBlock  `yaml:"assert_resources,omitempty"`
+	AssertPrompts    *PromptAssertBlock    `yaml:"assert_prompts,omitempty"`
+	AssertCompletion *CompletionAssertBlock `yaml:"assert_completion,omitempty"`
+	AssertSampling   *SamplingAssertBlock   `yaml:"assert_sampling,omitempty"`
+	AssertLogging    *LoggingAssertBlock    `yaml:"assert_logging,omitempty"`
 	Timeout         string                `yaml:"timeout"`
 	Trace           []TraceEntry          `yaml:"trace,omitempty"`      // inline tool call sequence
 	AuditLog        string                `yaml:"audit_log,omitempty"`  // path to agent-lsp JSONL audit log
@@ -26,11 +29,14 @@ type Assertion struct {
 }
 
 // ResourceAssertBlock tests MCP resources (resources/list or resources/read).
-// Set exactly one of List or Read.
+// Set exactly one of List or Read. Optionally subscribe/unsubscribe to resource updates.
 type ResourceAssertBlock struct {
-	List   *ResourceListArgs  `yaml:"list,omitempty"`   // call resources/list
-	Read   string             `yaml:"read,omitempty"`   // URI to pass to resources/read
-	Expect Expect             `yaml:"expect"`
+	List               *ResourceListArgs `yaml:"list,omitempty"`                // call resources/list
+	Read               string            `yaml:"read,omitempty"`               // URI to pass to resources/read
+	Expect             Expect            `yaml:"expect"`
+	Subscribe          string            `yaml:"subscribe,omitempty"`           // URI to subscribe to
+	Unsubscribe        string            `yaml:"unsubscribe,omitempty"`         // URI to unsubscribe from
+	ExpectNotification *bool             `yaml:"expect_notification,omitempty"` // expect a resource update notification
 }
 
 // ResourceListArgs holds parameters for resources/list (cursor for pagination).
@@ -55,6 +61,25 @@ type PromptListArgs struct {
 type PromptGetArgs struct {
 	Name      string            `yaml:"name"`                // prompt name (required)
 	Arguments map[string]string `yaml:"arguments,omitempty"` // prompt arguments
+}
+
+// CompletionAssertBlock tests MCP completion/complete.
+type CompletionAssertBlock struct {
+	Ref      CompletionRef `yaml:"ref"`
+	Argument CompletionArg `yaml:"argument"`
+	Expect   Expect        `yaml:"expect"`
+}
+
+// CompletionRef identifies the prompt or resource to complete against.
+type CompletionRef struct {
+	Type string `yaml:"type"` // "ref/prompt" or "ref/resource"
+	Name string `yaml:"name"` // prompt name or resource URI
+}
+
+// CompletionArg specifies the argument to complete.
+type CompletionArg struct {
+	Name  string `yaml:"name"`  // argument name
+	Value string `yaml:"value"` // partial value for completion
 }
 
 // TraceEntry is a single tool call in a recorded sequence.
