@@ -22,7 +22,6 @@
 
 | Item | Priority | Description |
 |------|----------|-------------|
-| **Automatic fixture isolation** | **Critical** | Per-test fixture copy in the runner so write-tests can never contaminate read-tests. Today any assertion that commits edits to disk modifies the shared fixture directory, shifting line numbers for subsequent tests. Docker already does this per container; the stdio path needs the same guarantee. Single highest-leverage DX improvement. |
 | **`--fix` mode for position errors** | High | When a position-sensitive assertion fails with "no identifier found" or "column is beyond end of line", suggest the correct line/column. Re-run scanning nearby positions, emit a suggested YAML patch. |
 | **Watch mode diff view** | Medium | When an assertion flips from PASS to FAIL in `--watch` mode, show a diff of expected vs actual response. |
 | **Live agent trajectory capture** | Low | Intercept tool calls made by a real agent session in real time (without needing a pre-recorded trace or audit log). Extends the existing `trace:` and `audit_log:` sources. |
