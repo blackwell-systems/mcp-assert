@@ -369,8 +369,8 @@ waves:
                  - Parse flags: `--server` (required, server command string), `--trajectory` (required,
                    path to YAML file with trajectory assertions), `--timeout` (optional, default 0 = no timeout).
                  - Parse the `--server` string into command and args (split on whitespace, like `applyServerOverride`).
-                 - Load trajectory assertions from the YAML file using `assertion.LoadSingle` or
-                   by reading the file and unmarshaling the `trajectory:` field.
+                 - Load trajectory assertions by calling `assertion.LoadSuite(trajectoryPath)` (which
+                   now accepts single files) and reading the `Trajectory` field from the first assertion.
                  - Start the server subprocess with stdin/stdout pipes.
                  - Run the proxy loop: read JSON-RPC messages from os.Stdin, forward to server stdin.
                    Read responses from server stdout, forward to os.Stdout.
