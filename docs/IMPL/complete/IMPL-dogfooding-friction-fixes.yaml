@@ -1,3 +1,4 @@
+completion_date: "2026-04-24"
 title: 'Dogfooding Friction Fixes: Generate Safety, Env Expansion, Auth Detection, Single-File Suite'
 feature_slug: dogfooding-friction-fixes
 verdict: SUITABLE
@@ -682,6 +683,68 @@ quality_gates:
         - type: test
           command: GOWORK=off go test ./... -race -count=1
           required: true
+completion_reports:
+    A:
+        status: complete
+        branch: saw/dogfooding-friction-fixes/wave1-agent-A
+        commit: 176f9cb
+        files_changed:
+            - internal/runner/generate.go
+            - internal/runner/generate_test.go
+            - internal/assertion/types.go
+        tests_added:
+            - TestIsDestructiveTool_DestructiveTrue
+            - TestIsDestructiveTool_ReadOnlyFalse
+            - TestIsDestructiveTool_ReadOnlyTrue
+            - TestIsDestructiveTool_NoAnnotations
+            - TestIsDestructiveTool_BothSet
+            - TestGenerateStub_SkipTrue
+            - TestGenerateStub_SkipFalse
+            - TestIsTransportError
+        verification: PASS
+        notes: F4 (skip destructive tools) and F1 (auth detection) both implemented. All 8 new tests pass. Full test suite passes with -race.
+    B:
+        status: complete
+        branch: saw/dogfooding-friction-fixes/wave1-agent-B
+        commit: e23a542
+        files_changed:
+            - internal/runner/client.go
+            - internal/runner/client_test.go
+        files_created:
+            - internal/runner/client_test.go
+        tests_added:
+            - TestExpandEnvVars_DollarBrace
+            - TestExpandEnvVars_DollarNoBrace
+            - TestExpandEnvVars_UnsetVar
+            - TestExpandEnvVars_NoVars
+            - TestExpandEnvVars_MixedContent
+            - TestExpandEnvVars_MultipleVars
+        verification: PASS
+        notes: expandEnvVars function added using os.ExpandEnv. Call site updated in createMCPClient env slice construction. All 6 tests passing.
+    C:
+        status: complete
+        branch: saw/dogfooding-friction-fixes/wave1-agent-C
+        commit: 28946dd
+        files_changed:
+            - internal/assertion/loader.go
+            - internal/assertion/loader_test.go
+        tests_added:
+            - TestLoadSuite_SingleFile
+            - TestLoadSuite_SingleFile_NonYAML
+            - TestLoadSuite_SingleFile_SetsDir
+            - TestLoadSuite_SingleFile_YmlExtension
+        verification: PASS
+        notes: 'LoadSuite now accepts single file paths. All 12 LoadSuite tests pass including 4 new ones. Postcondition grep counts: os.Stat=1, IsDir=2 (1 new + 1 existing entry.IsDir), filepath.Dir=1.'
+    D:
+        status: complete
+        branch: saw/dogfooding-friction-fixes/wave1-agent-D
+        commit: d4a7fc8
+        files_changed:
+            - docs/cli.md
+            - docs/writing-assertions.md
+            - docs/getting-started.md
+        verification: PASS
+        notes: 'All three docs updated: cli.md has generate flags table, destructive tool handling, auth detection, skip section, single-file suite. writing-assertions.md has env var expansion and skip sections. getting-started.md has single-file usage note and generate stubs section.'
 pre_mortem:
     overall_risk: low
     rows:
@@ -717,4 +780,4 @@ critic_report:
     summary: Skipped by operator (--skip-critic)
     reviewed_at: "2026-04-24T02:04:31Z"
     issue_count: 0
-state: WAVE_PENDING
+state: COMPLETE
