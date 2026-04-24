@@ -7,6 +7,9 @@
 | **File upstream bugs** | **Shipped** | 2 bugs filed: [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029) (filesystem `read_media_file` returns invalid `blob` type) and [mark3labs/mcp-go#826](https://github.com/mark3labs/mcp-go/issues/826) (everything server `longRunningOperation` crashes stdio transport). |
 | **Community server suites** | **Shipped** | 29 assertions across 4 community servers: 3 mark3labs/mcp-go SDK examples (everything, typed_tools, structured_input_and_output) + PrefectHQ/fastmcp testing_demo (11 assertions, 100% tool coverage). Go and Python framework coverage. Scan-and-contribute flywheel validated. |
 | **External adoption** | Planned | Get one MCP server author to use mcp-assert and report results. The mcp-go bug report is the first touchpoint: watch for maintainer response. |
+| **Underserved language suites** | Planned | Server suites for Rust, Java, and C# MCP servers — communities with few or no dedicated testing tools. Rust: `rmcp` SDK. Java: MCP SDK for Spring, Quarkus MCP. C#: modelcontextprotocol/csharp-sdk. These communities are underserved by existing MCP tooling and are high-signal distribution targets: post results in their package/Discord communities. |
+| **"Works with mcp-assert" badge** | Planned | A standard badge + registry that MCP server authors can claim after passing a reference suite. Server runs `mcp-assert ci --suite <reference-suite>` in their CI; on pass, they add the badge to their README. Drives discoverability: every badge is a backlink. Reference suites would cover the protocol surface (tools, resources, prompts, pagination, error handling) without being server-specific. |
+| **Reference suite registry** | Planned | A canonical set of suites that any conforming server can run against, independent of server-specific fixtures. Addresses the duplicate suite problem (agent-lsp and mcp-assert each maintaining their own copy of the same assertions). Authors link to the registry suite; the registry is the single source of truth. |
 
 ## Distribution
 
@@ -17,6 +20,7 @@
 | **Homebrew formula** | Planned | High | `brew install mcp-assert` |
 | **PyPI wrapper** | Planned | High | `pip install mcp-assert`: downloads the Go binary. Python MCP server authors won't `go install`. |
 | **npm wrapper** | Planned | Medium | `npx mcp-assert`: same pattern, TypeScript audience. |
+| **MCP registry integration** | Planned | Medium | Surface the mcp-assert test badge prominently on Glama and Smithery listings. Servers that pass a reference suite get a "verified" marker in the registry. Makes correctness a first-class signal in server discovery, not an afterthought. |
 
 The GitHub Action is the single highest-leverage distribution move. If adding mcp-assert to a CI pipeline is one `uses:` line, adoption is frictionless. Every MCP server repo can add it in 30 seconds.
 
@@ -24,6 +28,10 @@ The GitHub Action is the single highest-leverage distribution move. If adding mc
 
 | Item | Status | Priority | Description |
 |------|--------|----------|-------------|
+| **Automatic fixture isolation** | Planned | **Critical** | Per-test fixture copy in the runner so write-tests can never contaminate read-tests. Today any assertion that commits edits to disk (apply_edit, commit_session with apply: true) modifies the shared fixture directory, shifting line numbers for all subsequent position-sensitive tests. Two hours of debugging in agent-lsp dogfooding exposed this. Implementation: copy the fixture directory to a temp path for each assertion run; restore after. Docker already does this per container. The stdio path needs the same guarantee. This is the single highest-leverage DX improvement: it would eliminate an entire class of hard-to-diagnose failures for every mcp-assert user who writes edit assertions. |
+| **`--fix` mode for position errors** | Planned | High | When a position-sensitive assertion fails with "no identifier found" or "column is beyond end of line", suggest the correct line/column. Strategy: re-run the tool call scanning nearby positions (±3 lines, ±5 columns), report the nearest position that succeeds, and emit a suggested YAML patch. Turns a cryptic LSP error into an actionable one-line fix. |
+| **Watch mode diff view** | Planned | Medium | When an assertion flips from PASS to FAIL in `--watch` mode, show a diff of the expected vs actual response rather than just the error message. Makes the assertion development loop much tighter — you see exactly what changed without re-reading the YAML. |
+| **`init` one-step suite generation** | Planned | Medium | `mcp-assert init --server <cmd>` runs `generate` (stub YAMLs from tools/list) + `snapshot --update` (capture real outputs) in one command. Result: a complete working suite with 100% tool coverage, zero manual assertion writing. Currently requires two separate commands and manual wiring. |
 | **HTTP/SSE transport** | **Shipped** | **High** | Test MCP servers over HTTP (streamable HTTP) and SSE (legacy), not just stdio. Set `transport: sse` or `transport: http` with a `url` field in assertion YAML. Uses mcp-go's `NewSSEMCPClient` and `NewStreamableHttpClient`. Docker isolation remains stdio-only. |
 | **Snapshot testing** | **Shipped** | High | `mcp-assert snapshot --update` captures tool responses as `.snapshots.json`. Subsequent runs compare against saved snapshots. Like `jest --updateSnapshot`. |
 | **--watch mode** | **Shipped** | Medium | `mcp-assert watch` reruns assertions on YAML file change. Polls every 2s, clears terminal between runs. |
@@ -35,81 +43,67 @@ The GitHub Action is the single highest-leverage distribution move. If adding mc
 
 ### Trajectory assertions detail
 
-**Why this is critical, not nice-to-have:**
+Trajectory assertions validate that agents call MCP tools in the correct order. They test skill protocols rather than individual tools: "the agent called `prepare_rename` before `rename_symbol`" rather than "`rename_symbol` returned the right output."
 
-mcp-assert currently tests tools in isolation: "call X, check the response." But agent-lsp's 20 skills define exact tool call sequences. A skill is correct only if the agent calls the right tools in the right order. Testing each tool individually proves they work, but doesn't prove the agent follows the protocol.
-
-Examples of skill protocols that trajectory assertions would validate:
+The 20 example assertions in `examples/trajectory/` cover all agent-lsp skill protocols:
 
 | Skill | Required sequence | What breaks if skipped |
 |-------|------------------|----------------------|
-| `/lsp-rename` | prepare_rename -> confirm -> rename_symbol -> get_diagnostics | Renaming without prepare_rename skips validation (cursor on keyword, built-in type) |
-| `/lsp-refactor` | get_references -> simulate_edit_atomic -> apply_edit -> get_diagnostics -> run_tests | Editing without blast radius check risks breaking callers silently |
-| `/lsp-safe-edit` | simulate_edit_atomic -> (check net_delta) -> apply_edit | Applying without simulation skips error detection |
-| `/lsp-impact` | get_references -> call_hierarchy -> type_hierarchy | Incomplete blast radius analysis |
+| `/lsp-rename` | `prepare_rename` before `rename_symbol`, then `get_diagnostics` | Renaming without `prepare_rename` skips validation (cursor on keyword, built-in type) |
+| `/lsp-refactor` | blast-radius check before any edit | Editing without blast radius risks breaking callers silently |
+| `/lsp-safe-edit` | `simulate_edit_atomic` before `apply_edit` | Applying without simulation skips error detection |
+| `/lsp-simulate` | no `apply_edit` present | Simulate-only mode must never write to disk |
 
-**Proposed YAML format:**
+YAML format (inline trace):
 
 ```yaml
-name: lsp-rename follows protocol
-trajectory:
+name: lsp-rename follows skill protocol
+trace:
   - tool: prepare_rename
-    before: rename_symbol
+    args: { file_path: "main.go", line: 6, column: 6 }
   - tool: rename_symbol
-    args_contain:
-      new_name: "Entity"
-    after: prepare_rename
+    args: { file_path: "main.go", new_name: "Entity" }
   - tool: get_diagnostics
-    after: rename_symbol
-graders:
+    args: { file_path: "main.go" }
+trajectory:
   - type: order
-    assert: prepare_rename before rename_symbol before get_diagnostics
+    tools: ["prepare_rename", "rename_symbol", "get_diagnostics"]
   - type: presence
-    assert: all_of [prepare_rename, rename_symbol, get_diagnostics]
+    tools: ["prepare_rename", "rename_symbol", "get_diagnostics"]
   - type: absence
-    assert: none_of [apply_edit]  # rename_symbol handles writes internally
+    tools: ["apply_edit"]
+  - type: args_contain
+    tool: rename_symbol
+    args:
+      new_name: "Entity"
 ```
 
-**Implementation approaches:**
-
-1. **Audit trail parsing:** agent-lsp's `--audit-log` writes every tool call as JSONL. mcp-assert reads the log after a skill execution and checks the call sequence. No transport changes needed.
-
-2. **MCP transport interception:** mcp-assert acts as a proxy between the agent and the server, capturing every tool call in transit. More general but harder to implement.
-
-3. **Setup-driven replay:** Use the existing setup/capture mechanism to execute a sequence of tool calls, then assert on the final state. This works today but doesn't verify an agent's autonomous behavior.
-
-Approach #1 (audit trail) is the pragmatic first step. It works specifically with agent-lsp and requires no changes to mcp-assert's transport layer. The YAML format can be designed now and extended to approach #2 later.
+Use `audit_log: path/to/agent.jsonl` instead of `trace:` to validate real agent behavior from a recorded JSONL file. Live agent trajectory capture (real-time interception) is a planned item in the Scope Map.
 
 ### Client capabilities detail
 
-MCP is bidirectional: servers can request things from the client (sampling, roots, elicitation). mcp-assert currently only acts as a tool-calling client. Adding client capability mocks would let it test servers that depend on these features.
+MCP is bidirectional: servers can make requests back to the client (sampling, roots, elicitation). mcp-assert supports all three via `client_capabilities` in the server YAML block. This makes it the only MCP testing tool that can fully simulate a bidirectional MCP client environment.
 
-**YAML format:**
+Shipped YAML format:
 
 ```yaml
 server:
   command: sampling-server
   client_capabilities:
-    roots: ["{{fixture}}"]              # respond to roots/list with these paths
-    sampling:                           # respond to sampling/createMessage
-      response: "mock LLM response"
-    elicitation:                        # respond to elicitation/create
-      response:
-        name: "Alice"
-        confirm: true
+    roots:
+      - "{{fixture}}"                 # respond to roots/list with these paths
+    sampling:
+      text: "mock LLM response"       # respond to sampling/createMessage
+      model: mock
+      stop_reason: end_turn
+    elicitation:
+      content:                        # respond to elicitation/create
+        projectName: "myapp"
+        framework: "react"
+        includeTests: true
 ```
 
-**Implementation phases:**
-
-| Phase | Capability | Effort | What it unblocks |
-|-------|-----------|--------|------------------|
-| 1 | **Roots** | Low | Return a list of workspace paths. mcp-go client supports `WithRoots()`. Unblocks mcp-go `roots_server` example. |
-| 2 | **Elicitation** | Medium | Return preset key-value pairs for server-initiated prompts. Unblocks mcp-go `elicitation` example. |
-| 3 | **Sampling** | Medium | Return mock LLM responses with configurable text, model, and stop reason. Unblocks any server that uses MCP sampling for agent behavior. |
-
-**Why this matters:** The mcp-go SDK has 3 example servers (roots_server, sampling_server, elicitation) that are currently untestable by any MCP testing tool. Building this would make mcp-assert the only tool that can fully simulate an MCP client environment: not just "call tools and check responses" but "participate in the full MCP protocol."
-
-**The mock response pattern is key.** The server doesn't care if the LLM response is real. It just needs a response to continue its workflow. Same for roots (just return paths) and elicitation (just return values). The assertion still checks the tool result: client capabilities are setup for the server to function.
+All three are verified against real mcp-go SDK example servers: `roots_server`, `sampling_server`, and `elicitation`. See [Writing Assertions](writing-assertions.md#client-capabilities-bidirectional-mcp) for full examples.
 
 ### Setup output capture detail
 
@@ -163,23 +157,9 @@ mcp-assert snapshot --suite evals/ --server "my-server"
 
 This is the `jest --updateSnapshot` pattern applied to MCP servers. Write a minimal YAML with just the tool call and `expect: {}`, run with `--update`, and mcp-assert fills in the expected output. On subsequent runs, it asserts the output hasn't changed.
 
-### Trajectory assertions detail
+### Trajectory assertions detail (Scope Map)
 
-Current assertions test single tool calls: "call X, check the response." Trajectory assertions test sequences: "the agent called A, then B, then C: verify the ordering and arguments."
-
-```yaml
-trajectory:
-  - tool: start_lsp
-    args_contain: { root_dir: "{{fixture}}" }
-  - tool: get_references
-    before: rename_symbol
-  - tool: rename_symbol
-    args_contain: { new_name: "Entity" }
-  - tool: get_diagnostics
-    after: rename_symbol
-```
-
-This bridges mcp-assert (tool correctness) with skill evaluation (workflow correctness). Low priority because it requires capturing tool call traces, which means either wrapping the MCP transport or parsing audit logs.
+Trajectory assertions are shipped. The remaining planned item is live agent trajectory capture: intercepting tool calls made by a real agent session in real time (without needing a pre-recorded trace or audit log). This is distinct from the inline `trace:` and `audit_log:` sources that are already supported.
 
 ## MCP Protocol Surface Coverage
 
@@ -223,7 +203,17 @@ Tracking coverage of every method defined in the MCP 2025-11-25 specification.
 | Utilities | 2/7 | 7 | Progress (capture_progress + min_progress) and Pagination (json_path on list responses) covered; cancellation, logging, completion, ping, tasks remain |
 | **Total** | **8/13** | **13** | | |
 
-All three MCP server feature categories are now fully covered. The remaining gaps are in utilities: cancellation, logging, completion, ping, and task execution.
+All three MCP server feature categories have basic coverage. The next push should deepen coverage within each category (subscriptions, sampling as a test subject, completion) and expand elicitation beyond the single mcp-go example.
+
+### Next coverage targets
+
+| Gap | Priority | Description |
+|-----|----------|-------------|
+| **Resource subscriptions** | Medium | `resources/subscribe`, `resources/unsubscribe`, `notifications/resources/updated`, `notifications/resources/list_changed`. These let clients watch for resource changes. Requires client-side notification handling and a server that actually fires resource change events. The mcp-go `everything` server may support this. |
+| **Sampling as first-class test subject** | Medium | Today sampling is tested only as a client capability (mock responses for servers that call `sampling/createMessage`). The gap: testing servers that ARE sampling providers, where mcp-assert sends `sampling/createMessage` requests and validates the response quality, latency, or content. This would let mcp-assert test LLM gateway servers. |
+| **Elicitation breadth** | Medium | Only one elicitation example exists (mcp-go `create_project`). Need 2-3 more examples covering different form patterns: multi-step elicitation, validation constraints, cancel/reject flows. |
+| **Logging** | Low | `logging/setLevel` + `notifications/message`. Capture server log output during assertion execution. Useful for debugging flaky tests and verifying servers emit expected log events. |
+| **Completion** | Low | `completion/complete` for argument autocompletion. Low priority because few servers implement it, but it's part of the spec. |
 
 ---
 
@@ -251,7 +241,7 @@ What can be asserted?
 
 | Pattern | Status | Notes |
 |---------|--------|-------|
-| **Single tool responses** | Supported | 14 assertion types: contains, json_path, is_error, net_delta, etc. |
+| **Single tool responses** | Supported | 15 assertion types: contains, json_path, is_error, net_delta, min_progress, etc. |
 | **Multi-step workflows** | Supported | `setup:` steps with `capture:` for chaining outputs |
 | **Inline trace validation** | Supported | Trajectory assertions with inline `trace:` |
 | **Audit log validation** | Supported | Trajectory assertions against JSONL audit logs |
