@@ -1,0 +1,11 @@
+name: resource subscribe succeeds without error
+server:
+  command: go
+  args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+assert_resources:
+  subscribe: "test://static/resource"
+  list: {}
+  expect:
+    not_empty: true
+    contains: ["test://static/resource"]
+timeout: 30s

@@ -1,0 +1,14 @@
+name: completion for resource template returns ID suggestions
+server:
+  command: go
+  args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+assert_completion:
+  ref:
+    type: "ref/resource"
+    name: "test://dynamic/resource/{id}"
+  argument:
+    name: "id"
+    value: "1"
+  expect:
+    not_empty: true
+timeout: 30s

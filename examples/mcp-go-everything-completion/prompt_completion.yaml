@@ -1,0 +1,15 @@
+name: completion for prompt argument returns suggestions
+server:
+  command: go
+  args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+assert_completion:
+  ref:
+    type: "ref/prompt"
+    name: "complex_prompt"
+  argument:
+    name: "style"
+    value: "f"
+  expect:
+    not_empty: true
+    contains: ["formal"]
+timeout: 30s

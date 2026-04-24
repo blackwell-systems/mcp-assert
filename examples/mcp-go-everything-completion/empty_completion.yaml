@@ -1,0 +1,14 @@
+name: completion for unknown argument returns empty
+server:
+  command: go
+  args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+assert_completion:
+  ref:
+    type: "ref/prompt"
+    name: "simple_prompt"
+  argument:
+    name: "nonexistent"
+    value: "x"
+  expect:
+    not_error: true
+timeout: 30s
