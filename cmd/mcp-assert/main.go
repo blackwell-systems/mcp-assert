@@ -77,9 +77,9 @@ func printUsage() {
 
 Usage:
   mcp-assert init   [dir] [--server <cmd>] [--fixture <dir>]
-  mcp-assert run    --suite <dir> [--server <cmd>] [--fixture <dir>] [--trials N]
+  mcp-assert run    --suite <dir> [--server <cmd>] [--fixture <dir>] [--trials N] [--fix]
   mcp-assert matrix --suite <dir> --languages <lang:server,...>
-  mcp-assert ci     --suite <dir> [--server <cmd>] [--threshold N] [--fail-on-regression]
+  mcp-assert ci     --suite <dir> [--server <cmd>] [--threshold N] [--fail-on-regression] [--fix]
   mcp-assert coverage  --suite <dir> --server <cmd> [--coverage-json <path>]
   mcp-assert generate  --server <cmd> --output <dir> [--fixture <dir>]
   mcp-assert snapshot  --suite <dir> [--update] [--server <cmd>] [--fixture <dir>]
@@ -115,6 +115,7 @@ Flags:
   --badge <path>         Write shields.io endpoint JSON to path
   --coverage-json <path> Write coverage data as JSON (coverage command)
   --interval <duration>  Polling interval for watch mode (default: 2s)
+  --fix                  Scan nearby positions when position-sensitive assertions fail
 
 `)
 }

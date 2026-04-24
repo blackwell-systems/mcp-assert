@@ -1,3 +1,8 @@
+// Package report handles all output formatting for mcp-assert.
+//
+// Supports terminal output (color-aware), JUnit XML, GitHub Step Summary markdown,
+// shields.io badge JSON, reliability metrics (pass@k/pass^k), baseline comparison,
+// regression detection, coverage JSON, snapshot files, and unified diffs for watch mode.
 package report
 
 import (

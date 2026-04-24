@@ -1,6 +1,6 @@
 name: get_file_contents reads README from mcp-assert
 server:
-  command: /Users/dayna.blackwell/code/github-mcp-server/github-mcp-server
+  command: github-mcp-server
   args: [stdio]
 assert:
   tool: get_file_contents

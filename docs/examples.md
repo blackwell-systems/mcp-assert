@@ -1,6 +1,6 @@
 # Examples
 
-mcp-assert ships with 17 server assertion suites for 12 MCP servers in three languages (Go, TypeScript, Python), plus a trajectory suite that runs without a server. All built-in server suites use stdio transport except the HTTP conformance suite. 174 total assertions.
+mcp-assert ships with 18 suites (17 server suites + 1 trajectory suite) for 12 MCP servers in three languages (Go, TypeScript, Python), plus a trajectory suite that runs without a server. All built-in server suites use stdio transport except the HTTP conformance suite. 174 total assertions.
 
 ## Summary
 
@@ -202,11 +202,24 @@ Tests `logging/setLevel` on the mcp-go everything server. 2 assertions: setting 
 mcp-assert run --suite examples/mcp-go-everything-logging
 ```
 
+
 ## GitHub MCP Server. Go
 
 **Directory:** `examples/github-mcp/`
 
 Tests [github/github-mcp-server](https://github.com/github/github-mcp-server) (28K+ stars), the most popular MCP server. 6 assertions targeting read-only tools: `get_me`, `search_repositories`, `get_file_contents`, `list_issues`, `search_code`, `list_branches`. Requires a `GITHUB_PERSONAL_ACCESS_TOKEN` environment variable.
+
+The assertions reference `github-mcp-server` in PATH. Build and install the server before running:
+
+```bash
+git clone --depth 1 https://github.com/github/github-mcp-server.git /tmp/github-mcp-server
+cd /tmp/github-mcp-server && go build -o github-mcp-server ./cmd/github-mcp-server
+
+# Add to PATH or use --server to override:
+mcp-assert run --suite examples/github-mcp --server "/tmp/github-mcp-server/github-mcp-server stdio"
+```
+
+Or if `github-mcp-server` is already in your PATH:
 
 ```bash
 # Create a token at https://github.com/settings/tokens with repo + read:user scopes

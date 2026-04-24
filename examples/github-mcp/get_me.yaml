@@ -1,6 +1,6 @@
 name: get_me returns authenticated user info
 server:
-  command: /Users/dayna.blackwell/code/github-mcp-server/github-mcp-server
+  command: github-mcp-server
   args: [stdio]
 assert:
   tool: get_me

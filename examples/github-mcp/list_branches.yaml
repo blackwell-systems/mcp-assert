@@ -1,6 +1,6 @@
 name: list_branches returns branches for mcp-assert
 server:
-  command: /Users/dayna.blackwell/code/github-mcp-server/github-mcp-server
+  command: github-mcp-server
   args: [stdio]
 assert:
   tool: list_branches

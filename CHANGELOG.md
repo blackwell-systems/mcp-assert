@@ -3,35 +3,8 @@
 All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, Semantic Versioning.
 
-## [Unreleased]
 
-### Added
-
-- **`assert_completion` block type**: test `completion/complete` for prompt argument and resource URI autocompletion. Specify `ref` (type + name) and `argument` (name + partial value), assert on the completion results. 3 example assertions in `examples/mcp-go-everything-completion/`.
-- **`assert_sampling` block type**: first-class sampling test block that combines mock LLM config and tool call in one YAML block. Set `mock_text` and optional `mock_model`; the runner configures `client_capabilities.sampling` automatically, calls the specified tool, and asserts on the result.
-- **`assert_logging` block type**: test `logging/setLevel` and `notifications/message` capture. Set `set_level` to configure log verbosity, optionally call a tool to trigger log messages, then assert on captured messages with `min_messages`, `contains_level`, and `contains_data`. 2 example assertions in `examples/mcp-go-everything-logging/`.
-- **`init --server` one-step suite generation**: `mcp-assert init evals --server "cmd" --fixture ./fixtures` queries `tools/list`, generates one stub per tool, and captures response snapshots in a single command. Recommended path for new users.
-- **`--fix` flag**: pass `--fix` to `run` or `ci` to scan nearby positions when position-sensitive assertions fail. Emits a suggested YAML patch showing the corrected line/column values.
-- **Watch mode diff view**: when an assertion's status flips between iterations, watch mode displays a unified diff of expected vs actual to help diagnose changes.
-- **`intercept` command**: proxy stdio between an agent and MCP server, capturing every `tools/call` invocation in real time. Validates the captured sequence against trajectory assertions on disconnect.
-- **Fixture isolation**: each stdio assertion automatically receives its own copy of the fixture directory via a temporary directory. The original fixture is never modified, preventing side effects from one assertion affecting subsequent ones.
-- **`${VAR}` environment variable expansion**: `env:` blocks in YAML now support `${VAR}` and `$VAR` syntax to reference host environment variables. If the variable is not set, the original string is preserved unchanged.
-- **`--suite` accepts single files**: `--suite path/to/file.yaml` now works in addition to directories, for iterating on one assertion at a time.
-- **`generate` skips destructive tools by default**: tools annotated as destructive or not read-only are generated with `skip: true`. Use `--include-writes` to include all tools.
-- **`skip: true` field**: any assertion YAML can set `skip: true` to exclude it from execution. Skipped assertions appear as SKIP in output.
-- **Elicitation decline/cancel flows**: `client_capabilities.elicitation` now supports decline and cancel flows in addition to accept. 4 assertions in `examples/mcp-go-elicitation/` cover all three.
-- **Resource subscription support**: `assert_resources:` block supports `subscribe` and `unsubscribe` fields. 2 assertions in `examples/mcp-go-everything-resources/` cover subscribe and unsubscribe.
-- **GitHub MCP Server suite**: 6 read-only assertions for `github/github-mcp-server` (28K+ stars) in `examples/github-mcp/`: `get_me`, `search_repositories`, `get_file_contents`, `list_issues`, `search_code`, `list_branches`.
-- **fastmcp testing_demo suite expanded**: added resource and prompt assertions (3 resources + 2 prompts), now covers all three MCP server feature categories. Total: 16 assertions.
-- **Prompts assertions**: `assert_prompts:` block tests `prompts/list` and `prompts/get`. 4 example assertions in `examples/mcp-go-everything-prompts/`.
-- **Progress capture** (`capture_progress` + `min_progress`): collect `notifications/progress` messages during tool execution.
-- **Resources assertions**: `assert_resources:` block tests `resources/list` and `resources/read`. 4 example assertions in `examples/mcp-go-everything-resources/`.
-- **Client capabilities (roots, sampling, elicitation)**: `client_capabilities` in server YAML config supports `roots`, `sampling`, and `elicitation` for bidirectional MCP testing.
-- **mcp-go sampling_server suite**: 3 assertions for `mark3labs/mcp-go` sampling_server. 100% tool coverage.
-- **mcp-go elicitation suite**: 4 assertions for `mark3labs/mcp-go` elicitation server.
-- **218 unit tests** across 3 packages (assertion: 53, report: 42, runner: 123). Race-detector clean.
-- **174 total assertions** across 18 suites in 3 languages.
-
+(Empty - all recent work shipped in 0.1.3)
 ## [0.1.3] - 2026-04-23
 
 ### Added

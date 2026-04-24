@@ -1,6 +1,6 @@
 name: search_repositories finds mcp-assert by name
 server:
-  command: /Users/dayna.blackwell/code/github-mcp-server/github-mcp-server
+  command: github-mcp-server
   args: [stdio]
 assert:
   tool: search_repositories

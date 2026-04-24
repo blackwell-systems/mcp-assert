@@ -30,3 +30,7 @@ nav:
   - Distribution: distribution.md
   - Dogfooding: dogfooding.md
   - "Dogfooding: GitHub MCP": dogfooding-github-mcp.md
+  - Audit Results:
+    - "First Round": cold-start-audit.md
+    - "Second Round": cold-start-audit-round2.md
+    - "Summary": audit-results.md
