@@ -1,3 +1,4 @@
+completion_date: "2026-04-24"
 title: MCP Protocol Surface Complete (13/13 coverage)
 feature_slug: protocol-surface-complete
 verdict: SUITABLE
@@ -1248,6 +1249,20 @@ completion_reports:
             - TestElicitation_ActionFilteredFromContent
         verification: PASS
         notes: Updated staticElicitationHandler to support decline/cancel actions. Added 3 example YAMLs and 4 unit tests. All postconditions verified.
+    D:
+        status: complete
+        branch: saw/protocol-surface-complete/wave2-agent-D
+        commit: 9289c2a
+        files_changed:
+            - docs/writing-assertions.md
+            - docs/cli.md
+            - docs/examples.md
+            - docs/scorecard.md
+            - docs/roadmap.md
+            - docs/architecture.md
+            - FEATURES.md
+        verification: PASS
+        notes: All 7 documentation files updated. Protocol coverage 8/13 to 11/13. Suite count 15 to 17, assertion count 144 to 152. All postconditions verified.
 pre_mortem:
     overall_risk: medium
     rows:
@@ -1319,4 +1334,4 @@ critic_report:
     summary: 'All four agent briefs verified against the codebase. File existence checks pass: all modify-target files exist, all new-file targets do not. Symbol accuracy verified for SDK methods (Subscribe, SetLevel, Complete, OnNotification, ElicitationResponseAction variants) and internal functions (createMCPClient, substituteAll, extractText, Check). Pattern accuracy confirmed: line numbers for ResourceAssertBlock (line 31), validation check (line 171), runPromptAssertion (line 300), and staticElicitationHandler.Elicit (lines 170-183) all match actual code. Interface contracts use valid Go types with packages present in go.mod (mcp-go v0.49.0). Import chains verified for all new files. I1 disjoint ownership holds across both waves. Two advisory warnings for complexity balance: agents A and B each exceed the 8-file threshold.'
     reviewed_at: "2026-04-24T01:12:07Z"
     issue_count: 2
-state: WAVE_PENDING
+state: COMPLETE
