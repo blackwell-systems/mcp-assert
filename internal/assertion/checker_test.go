@@ -266,6 +266,58 @@ func TestCheck_Combined(t *testing.T) {
 	}
 }
 
+func TestCheck_CompletionJSON(t *testing.T) {
+	// Simulate a marshaled CompleteResult with completion values.
+	completionJSON := `{"completion":{"values":["formal","friendly","fun"],"total":3}}`
+
+	// contains assertion.
+	err := Check(Expect{Contains: []string{"formal"}}, completionJSON, false)
+	if err != nil {
+		t.Fatalf("expected contains 'formal' to pass, got: %v", err)
+	}
+
+	// json_path assertion.
+	err = Check(Expect{JSONPath: map[string]any{"$.completion.total": float64(3)}}, completionJSON, false)
+	if err != nil {
+		t.Fatalf("expected json_path total=3 to pass, got: %v", err)
+	}
+
+	// json_path on values array.
+	err = Check(Expect{JSONPath: map[string]any{"$.completion.values[0]": "formal"}}, completionJSON, false)
+	if err != nil {
+		t.Fatalf("expected json_path values[0]=formal to pass, got: %v", err)
+	}
+
+	// not_empty assertion.
+	err = Check(Expect{NotEmpty: boolPtr(true)}, completionJSON, false)
+	if err != nil {
+		t.Fatalf("expected not_empty to pass, got: %v", err)
+	}
+}
+
+func TestCheck_EmptyCompletion(t *testing.T) {
+	// Empty completion result (no values).
+	emptyJSON := `{"completion":{"values":[],"total":0}}`
+
+	// not_error should pass (it's a valid result, just empty).
+	err := Check(Expect{NotError: boolPtr(true)}, emptyJSON, false)
+	if err != nil {
+		t.Fatalf("expected not_error to pass, got: %v", err)
+	}
+
+	// contains should fail for a value that isn't present.
+	err = Check(Expect{Contains: []string{"formal"}}, emptyJSON, false)
+	if err == nil {
+		t.Fatal("expected contains 'formal' to fail on empty completion")
+	}
+
+	// json_path total should be 0.
+	err = Check(Expect{JSONPath: map[string]any{"$.completion.total": float64(0)}}, emptyJSON, false)
+	if err != nil {
+		t.Fatalf("expected json_path total=0 to pass, got: %v", err)
+	}
+}
+
 func TestCheckProgress_PassesWhenCountMeetsMinimum(t *testing.T) {
 	err := CheckProgress(Expect{MinProgress: intPtr(3)}, 3)
 	if err != nil {

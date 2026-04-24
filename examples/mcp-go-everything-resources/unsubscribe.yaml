@@ -1,0 +1,11 @@
+name: resource subscribe then unsubscribe succeeds
+server:
+  command: go
+  args: ["run", "github.com/mark3labs/mcp-go/examples/everything@v0.49.0"]
+assert_resources:
+  subscribe: "test://static/resource"
+  unsubscribe: "test://static/resource"
+  list: {}
+  expect:
+    not_empty: true
+timeout: 30s
