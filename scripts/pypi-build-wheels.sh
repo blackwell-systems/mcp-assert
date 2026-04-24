@@ -19,6 +19,13 @@ DIST_DIR="${PYPI_DIR}/dist"
 
 echo "Building mcp-assert wheels for ${VERSION} (tag: ${TAG})"
 
+# Update version in pyproject.toml to match the release tag
+sed -i.bak "s/^version = .*/version = \"${VERSION}\"/" "${PYPI_DIR}/pyproject.toml"
+rm -f "${PYPI_DIR}/pyproject.toml.bak"
+# Update __init__.py version too
+sed -i.bak "s/^__version__ = .*/__version__ = \"${VERSION}\"/" "${PYPI_DIR}/mcp_assert/__init__.py"
+rm -f "${PYPI_DIR}/mcp_assert/__init__.py.bak"
+
 # Mapping: goreleaser_key -> "platform_tag:binary_name:archive_ext"
 # Platform tags follow PEP 427 / wheel naming conventions
 declare -A PLATFORMS=(
@@ -63,15 +70,16 @@ for GOKEY in "${!PLATFORMS[@]}"; do
   cd "$PYPI_DIR"
   python3 -m pip wheel . --no-deps --wheel-dir "$TMP_DIR/wheels"
 
-  # Rename the wheel with the correct platform tag
+  # Retag the wheel with the correct platform tag
   # setuptools produces: mcp_assert-VERSION-py3-none-any.whl
-  # We need:             mcp_assert-VERSION-py3-none-PLAT_TAG.whl
+  # wheel tags rewrites both filename and internal RECORD/METADATA
   SRC_WHEEL=$(ls "$TMP_DIR/wheels"/mcp_assert-*.whl | head -1)
-  DEST_WHEEL="${DIST_DIR}/mcp_assert-${VERSION}-py3-none-${PLAT_TAG}.whl"
-  cp "$SRC_WHEEL" "$DEST_WHEEL"
+  python3 -m wheel tags --platform-tag "$PLAT_TAG" --remove "$SRC_WHEEL"
+  TAGGED_WHEEL=$(ls "$TMP_DIR/wheels"/mcp_assert-*.whl | head -1)
+  cp "$TAGGED_WHEEL" "$DIST_DIR/"
   rm -rf "$TMP_DIR/wheels"
 
-  echo "  [${PLAT_TAG}] -> $(basename "$DEST_WHEEL")"
+  echo "  [${PLAT_TAG}] -> $(basename "$TAGGED_WHEEL")"
 done
 
 # Clean up bin dir
