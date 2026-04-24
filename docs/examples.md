@@ -70,13 +70,14 @@ Tests the `testing_demo` example server from [PrefectHQ/fastmcp](https://github.
 - **Resources (3):** `resources/list` (verifies `demo://info` is exposed), `resources/read demo://info` (static server info), `resources/read demo://greeting/Alice` (parameterized template resource).
 - **Prompts (2):** `prompts/list` (verifies `hello` and `explain` are exposed), `prompts/get hello` with `name: "Alice"` argument.
 
+The assertions reference the server at `/tmp/fastmcp/examples/testing_demo/server.py`. Clone the repo before running:
+
 ```bash
 git clone --depth 1 https://github.com/PrefectHQ/fastmcp.git /tmp/fastmcp
 mcp-assert run --suite examples/fastmcp-testing-demo
 ```
 
-!!! note
-    The assertions reference the server at `/tmp/fastmcp/examples/testing_demo/server.py`. Clone the fastmcp repo to `/tmp/fastmcp` before running, or use `--server` to override the path.
+You can also use `--server` to override the path if you cloned to a different location.
 
 ## agent-lsp. Go
 
@@ -85,7 +86,8 @@ mcp-assert run --suite examples/fastmcp-testing-demo
 Tests [agent-lsp](https://github.com/blackwell-systems/agent-lsp) with gopls. 63 assertions covering all 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, and build. 100% tool coverage.
 
 ```bash
-mcp-assert run --suite examples/agent-lsp-go --fixture /path/to/go/fixtures
+git clone --depth 1 https://github.com/blackwell-systems/agent-lsp.git /tmp/agent-lsp
+mcp-assert run --suite examples/agent-lsp-go --fixture /tmp/agent-lsp/test/fixtures/go
 ```
 
 ## mcp-go everything. Go (stdio)
@@ -207,7 +209,7 @@ mcp-assert run --suite examples/mcp-go-everything-logging
 Tests [github/github-mcp-server](https://github.com/github/github-mcp-server) (28K+ stars), the most popular MCP server. 6 assertions targeting read-only tools: `get_me`, `search_repositories`, `get_file_contents`, `list_issues`, `search_code`, `list_branches`. Requires a `GITHUB_PERSONAL_ACCESS_TOKEN` environment variable.
 
 ```bash
-# Build the server from the github-mcp-server repo, then:
+# Create a token at https://github.com/settings/tokens with repo + read:user scopes
 GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_TOKEN mcp-assert run --suite examples/github-mcp
 ```
 

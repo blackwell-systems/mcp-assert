@@ -56,7 +56,7 @@ The value isn't in the assertion logic. It's in not writing MCP client boilerpla
 go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
 
 # Scaffold your first assertion
-mcp-assert init evals
+mcp-assert init evals                   # Or: init evals --server "my-server" for auto-generation
 
 # Run it
 mcp-assert run --suite evals/ --fixture evals/fixtures

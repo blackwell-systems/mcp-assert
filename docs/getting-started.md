@@ -1,5 +1,10 @@
 # Getting Started
 
+> **Which path should I use?**
+> - Have a running MCP server? Use `init evals --server "my-server"` (generates stubs + captures baselines)
+> - Want to start from a template? Use `init evals` (creates one commented YAML to customize)
+> - Know your server config already? Jump to [Write an assertion by hand](#write-an-assertion-by-hand) below
+
 ## Install
 
 ```bash
@@ -13,6 +18,8 @@ If you have a running MCP server, generate a complete test suite in one command:
 ```bash
 mcp-assert init evals --server "my-mcp-server" --fixture ./fixtures
 ```
+
+> If `--fixture` is omitted, `{{fixture}}` appears literally in generated YAMLs. Pass `--fixture ./fixtures` when your server tools use file paths.
 
 This connects to your server, queries `tools/list`, generates one assertion stub per tool, and captures real response snapshots as baselines. You get 100% tool coverage with zero manual assertion writing.
 
@@ -67,6 +74,11 @@ PASS  read_file returns file contents  1203ms
 
 1 passed
 ```
+
+> **Tip:** If a position-sensitive assertion fails with "no identifier found" or "column is beyond end of line", run with `--fix` to get a suggested correction:
+> ```bash
+> mcp-assert run --suite evals/ --fix
+> ```
 
 You can also run a single YAML file directly instead of an entire directory:
 
