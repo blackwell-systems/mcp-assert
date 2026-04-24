@@ -1095,7 +1095,7 @@ waves:
             - examples/mcp-go-elicitation/decline_flow.yaml
             - examples/mcp-go-elicitation/cancel_flow.yaml
             - examples/mcp-go-elicitation/validation_constraints.yaml
-      base_commit: a34b8176268a71714de0dcb47e6eb00857368bbc
+      base_commit: 6426523486b50559abf3a61003a5df7de6d47de9
     - number: 2
       type: integration
       agents:
@@ -1248,4 +1248,3 @@ critic_report:
     reviewed_at: "2026-04-24T01:12:07Z"
     issue_count: 2
 state: WAVE_PENDING
-original_branch: main
