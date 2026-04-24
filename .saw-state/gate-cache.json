@@ -1,0 +1,40 @@
+{
+  "entries": {
+    "8c10d7a351c2ffcb1ea4df8415337be5": {
+      "build": {
+        "gate_type": "build",
+        "command": "go build ./...",
+        "passed": false,
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "pattern ./...: directory prefix . does not contain modules listed in go.work or their selected dependencies\n",
+        "from_cache": true,
+        "cached_at": "2026-04-23T18:12:33.937717-07:00"
+      }
+    },
+    "ca0321ac8093829a288a3f551798d00b": {
+      "lint": {
+        "gate_type": "lint",
+        "command": "go vet ./...",
+        "passed": false,
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "pattern ./...: directory prefix . does not contain modules listed in go.work or their selected dependencies\n",
+        "from_cache": true,
+        "cached_at": "2026-04-23T18:12:34.073385-07:00"
+      }
+    },
+    "ec2bb9b31843f38c88f62923cb96cc27": {
+      "test": {
+        "gate_type": "test",
+        "command": "go test ./... -v -race -count=1",
+        "passed": false,
+        "exit_code": 1,
+        "stdout": "FAIL\t./... [setup failed]\nFAIL\n",
+        "stderr": "# ./...\npattern ./...: directory prefix . does not contain modules listed in go.work or their selected dependencies\n",
+        "from_cache": true,
+        "cached_at": "2026-04-23T18:12:34.205346-07:00"
+      }
+    }
+  }
+}
