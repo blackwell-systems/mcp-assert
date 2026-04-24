@@ -1,9 +1,11 @@
 package runner
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 const assertionTemplate = `# Name shown in test output. Make it descriptive — it's the only context
@@ -68,13 +70,99 @@ timeout: 15s
 const fixtureContent = `Hello, world!
 `
 
-// Init scaffolds an assertion YAML template and fixture directory.
+// Init scaffolds an assertion YAML template and fixture directory, or generates
+// a complete suite when --server is provided.
 func Init(args []string) error {
-	dir := "evals"
-	if len(args) > 0 && args[0] != "" {
-		dir = args[0]
+	fs := flag.NewFlagSet("init", flag.ExitOnError)
+	serverSpec := fs.String("server", "", "Server command to auto-generate a complete suite")
+	fixture := fs.String("fixture", "", "Fixture directory for {{fixture}} substitution")
+	timeout := fs.Duration("timeout", 15*time.Second, "Timeout for tools/list call")
+	if err := fs.Parse(args); err != nil {
+		return err
 	}
 
+	dir := "evals"
+	if fs.NArg() > 0 && fs.Arg(0) != "" {
+		dir = fs.Arg(0)
+	}
+
+	// When --server is provided, run the full generate + snapshot flow.
+	if *serverSpec != "" {
+		return initWithServer(dir, *serverSpec, *fixture, *timeout)
+	}
+
+	// Otherwise, fall back to the original template scaffolding.
+	return initTemplate(dir)
+}
+
+// initWithServer runs generate + snapshot --update to produce a complete working suite.
+func initWithServer(dir, serverSpec, fixture string, timeout time.Duration) error {
+	// 1. Create the output directory.
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return fmt.Errorf("creating directory %s: %w", dir, err)
+	}
+
+	// 2. Generate stub YAMLs from tools/list.
+	fmt.Println("Generating assertion stubs from tools/list...")
+	genResult, err := GenerateCore(GenerateOpts{
+		ServerSpec:    serverSpec,
+		Output:        dir,
+		Fixture:       fixture,
+		Timeout:       timeout,
+		Overwrite:     false,
+		IncludeWrites: false,
+	})
+	if err != nil {
+		return fmt.Errorf("generate: %w", err)
+	}
+
+	fmt.Printf("\n%d tools discovered, %d stubs created, %d skipped (already exist)\n",
+		genResult.ToolCount, genResult.Created, genResult.Skipped)
+
+	if genResult.Created == 0 && genResult.Skipped == 0 {
+		return fmt.Errorf("server reported 0 tools; nothing to generate")
+	}
+
+	// 3. Run snapshot --update to capture baselines.
+	fmt.Println("\nCapturing snapshots...")
+	snapResult, err := SnapshotCore(SnapshotOpts{
+		SuiteDir: dir,
+		Fixture:  fixture,
+		Server:   serverSpec,
+		Update:   true,
+		Timeout:  30 * time.Second,
+	})
+	if err != nil {
+		return fmt.Errorf("snapshot: %w", err)
+	}
+
+	// 4. Print summary.
+	fmt.Println()
+	fmt.Println("Suite created successfully:")
+	fmt.Printf("  Tools found:       %d\n", genResult.ToolCount)
+	fmt.Printf("  Stubs created:     %d\n", genResult.Created)
+	fmt.Printf("  Snapshots captured: %d\n", snapResult.New+snapResult.Matched+snapResult.Changed)
+
+	// 5. Print next steps.
+	fmt.Println()
+	fmt.Println("Next steps:")
+	fmt.Printf("  Run the suite:   mcp-assert run --suite %s --server %q\n", dir, serverSpec)
+	if fixture != "" {
+		fmt.Printf("                   mcp-assert run --suite %s --server %q --fixture %s\n", dir, serverSpec, fixture)
+	}
+	fmt.Println()
+	fmt.Println("  Add to CI (GitHub Actions):")
+	fmt.Println()
+	fmt.Println("    - uses: blackwell-systems/mcp-assert@v1")
+	fmt.Println("      with:")
+	fmt.Printf("        suite: %s\n", dir)
+	fmt.Printf("        server: %q\n", serverSpec)
+
+	return nil
+}
+
+// initTemplate scaffolds a template assertion file and fixture directory.
+func initTemplate(dir string) error {
 	// Create assertion directory.
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("creating directory %s: %w", dir, err)

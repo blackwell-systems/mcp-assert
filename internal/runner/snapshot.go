@@ -11,32 +11,34 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
-// Snapshot runs assertions and compares/updates snapshots.
-func Snapshot(args []string) error {
-	fs := flag.NewFlagSet("snapshot", flag.ExitOnError)
-	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")
-	fixture := fs.String("fixture", "", "Fixture directory (substituted for {{fixture}})")
-	server := fs.String("server", "", "Override server command")
-	docker := fs.String("docker", "", "Run MCP server inside this Docker image")
-	update := fs.Bool("update", false, "Update snapshots with current outputs")
-	timeout := fs.Duration("timeout", 30*time.Second, "Per-assertion timeout")
-	if err := fs.Parse(args); err != nil {
-		return err
-	}
+// SnapshotOpts configures the snapshot operation.
+type SnapshotOpts struct {
+	SuiteDir string
+	Fixture  string
+	Server   string
+	Docker   string
+	Update   bool
+	Timeout  time.Duration
+}
 
-	if *suiteDir == "" {
-		return fmt.Errorf("--suite is required")
-	}
+// SnapshotResult holds the outcome of a snapshot operation.
+type SnapshotResult struct {
+	Matched int
+	Changed int
+	New     int
+}
 
-	suite, err := assertion.LoadSuite(*suiteDir)
+// SnapshotCore runs the snapshot logic and returns a result summary.
+func SnapshotCore(opts SnapshotOpts) (*SnapshotResult, error) {
+	suite, err := assertion.LoadSuite(opts.SuiteDir)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Load existing snapshots.
-	sf, err := report.LoadSnapshots(*suiteDir)
+	sf, err := report.LoadSnapshots(opts.SuiteDir)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Index existing snapshots by name.
@@ -51,14 +53,14 @@ func Snapshot(args []string) error {
 
 	total := len(suite.Assertions)
 	for i, a := range suite.Assertions {
-		if *server != "" {
-			applyServerOverride(&a, *server)
+		if opts.Server != "" {
+			applyServerOverride(&a, opts.Server)
 		}
 
 		report.ProgressLine(i+1, total, a.Name)
 
 		// Run the tool call and capture the response.
-		text, isError, err := runAndCapture(a, *fixture, *timeout, *docker)
+		text, isError, err := runAndCapture(a, opts.Fixture, opts.Timeout, opts.Docker)
 		if err != nil {
 			fmt.Printf("  ERROR  %s: %v\n", a.Name, err)
 			continue
@@ -74,7 +76,7 @@ func Snapshot(args []string) error {
 
 		saved, exists := savedMap[a.Name]
 
-		if *update {
+		if opts.Update {
 			if !exists {
 				newCount++
 				fmt.Printf("  NEW    %s\n", a.Name)
@@ -102,20 +104,59 @@ func Snapshot(args []string) error {
 	}
 	report.ClearProgress()
 
-	if *update {
+	if opts.Update {
 		sf.Snapshots = newSnapshots
-		if err := report.SaveSnapshots(*suiteDir, sf); err != nil {
-			return fmt.Errorf("saving snapshots: %w", err)
-		}
-		report.PrintSnapshotSummary(1, matched, changed, newCount)
-	} else {
-		report.PrintSnapshotSummary(0, matched, changed, newCount)
-		if len(failures) > 0 {
-			return fmt.Errorf("%d snapshot(s) failed", len(failures))
+		if err := report.SaveSnapshots(opts.SuiteDir, sf); err != nil {
+			return nil, fmt.Errorf("saving snapshots: %w", err)
 		}
 	}
 
-	return nil
+	result := &SnapshotResult{
+		Matched: matched,
+		Changed: changed,
+		New:     newCount,
+	}
+
+	if !opts.Update && len(failures) > 0 {
+		return result, fmt.Errorf("%d snapshot(s) failed", len(failures))
+	}
+
+	return result, nil
+}
+
+// Snapshot runs assertions and compares/updates snapshots.
+func Snapshot(args []string) error {
+	fs := flag.NewFlagSet("snapshot", flag.ExitOnError)
+	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")
+	fixture := fs.String("fixture", "", "Fixture directory (substituted for {{fixture}})")
+	server := fs.String("server", "", "Override server command")
+	docker := fs.String("docker", "", "Run MCP server inside this Docker image")
+	update := fs.Bool("update", false, "Update snapshots with current outputs")
+	timeout := fs.Duration("timeout", 30*time.Second, "Per-assertion timeout")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	if *suiteDir == "" {
+		return fmt.Errorf("--suite is required")
+	}
+
+	result, err := SnapshotCore(SnapshotOpts{
+		SuiteDir: *suiteDir,
+		Fixture:  *fixture,
+		Server:   *server,
+		Docker:   *docker,
+		Update:   *update,
+		Timeout:  *timeout,
+	})
+
+	if *update {
+		report.PrintSnapshotSummary(1, result.Matched, result.Changed, result.New)
+	} else {
+		report.PrintSnapshotSummary(0, result.Matched, result.Changed, result.New)
+	}
+
+	return err
 }
 
 // runAndCapture executes a single assertion and returns the raw response text.

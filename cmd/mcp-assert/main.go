@@ -71,7 +71,7 @@ func printUsage() {
 	fmt.Print(`mcp-assert - Deterministic correctness testing for MCP servers
 
 Usage:
-  mcp-assert init   [dir]
+  mcp-assert init   [dir] [--server <cmd>] [--fixture <dir>]
   mcp-assert run    --suite <dir> [--server <cmd>] [--fixture <dir>] [--trials N]
   mcp-assert matrix --suite <dir> --languages <lang:server,...>
   mcp-assert ci     --suite <dir> [--server <cmd>] [--threshold N] [--fail-on-regression]
@@ -81,7 +81,7 @@ Usage:
   mcp-assert watch     --suite <dir> [--server <cmd>] [--interval <duration>]
 
 Commands:
-  init      Scaffold an assertion template and fixture directory
+  init      Scaffold a template, or generate a complete suite with --server
   run       Run assertions against an MCP server
   matrix    Run assertions across multiple language servers
   ci        Run assertions with CI-specific output and exit codes

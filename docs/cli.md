@@ -4,13 +4,25 @@
 
 ### `mcp-assert init`
 
-Scaffold an assertion template and fixture directory.
+Scaffold an assertion template, or generate a complete working suite from a live server.
 
 ```bash
+# Template mode (no server required)
 mcp-assert init [dir]
+
+# One-step suite generation (queries the server, creates stubs, captures snapshots)
+mcp-assert init [dir] --server <cmd> [--fixture <dir>]
 ```
 
-Creates `<dir>/read_file.yaml` (a commented assertion template) and `<dir>/fixtures/hello.txt` (a fixture file). Default directory is `evals`.
+| Flag | Description |
+|------|-------------|
+| `--server <cmd>` | Server command to query for `tools/list`. When provided, runs generate + snapshot in one step |
+| `--fixture <dir>` | Fixture directory for `{{fixture}}` substitution in generated assertions |
+| `--timeout <duration>` | Timeout for `tools/list` call (default: `15s`) |
+
+**Without `--server`:** Creates `<dir>/read_file.yaml` (a commented assertion template) and `<dir>/fixtures/hello.txt` (a fixture file). Default directory is `evals`.
+
+**With `--server`:** Connects to the server, queries `tools/list`, generates one stub YAML per tool, then runs snapshot capture with `--update` to record baseline responses. The result is a complete working suite with 100% tool coverage and zero manual assertion writing. Destructive tools are generated with `skip: true` by default.
 
 ### `mcp-assert run`
 

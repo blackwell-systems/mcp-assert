@@ -14,6 +14,112 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// GenerateResult holds the outcome of a generate operation.
+type GenerateResult struct {
+	ToolCount  int
+	Created    int
+	Skipped    int
+}
+
+// GenerateOpts configures the generate operation.
+type GenerateOpts struct {
+	ServerSpec    string
+	Output        string
+	Fixture       string
+	Timeout       time.Duration
+	Overwrite     bool
+	IncludeWrites bool
+}
+
+// GenerateCore queries tools/list and creates stub assertion YAMLs. It returns
+// a result summary without printing next-steps guidance (the caller decides).
+func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
+	parts := strings.Fields(opts.ServerSpec)
+	if len(parts) == 0 {
+		return nil, fmt.Errorf("--server cannot be empty")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), opts.Timeout)
+	defer cancel()
+
+	mcpClient, err := client.NewStdioMCPClient(parts[0], nil, parts[1:]...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start server: %w", err)
+	}
+	defer mcpClient.Close()
+
+	initReq := mcp.InitializeRequest{}
+	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
+	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
+	if _, err := mcpClient.Initialize(ctx, initReq); err != nil {
+		if isTransportError(err) {
+			return nil, fmt.Errorf("MCP initialize failed: %w\n\nhint: the server exited immediately. Check that any required environment variables (API keys, tokens) are set", err)
+		}
+		return nil, fmt.Errorf("MCP initialize failed: %w", err)
+	}
+
+	toolsResult, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
+	if err != nil {
+		if isTransportError(err) {
+			return nil, fmt.Errorf("tools/list failed: %w\n\nhint: the server exited immediately. Check that any required environment variables (API keys, tokens) are set", err)
+		}
+		return nil, fmt.Errorf("tools/list failed: %w", err)
+	}
+
+	// Create output directory.
+	if err := os.MkdirAll(opts.Output, 0755); err != nil {
+		return nil, fmt.Errorf("creating output dir: %w", err)
+	}
+
+	created, skipped := 0, 0
+	for _, tool := range toolsResult.Tools {
+		filename := sanitizeFilename(tool.Name) + ".yaml"
+		path := filepath.Join(opts.Output, filename)
+
+		if !opts.Overwrite {
+			if _, err := os.Stat(path); err == nil {
+				skipped++
+				continue
+			}
+		}
+
+		skip := !opts.IncludeWrites && isDestructiveTool(tool)
+		stub := generateStub(tool, opts.ServerSpec, opts.Fixture, skip)
+		data, err := yaml.Marshal(stub)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: %s: %v\n", tool.Name, err)
+			continue
+		}
+
+		if err := os.WriteFile(path, data, 0644); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: %s: %v\n", tool.Name, err)
+			continue
+		}
+		created++
+		fmt.Printf("  created %s\n", filename)
+	}
+
+	result := &GenerateResult{
+		ToolCount: len(toolsResult.Tools),
+		Created:   created,
+		Skipped:   skipped,
+	}
+
+	if !opts.IncludeWrites {
+		destructive := 0
+		for _, tool := range toolsResult.Tools {
+			if isDestructiveTool(tool) {
+				destructive++
+			}
+		}
+		if destructive > 0 {
+			fmt.Printf("  %d tool(s) marked skip:true (destructive). Use --include-writes to include them.\n", destructive)
+		}
+	}
+
+	return result, nil
+}
+
 // Generate queries tools/list and creates stub assertion YAMLs for each tool.
 func Generate(args []string) error {
 	fs := flag.NewFlagSet("generate", flag.ExitOnError)
@@ -31,85 +137,20 @@ func Generate(args []string) error {
 		return fmt.Errorf("--server and --output are required")
 	}
 
-	// Start the server and query tools/list.
-	parts := strings.Fields(*serverSpec)
-	if len(parts) == 0 {
-		return fmt.Errorf("--server cannot be empty")
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
-	defer cancel()
-
-	mcpClient, err := client.NewStdioMCPClient(parts[0], nil, parts[1:]...)
+	result, err := GenerateCore(GenerateOpts{
+		ServerSpec:    *serverSpec,
+		Output:        *output,
+		Fixture:       *fixture,
+		Timeout:       *timeout,
+		Overwrite:     *overwrite,
+		IncludeWrites: *includeWrites,
+	})
 	if err != nil {
-		return fmt.Errorf("failed to start server: %w", err)
-	}
-	defer mcpClient.Close()
-
-	initReq := mcp.InitializeRequest{}
-	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
-	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
-	if _, err := mcpClient.Initialize(ctx, initReq); err != nil {
-		if isTransportError(err) {
-			return fmt.Errorf("MCP initialize failed: %w\n\nhint: the server exited immediately. Check that any required environment variables (API keys, tokens) are set", err)
-		}
-		return fmt.Errorf("MCP initialize failed: %w", err)
+		return err
 	}
 
-	toolsResult, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
-	if err != nil {
-		if isTransportError(err) {
-			return fmt.Errorf("tools/list failed: %w\n\nhint: the server exited immediately. Check that any required environment variables (API keys, tokens) are set", err)
-		}
-		return fmt.Errorf("tools/list failed: %w", err)
-	}
-
-	// Create output directory.
-	if err := os.MkdirAll(*output, 0755); err != nil {
-		return fmt.Errorf("creating output dir: %w", err)
-	}
-
-	created, skipped := 0, 0
-	for _, tool := range toolsResult.Tools {
-		filename := sanitizeFilename(tool.Name) + ".yaml"
-		path := filepath.Join(*output, filename)
-
-		if !*overwrite {
-			if _, err := os.Stat(path); err == nil {
-				skipped++
-				continue
-			}
-		}
-
-		skip := !*includeWrites && isDestructiveTool(tool)
-		stub := generateStub(tool, *serverSpec, *fixture, skip)
-		data, err := yaml.Marshal(stub)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "warning: %s: %v\n", tool.Name, err)
-			continue
-		}
-
-		if err := os.WriteFile(path, data, 0644); err != nil {
-			fmt.Fprintf(os.Stderr, "warning: %s: %v\n", tool.Name, err)
-			continue
-		}
-		created++
-		fmt.Printf("  created %s\n", filename)
-	}
-
-	fmt.Printf("\n%d tools discovered, %d assertions created, %d skipped (already exist)\n", len(toolsResult.Tools), created, skipped)
-	if !*includeWrites {
-		destructive := 0
-		for _, tool := range toolsResult.Tools {
-			if isDestructiveTool(tool) {
-				destructive++
-			}
-		}
-		if destructive > 0 {
-			fmt.Printf("  %d tool(s) marked skip:true (destructive). Use --include-writes to include them.\n", destructive)
-		}
-	}
-	if created > 0 {
+	fmt.Printf("\n%d tools discovered, %d assertions created, %d skipped (already exist)\n", result.ToolCount, result.Created, result.Skipped)
+	if result.Created > 0 {
 		fmt.Printf("\nNext steps:\n")
 		fmt.Printf("  1. Edit the generated YAMLs to fill in realistic argument values\n")
 		fmt.Printf("  2. Run: mcp-assert snapshot --suite %s --server %q --update\n", *output, *serverSpec)

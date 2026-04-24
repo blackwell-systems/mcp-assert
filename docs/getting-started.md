@@ -6,7 +6,49 @@
 go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
 ```
 
-## Scaffold your first assertion
+## One-step suite generation (recommended)
+
+If you have a running MCP server, generate a complete test suite in one command:
+
+```bash
+mcp-assert init evals --server "my-mcp-server" --fixture ./fixtures
+```
+
+This connects to your server, queries `tools/list`, generates one assertion stub per tool, and captures real response snapshots as baselines. You get 100% tool coverage with zero manual assertion writing.
+
+```
+Generating assertion stubs from tools/list...
+  created read_file.yaml
+  created list_directory.yaml
+  created search_files.yaml
+
+3 tools discovered, 3 stubs created, 0 skipped (already exist)
+
+Capturing snapshots...
+  NEW    read_file returns expected result
+  NEW    list_directory returns expected result
+  NEW    search_files returns expected result
+
+Suite created successfully:
+  Tools found:       3
+  Stubs created:     3
+  Snapshots captured: 3
+
+Next steps:
+  Run the suite:   mcp-assert run --suite evals --server "my-mcp-server"
+```
+
+Then run the suite:
+
+```bash
+mcp-assert run --suite evals/ --server "my-mcp-server"
+```
+
+Edit the generated YAMLs to replace `TODO` placeholders with realistic argument values and add more specific assertions (contains, json_path, etc.) as needed.
+
+## Scaffold a template (manual)
+
+If you prefer to write assertions by hand, scaffold a template without a server:
 
 ```bash
 mcp-assert init evals
@@ -77,7 +119,19 @@ server:
 
 ## Zero-Effort Coverage
 
-Get from zero to 100% coverage in three commands:
+Get from zero to 100% coverage in one command:
+
+```bash
+mcp-assert init evals --server "my-mcp-server" --fixture ./fixtures
+```
+
+This runs `generate` (stub YAMLs from `tools/list`) and `snapshot --update` (capture real outputs) in a single step. Then assert nothing changed:
+
+```bash
+mcp-assert run --suite evals/ --server "my-mcp-server"
+```
+
+You can also run the steps individually if you need more control:
 
 ```bash
 # 1. Generate stub assertions for every tool the server exposes
