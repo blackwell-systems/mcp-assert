@@ -1,141 +1,86 @@
-# Distribution Strategy
+# Distribution
 
-## Core thesis
+## Current channels
 
-mcp-assert spreads through the bugs it finds, not through marketing. Every issue filed and PR opened on a popular MCP server is passive promotion with built-in credibility.
+### GitHub Releases
+Pre-built binaries via GoReleaser on every `v*` tag. Cross-compiled for linux/darwin/windows, amd64/arm64.
+
+```bash
+go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
+```
+
+### GitHub Action
+[`blackwell-systems/mcp-assert-action@v1`](https://github.com/blackwell-systems/mcp-assert-action): one line in any workflow. Downloads binary, runs assertions, uploads JUnit XML + badge.
+
+```yaml
+- uses: blackwell-systems/mcp-assert-action@v1
+  with:
+    suite: evals/
+```
+
+### Awesome MCP DevTools
+PR submitted ([punkpeye/awesome-mcp-devtools#144](https://github.com/punkpeye/awesome-mcp-devtools/pull/144)). Pending maintainer review. Listed under Testing Tools.
+
+### Planned
+
+| Channel | Priority | Description |
+|---------|----------|-------------|
+| Homebrew formula | High | `brew install mcp-assert` |
+| PyPI wrapper | High | `pip install mcp-assert`: downloads Go binary. Python server authors won't `go install`. |
+| npm wrapper | Medium | `npx mcp-assert`: same pattern, TypeScript audience. |
+| MCP registry integration | Medium | Test badge on Glama and Smithery listings. |
 
 ## The scan-and-contribute flywheel
 
+mcp-assert spreads through the bugs it finds, not through marketing. Every issue filed on a popular MCP server is passive promotion with built-in credibility.
+
 ```
-Scan server → Find bugs → File issue/PR → Link mcp-assert → Maintainers discover tool → Adopt it
+Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discover tool -> Adopt
 ```
 
-1. Run `mcp-assert coverage` + `mcp-assert run` against a popular MCP server
-2. Document any bugs, spec violations, or missing error handling
-3. File issue or open PR with the fix, including "Found by [mcp-assert](https://github.com/blackwell-systems/mcp-assert)"
-4. Ship the assertion suite as an example in our repo
-5. Server maintainers and their community discover mcp-assert organically
+## Server suites shipped
 
-This is the playbook that made eslint, clippy, and staticcheck ubiquitous. They spread through the bugs they find.
+| Server | Language | Assertions | Coverage | Notes |
+|--------|----------|------------|----------|-------|
+| `agent-lsp` + gopls | Go | 63 | 100% (50/50 tools) | Internal dogfooding server |
+| `agent-lsp` skill protocols | N/A | 20 | 20/20 skills | Trajectory assertions |
+| `@modelcontextprotocol/server-filesystem` | TypeScript | 15 | 92% | Includes resource subscription test |
+| `@modelcontextprotocol/server-memory` | TypeScript | 5 | -- | Clean scan |
+| `mcp-server-sqlite` | Python | 6 | -- | Clean scan |
+| `mark3labs/mcp-go` everything | Go | 9 | 100% | stdio |
+| `mark3labs/mcp-go` everything | Go | 5 | 100% | HTTP transport conformance |
+| `mark3labs/mcp-go` everything (prompts) | Go | 4 | 100% | prompts/list, prompts/get |
+| `mark3labs/mcp-go` everything (resources) | Go | 4 | 100% | resources/list, read, subscribe |
+| `mark3labs/mcp-go` everything (completion) | Go | 3 | -- | completion/complete |
+| `mark3labs/mcp-go` everything (logging) | Go | 2 | -- | logging/setLevel, message capture |
+| `mark3labs/mcp-go` typed_tools | Go | 3 | 100% | Clean |
+| `mark3labs/mcp-go` structured | Go | 6 | 100% | Clean |
+| `mark3labs/mcp-go` roots_server | Go | 1 | 100% | Bidirectional roots/list |
+| `mark3labs/mcp-go` sampling_server | Go | 3 | 100% | Bidirectional sampling |
+| `mark3labs/mcp-go` elicitation | Go | 4 | 100% | Accept, decline, cancel, validation |
+| `PrefectHQ/fastmcp` testing_demo | Python | 16 | 100% | All 3 MCP feature categories |
+| `github/github-mcp-server` | Go | 6 | -- | Initial suite: get_me, search, list, file read |
+| **Total** | **3 languages** | **175** | | **18 suites** |
 
-### Proven: first result
-
-| Server | Bug found | Issue |
-|--------|-----------|-------|
-| `@modelcontextprotocol/server-filesystem` | `read_media_file` returns `type: "blob"`, not a valid MCP content type per the 2025-11-25 spec | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029) |
-
-## Target servers
-
-Prioritized by stars, community size, and likelihood of finding issues.
-
-### Tier 1: Official Anthropic servers (highest credibility)
-
-| Server | Language | Status | Stars |
-|--------|----------|--------|-------|
-| `server-filesystem` | TypeScript | 92% coverage, 1 bug filed | Part of modelcontextprotocol/servers |
-| `server-memory` | TypeScript | Suite shipped, CI passing | Part of modelcontextprotocol/servers |
-| `server-sqlite` | Python | Suite shipped, CI passing | Part of modelcontextprotocol/servers |
-| `server-github` | TypeScript | Not started | Part of modelcontextprotocol/servers |
-| `server-postgres` | TypeScript | Not started | Part of modelcontextprotocol/servers |
-| `server-brave-search` | TypeScript | Not started | Part of modelcontextprotocol/servers |
-
-### Tier 2: High-star community servers
+## Target servers (next)
 
 | Server | Language | Stars | Why target |
 |--------|----------|-------|------------|
-| `mark3labs/mcp-go` | Go | 1000+ | Go MCP SDK. Testing the SDK's example servers validates the ecosystem |
-| `PrefectHQ/fastmcp` | Python | 25000+ | Most popular Python MCP framework. **11 assertions shipped, 100% tool coverage** |
-| `supabase/mcp` | TypeScript | 500+ | Database tools; deterministic query assertions are a natural fit |
-| `firebase/mcp` | TypeScript | - | Google ecosystem, high visibility |
-| `stripe/agent-toolkit` | TypeScript | - | Payment tools; correctness matters |
-| `linear/mcp-server` | TypeScript | - | Project management tools |
+| `github/github-mcp-server` | Go | 28K+ | Most popular MCP server. Expand beyond initial 6 assertions. Responsive team. |
+| Rust MCP servers (`rmcp` SDK) | Rust | -- | Underserved community, no existing testing tools |
+| Java MCP servers (Spring, Quarkus) | Java | -- | Enterprise community, high signal |
+| C# MCP servers (csharp-sdk) | C# | -- | .NET community, underserved |
 
-### Tier 3: Niche servers with engaged communities
-
-| Server | Language | Why target |
-|--------|----------|------------|
-| `tavily/mcp-server` | Python | Search tools; response shape assertions |
-| `browserbase/mcp-server` | TypeScript | Browser automation; state management testing |
-| `Nix MCP servers` | Various | Nix community is quality-focused and vocal |
-
-## Contribution format
-
-For each server we scan:
-
-### 1. Assertion suite (PR to our repo)
-
-```
-examples/<server-name>/
-  ├── fixtures/           # Minimal test data
-  ├── read_query.yaml     # One YAML per tool tested
-  ├── list_items.yaml
-  └── error_handling.yaml
-```
-
-### 2. Bug report (issue on their repo)
-
-Template:
-```markdown
-## Bug: [tool_name] returns [problem]
-
-**Found by:** automated testing with [mcp-assert](https://github.com/blackwell-systems/mcp-assert)
-
-**Reproduction:**
-[YAML assertion that demonstrates the bug]
-
-**Expected:** [what the MCP spec says should happen]
-**Actual:** [what happens]
-
-**Spec reference:** [link to MCP spec section]
-```
-
-### 3. Fix PR (when the fix is obvious)
-
-Even better than an issue: a PR with the fix and the assertion that proves it works. Include the assertion YAML in the PR description so the maintainer can verify.
-
-## Distribution channels
-
-### Frictionless adoption (highest priority)
-
-| Channel | Status | Effort | Impact |
-|---------|--------|--------|--------|
-| **GitHub Action** | Planned | 1 day | `uses: blackwell-systems/mcp-assert-action@v1`, one line in any workflow |
-| **GoReleaser** | Planned | 1 hour | Tagged releases, `go install ...@v0.1.0`, GitHub Releases binaries |
-| **Homebrew** | Planned | 2 hours | `brew install mcp-assert` |
-| **PyPI wrapper** | Planned | 1 day | `pip install mcp-assert`, downloads Go binary |
-| **npm wrapper** | Planned | 1 day | `npx mcp-assert`, same pattern |
-
-### Content (medium priority)
+## Content (planned)
 
 | Channel | Status | Description |
 |---------|--------|-------------|
-| **Blog post: dogfooding** | Draft material in `docs/dogfooding-findings.md` | "We built mcp-assert, used it on ourselves, and found 6 real bugs" |
-| **Blog post: filesystem audit** | Material from scan results | "We tested Anthropic's official filesystem server and found a spec violation" |
-| **MCP community Discord/forums** | Not started | Post when we have 3+ server suites with bugs found |
-| **Hacker News** | Not started | Post when GitHub Action is live (frictionless try-it) |
-| **r/LocalLLaMA, r/ClaudeAI** | Not started | After HN, when there's momentum |
-
-### Passive (ongoing)
-
-| Channel | Description |
-|---------|-------------|
-| **Bug reports on MCP servers** | Every issue filed mentions mcp-assert |
-| **awesome-mcp-servers** | Already listed for agent-lsp; submit mcp-assert under testing tools |
-| **Example suites in repo** | Each new suite is a landing page for that server's community |
-| **Coverage reports** | `mcp-assert coverage` output in README shows the tool in action |
-
-## Metrics to track
-
-| Metric | Target | How to measure |
-|--------|--------|---------------|
-| Server suites shipped | 10 by end of Q2 | Count `examples/` directories |
-| Bugs filed upstream | 5 by end of Q2 | GitHub issue links in dogfooding doc |
-| External contributors | 1 by end of Q2 | GitHub contributor count |
-| GitHub stars | 50 by end of Q2 | GitHub |
-| GitHub Action installs | Track via marketplace | After Action ships |
+| Blog post: dogfooding | Material in `docs/dogfooding-github-mcp.md` | "We tested the most popular MCP server and found 4 DX issues in our own tool" |
+| MCP community Discord/forums | Not started | Post when awesome-mcp-devtools listing is merged |
+| Hacker News | Not started | Post when Homebrew formula is live |
 
 ## Non-goals
 
 - **Paid tier.** mcp-assert is free and open source. The value is ecosystem positioning, not revenue.
 - **SaaS dashboard.** No hosted version. CI-native, single binary.
-- **LLM-as-judge features.** Stay in our lane. Deterministic assertions only. Don't dilute the positioning.
+- **LLM-as-judge features.** Stay in our lane. Deterministic assertions only.
