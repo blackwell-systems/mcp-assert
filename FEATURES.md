@@ -8,12 +8,12 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 
 | Command | Description | Key flags |
 |---------|-------------|-----------|
-| `init` | Scaffold an assertion template and fixture directory | `[dir]` |
-| `run` | Execute assertions against an MCP server | `--suite`, `--server`, `--fixture`, `--trials`, `--docker`, `--json`, `--junit`, `--markdown`, `--badge`, `--baseline`, `--save-baseline` |
+| `init` | Scaffold template or one-step suite generation from a live server | `[dir]`, `--server`, `--fixture`, `--timeout` |
+| `run` | Execute assertions against an MCP server | `--suite` (dir or file), `--server`, `--fixture`, `--trials`, `--docker`, `--json`, `--junit`, `--markdown`, `--badge`, `--baseline`, `--save-baseline` |
 | `ci` | Run with CI-specific exit codes and reporting | All `run` flags + `--threshold`, `--fail-on-regression` |
 | `matrix` | Run assertions across multiple language servers | `--suite`, `--languages`, `--fixture` |
 | `coverage` | Report which server tools have assertions | `--suite`, `--server`, `--coverage-json` |
-| `generate` | Auto-generate stub assertions from a server's tools/list | `--server`, `--output`, `--fixture` |
+| `generate` | Auto-generate stub assertions from a server's tools/list (destructive tools skipped by default) | `--server`, `--output`, `--fixture`, `--include-writes` |
 | `snapshot` | Capture/compare tool response snapshots | `--suite`, `--server`, `--fixture`, `--update`, `--docker` |
 | `watch` | Rerun assertions on YAML file change | Same as `run` + polling interval |
 
@@ -94,7 +94,7 @@ Only PASS → non-PASS transitions are flagged. Previously-failing tests that st
 
 | Transport | Field | Description |
 |-----------|-------|-------------|
-| `stdio` (default) | `command`, `args`, `env` | Launch MCP server as a subprocess, communicate over stdin/stdout |
+| `stdio` (default) | `command`, `args`, `env` | Launch MCP server as a subprocess, communicate over stdin/stdout. `env` values support `${VAR}` and `$VAR` expansion from the parent shell environment. |
 | `sse` | `url` | Connect to an SSE-based MCP server (legacy transport) |
 | `http` | `url` | Connect to a streamable HTTP MCP server (modern transport) |
 
@@ -209,7 +209,7 @@ server:
   command: path/to/mcp-server        # stdio transport
   args: ["arg1", "arg2"]
   env:
-    KEY: value
+    KEY: value                         # supports ${VAR} expansion from shell
   transport: stdio                   # "stdio" (default), "sse", or "http"
   url: "http://localhost:8080/sse"   # required for sse/http transport
   client_capabilities:               # optional: respond to server-initiated requests
@@ -239,6 +239,7 @@ assert:
       "$.field": "value"
     min_results: 3
     min_progress: 2                  # requires capture_progress: true
+skip: false                            # when true, assertion is skipped (set automatically by generate for destructive tools)
 timeout: 30s
 
 # OR: test MCP prompts instead of a tool
