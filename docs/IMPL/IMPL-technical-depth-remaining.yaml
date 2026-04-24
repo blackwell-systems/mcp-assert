@@ -561,6 +561,68 @@ quality_gates:
         - type: test
           command: GOWORK=off go test ./... -race -count=1
           required: true
+completion_reports:
+    A:
+        status: complete
+        branch: saw/technical-depth-remaining/wave1-agent-A
+        commit: 16065a6
+        files_changed:
+            - internal/runner/fix.go
+            - internal/runner/fix_test.go
+            - internal/runner/commands.go
+        files_created:
+            - internal/runner/fix.go
+            - internal/runner/fix_test.go
+        tests_added:
+            - TestIsPositionError
+            - TestScanNearbyPositions_NoLineColumn
+            - TestScanNearbyPositions_NoLineOnly
+            - TestScanNearbyPositions_NoColOnly
+            - TestFixSuggestion_YAMLPatch
+            - TestFixSuggestion_YAMLPatch_FullFormat
+            - TestPrintFixSuggestions_Empty
+            - TestPrintFixSuggestions_OneSuggestion
+            - TestPrintFixSuggestions_MultipleSuggestions
+        verification: PASS
+        notes: 'All 3 files implemented. fix.go has FixSuggestion struct, IsPositionError, ScanNearbyPositions (spiral search pattern), PrintFixSuggestions. Both Run() and CI() in commands.go have --fix flag wired. Full test suite passes with -race. Postconditions verified: 1 FixSuggestion struct, 2 fix flag registrations.'
+    B:
+        status: complete
+        branch: saw/technical-depth-remaining/wave1-agent-B
+        commit: 1823a51
+        files_changed:
+            - internal/report/diff.go
+            - internal/report/diff_test.go
+            - internal/runner/watch.go
+        files_created:
+            - internal/report/diff.go
+            - internal/report/diff_test.go
+        tests_added:
+            - TestFormatDiff_IdenticalStrings
+            - TestFormatDiff_AddedLines
+            - TestFormatDiff_RemovedLines
+            - TestFormatDiff_MixedChanges
+            - TestFormatStatusChange_PassToFail
+            - TestFormatStatusChange_FailToPass
+        verification: PASS
+        notes: 'All 6 diff tests pass. Full test suite passes with -race. Postconditions verified: FormatDiff=1, FormatStatusChange=1, Run(buildRunArgs())=0. watch.go refactored to use runAndCollect with prevResults tracking.'
+    C:
+        status: complete
+        branch: saw/technical-depth-remaining/wave1-agent-C
+        commit: bbb9731
+        files_changed:
+            - internal/runner/intercept.go
+            - internal/runner/intercept_test.go
+            - cmd/mcp-assert/main.go
+        files_created:
+            - internal/runner/intercept.go
+            - internal/runner/intercept_test.go
+        tests_added:
+            - TestIntercept_MissingFlags
+            - TestExtractToolCall
+            - TestIntercept_TrajectoryValidation
+            - TestIntercept_TrajectoryFileLoading
+        verification: PASS
+        notes: Intercept command complete. proxyStdio and extractToolCall implemented. All 15 subtests pass. Full suite clean with -race.
 pre_mortem:
     overall_risk: low
     rows:
@@ -609,3 +671,4 @@ critic_report:
     reviewed_at: "2026-04-24T03:10:21Z"
     issue_count: 0
 state: WAVE_PENDING
+original_branch: main
