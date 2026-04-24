@@ -3,8 +3,33 @@
 All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, Semantic Versioning.
 
+## [0.2.0] - 2026-04-24
 
-(Empty - all recent work shipped in 0.1.3)
+### Added
+
+- **`intercept` command**: Live stdio proxy between agent and MCP server. Captures every `tools/call` in real time and validates trajectory assertions on disconnect. `mcp-assert intercept --server <cmd> --trajectory <yaml>`.
+- **`--fix` flag**: Position error correction for `run` and `ci` commands. When a position-sensitive assertion fails ("no identifier found", "column is beyond end of line"), scans nearby positions (line ±3, column ±5) and emits a suggested YAML patch.
+- **Watch mode diff view**: When an assertion flips status between iterations in `--watch` mode, shows a unified diff of expected vs actual response.
+- **`init --server`**: One-step suite generation. `mcp-assert init evals --server "my-server"` runs generate + snapshot in one command. Complete working suite with zero manual assertion writing.
+- **Fixture isolation**: Each assertion automatically receives its own copy of the fixture directory. Write-tests can never contaminate read-tests. Automatic for stdio; Docker already isolates via containers.
+- **`${VAR}` env expansion**: Shell variable patterns (`${VAR}` and `$VAR`) in YAML `env:` blocks resolve from the parent process environment at runtime.
+- **Single-file `--suite`**: `--suite` accepts both directories and single YAML files for iterative development.
+- **`generate` safety**: Destructive tools (based on MCP `destructiveHint` annotations) are generated with `skip: true` by default. Use `--include-writes` to opt in. Auth detection hints when the server exits immediately (transport closed).
+- **`skip` field**: Assertions with `skip: true` are skipped during execution. Set automatically by `generate` for destructive tools.
+- **`assert_completion` block**: Test `completion/complete` for argument autocompletion. `ref: {type, name}` + `argument: {name, value}`.
+- **`assert_sampling` block**: First-class sampling test combining mock LLM config and tool call. `mock_text`, `mock_model`, tool, args, expect.
+- **`assert_logging` block**: Test `logging/setLevel` and capture `notifications/message`. `set_level`, `expect: {min_messages, contains_level, contains_data}`.
+- **Resource subscriptions**: `subscribe` and `unsubscribe` fields on `assert_resources` block for `resources/subscribe` and `resources/unsubscribe`.
+- **Elicitation breadth**: `action: decline` and `action: cancel` in `client_capabilities.elicitation` for testing reject/cancel flows. 3 new example assertions.
+- **GitHub MCP Server suite**: 6 assertions against github/github-mcp-server (28K+ stars). get_me, search_repositories, get_file_contents, list_issues, search_code, list_branches.
+- **CONTRIBUTING.md**: Contributor guide covering package structure, adding assertion types, CLI commands, and block types.
+- **Dogfooding report**: `docs/dogfooding-github-mcp.md` documenting the end-to-end onboarding experience against the most popular MCP server.
+- **Protocol surface 10/12**: Resource subscriptions, completion, logging covered. Only cancellation and ping remain.
+
+### Fixed
+
+- **Fixture contamination**: apply_edit and commit_session tests no longer modify shared fixture files. Dedicated fixture files (`apply_edit_fixture.go`, `commit_fixture.go`) plus automatic per-test isolation.
+
 ## [0.1.3] - 2026-04-23
 
 ### Added
