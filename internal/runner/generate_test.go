@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -129,7 +130,7 @@ func TestGenerateStub(t *testing.T) {
 		},
 	}
 
-	stub := generateStub(tool, "agent-lsp go:gopls", "/fixture")
+	stub := generateStub(tool, "agent-lsp go:gopls", "/fixture", false)
 
 	if stub.Name != "get_references returns expected result" {
 		t.Errorf("unexpected name: %q", stub.Name)
@@ -177,5 +178,96 @@ func TestGenerate_MissingFlags(t *testing.T) {
 	err = Generate([]string{"--server", "test"})
 	if err == nil {
 		t.Error("expected error for missing --output")
+	}
+}
+
+func boolPtr(b bool) *bool { return &b }
+
+func TestIsDestructiveTool_DestructiveTrue(t *testing.T) {
+	tool := mcp.Tool{
+		Annotations: mcp.ToolAnnotation{DestructiveHint: boolPtr(true)},
+	}
+	if !isDestructiveTool(tool) {
+		t.Error("expected true for DestructiveHint=true")
+	}
+}
+
+func TestIsDestructiveTool_ReadOnlyFalse(t *testing.T) {
+	tool := mcp.Tool{
+		Annotations: mcp.ToolAnnotation{ReadOnlyHint: boolPtr(false)},
+	}
+	if !isDestructiveTool(tool) {
+		t.Error("expected true for ReadOnlyHint=false")
+	}
+}
+
+func TestIsDestructiveTool_ReadOnlyTrue(t *testing.T) {
+	tool := mcp.Tool{
+		Annotations: mcp.ToolAnnotation{ReadOnlyHint: boolPtr(true)},
+	}
+	if isDestructiveTool(tool) {
+		t.Error("expected false for ReadOnlyHint=true")
+	}
+}
+
+func TestIsDestructiveTool_NoAnnotations(t *testing.T) {
+	tool := mcp.Tool{}
+	if isDestructiveTool(tool) {
+		t.Error("expected false for zero-value annotations")
+	}
+}
+
+func TestIsDestructiveTool_BothSet(t *testing.T) {
+	tool := mcp.Tool{
+		Annotations: mcp.ToolAnnotation{
+			DestructiveHint: boolPtr(true),
+			ReadOnlyHint:    boolPtr(true),
+		},
+	}
+	if !isDestructiveTool(tool) {
+		t.Error("expected true when DestructiveHint=true even with ReadOnlyHint=true")
+	}
+}
+
+func TestGenerateStub_SkipTrue(t *testing.T) {
+	tool := mcp.Tool{
+		Name: "write_file",
+		InputSchema: mcp.ToolInputSchema{},
+	}
+	stub := generateStub(tool, "server arg1", "", true)
+	if !stub.Skip {
+		t.Error("expected Skip=true")
+	}
+}
+
+func TestGenerateStub_SkipFalse(t *testing.T) {
+	tool := mcp.Tool{
+		Name: "read_file",
+		InputSchema: mcp.ToolInputSchema{},
+	}
+	stub := generateStub(tool, "server arg1", "", false)
+	if stub.Skip {
+		t.Error("expected Skip=false")
+	}
+}
+
+func TestIsTransportError(t *testing.T) {
+	tests := []struct {
+		msg    string
+		expect bool
+	}{
+		{"transport closed", true},
+		{"EOF", true},
+		{"connection refused", true},
+		{"some other error", false},
+		{"read: transport closed unexpectedly", true},
+		{"dial tcp: connection refused", true},
+	}
+	for _, tt := range tests {
+		err := fmt.Errorf("%s", tt.msg)
+		got := isTransportError(err)
+		if got != tt.expect {
+			t.Errorf("isTransportError(%q) = %v, want %v", tt.msg, got, tt.expect)
+		}
 	}
 }

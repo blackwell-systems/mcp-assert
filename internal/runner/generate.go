@@ -22,6 +22,7 @@ func Generate(args []string) error {
 	fixture := fs.String("fixture", "", "Fixture directory to use in generated assertions")
 	timeout := fs.Duration("timeout", 15*time.Second, "Timeout for tools/list call")
 	overwrite := fs.Bool("overwrite", false, "Overwrite existing YAML files")
+	includeWrites := fs.Bool("include-writes", false, "Include write/destructive tools (skipped by default)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -49,11 +50,17 @@ func Generate(args []string) error {
 	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
 	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
 	if _, err := mcpClient.Initialize(ctx, initReq); err != nil {
+		if isTransportError(err) {
+			return fmt.Errorf("MCP initialize failed: %w\n\nhint: the server exited immediately. Check that any required environment variables (API keys, tokens) are set", err)
+		}
 		return fmt.Errorf("MCP initialize failed: %w", err)
 	}
 
 	toolsResult, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
 	if err != nil {
+		if isTransportError(err) {
+			return fmt.Errorf("tools/list failed: %w\n\nhint: the server exited immediately. Check that any required environment variables (API keys, tokens) are set", err)
+		}
 		return fmt.Errorf("tools/list failed: %w", err)
 	}
 
@@ -74,7 +81,8 @@ func Generate(args []string) error {
 			}
 		}
 
-		stub := generateStub(tool, *serverSpec, *fixture)
+		skip := !*includeWrites && isDestructiveTool(tool)
+		stub := generateStub(tool, *serverSpec, *fixture, skip)
 		data, err := yaml.Marshal(stub)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "warning: %s: %v\n", tool.Name, err)
@@ -90,6 +98,17 @@ func Generate(args []string) error {
 	}
 
 	fmt.Printf("\n%d tools discovered, %d assertions created, %d skipped (already exist)\n", len(toolsResult.Tools), created, skipped)
+	if !*includeWrites {
+		destructive := 0
+		for _, tool := range toolsResult.Tools {
+			if isDestructiveTool(tool) {
+				destructive++
+			}
+		}
+		if destructive > 0 {
+			fmt.Printf("  %d tool(s) marked skip:true (destructive). Use --include-writes to include them.\n", destructive)
+		}
+	}
 	if created > 0 {
 		fmt.Printf("\nNext steps:\n")
 		fmt.Printf("  1. Edit the generated YAMLs to fill in realistic argument values\n")
@@ -107,6 +126,7 @@ type stubAssertion struct {
 	Setup   []stubToolCall `yaml:"setup,omitempty"`
 	Assert  stubAssert     `yaml:"assert"`
 	Timeout string         `yaml:"timeout"`
+	Skip    bool           `yaml:"skip,omitempty"`
 }
 
 type stubServer struct {
@@ -129,7 +149,7 @@ type stubExpect struct {
 	NotError bool `yaml:"not_error"`
 }
 
-func generateStub(tool mcp.Tool, serverSpec string, fixture string) stubAssertion {
+func generateStub(tool mcp.Tool, serverSpec string, fixture string, skip bool) stubAssertion {
 	parts := strings.Fields(serverSpec)
 	cmd := parts[0]
 	var args []string
@@ -153,6 +173,8 @@ func generateStub(tool mcp.Tool, serverSpec string, fixture string) stubAssertio
 		},
 		Timeout: "30s",
 	}
+
+	stub.Skip = skip
 
 	return stub
 }
@@ -231,6 +253,28 @@ func generateStringPlaceholder(name, desc, fixture string) string {
 	}
 
 	return "TODO"
+}
+
+// isDestructiveTool returns true if the tool's MCP annotations indicate
+// it performs write or destructive operations.
+func isDestructiveTool(tool mcp.Tool) bool {
+	a := tool.Annotations
+	if a.DestructiveHint != nil && *a.DestructiveHint {
+		return true
+	}
+	if a.ReadOnlyHint != nil && !*a.ReadOnlyHint {
+		return true
+	}
+	return false
+}
+
+// isTransportError checks if an error indicates the server exited
+// or failed to start, which often means missing auth credentials.
+func isTransportError(err error) bool {
+	msg := err.Error()
+	return strings.Contains(msg, "transport closed") ||
+		strings.Contains(msg, "EOF") ||
+		strings.Contains(msg, "connection refused")
 }
 
 func sanitizeFilename(name string) string {
