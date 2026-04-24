@@ -27,4 +27,6 @@ nav:
   - Architecture: architecture.md
   - Scorecard: scorecard.md
   - Roadmap: roadmap.md
+  - Distribution: distribution.md
   - Dogfooding: dogfooding.md
+  - "Dogfooding: GitHub MCP": dogfooding-github-mcp.md

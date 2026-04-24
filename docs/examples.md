@@ -1,12 +1,12 @@
 # Examples
 
-mcp-assert ships with 16 server assertion suites for 11 MCP servers in three languages (Go, TypeScript, Python), plus a trajectory suite that runs without a server. All built-in server suites use stdio transport except the HTTP conformance suite. 169 total assertions.
+mcp-assert ships with 17 server assertion suites for 12 MCP servers in three languages (Go, TypeScript, Python), plus a trajectory suite that runs without a server. All built-in server suites use stdio transport except the HTTP conformance suite. 174 total assertions.
 
 ## Summary
 
 | Suite | Server | Language | Transport | Assertions |
 |-------|--------|----------|-----------|------------|
-| `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 15 |
+| `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 |
 | `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 |
 | `examples/sqlite/` | `mcp-server-sqlite` | Python | stdio | 6 |
 | `examples/fastmcp-testing-demo/` | PrefectHQ/fastmcp testing_demo | Python | stdio | 16 |
@@ -22,6 +22,7 @@ mcp-assert ships with 16 server assertion suites for 11 MCP servers in three lan
 | `examples/mcp-go-elicitation/` | mark3labs/mcp-go elicitation | Go | stdio | 4 |
 | `examples/mcp-go-everything-completion/` | mark3labs/mcp-go everything | Go | stdio | 3 |
 | `examples/mcp-go-everything-logging/` | mark3labs/mcp-go everything | Go | stdio | 2 |
+| `examples/github-mcp/` | github/github-mcp-server | Go | stdio | 6 |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 |
 
 ---
@@ -30,7 +31,7 @@ mcp-assert ships with 16 server assertion suites for 11 MCP servers in three lan
 
 **Directory:** `examples/filesystem/`
 
-Tests the official `@modelcontextprotocol/server-filesystem`. 15 assertions: read file, read multiple files, read text file, list directory, list directory with sizes, directory tree, get file info, search files, write file, edit file, create directory, move file, list allowed directories, resource subscription, and a **negative test** that verifies path traversal is rejected. 92% tool coverage (13/14 tools; `read_media_file` excluded due to [upstream spec violation](https://github.com/modelcontextprotocol/servers/issues/4029)).
+Tests the official `@modelcontextprotocol/server-filesystem`. 14 assertions: read file, read multiple files, read text file, list directory, list directory with sizes, directory tree, get file info, search files, write file, edit file, create directory, move file, list allowed directories, and a **negative test** that verifies path traversal is rejected. 92% tool coverage (13/14 tools; `read_media_file` excluded due to [upstream spec violation](https://github.com/modelcontextprotocol/servers/issues/4029)).
 
 ```bash
 npm install -g @modelcontextprotocol/server-filesystem
@@ -197,6 +198,17 @@ Tests `logging/setLevel` on the mcp-go everything server. 2 assertions: setting 
 
 ```bash
 mcp-assert run --suite examples/mcp-go-everything-logging
+```
+
+## GitHub MCP Server. Go
+
+**Directory:** `examples/github-mcp/`
+
+Tests [github/github-mcp-server](https://github.com/github/github-mcp-server) (28K+ stars), the most popular MCP server. 6 assertions targeting read-only tools: `get_me`, `search_repositories`, `get_file_contents`, `list_issues`, `search_code`, `list_branches`. Requires a `GITHUB_PERSONAL_ACCESS_TOKEN` environment variable.
+
+```bash
+# Build the server from the github-mcp-server repo, then:
+GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_TOKEN mcp-assert run --suite examples/github-mcp
 ```
 
 ## Trajectory assertions (no server)

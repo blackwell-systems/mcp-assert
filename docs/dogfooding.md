@@ -64,9 +64,9 @@ What we found by using mcp-assert to test agent-lsp (our own MCP server) and the
 
 **How mcp-assert found it:** 12 of 15 assertion failures had the same root cause: "no identifier found" or empty responses at positions that should have worked. The pattern: all failures in the same file, all off by exactly one line: pointed to a shared-state mutation.
 
-**Fix:** Adjusted all position-dependent assertions to account for the inserted line. Long-term fix: either run `apply_edit` last, use a separate fixture copy, or use `--docker` for true isolation.
+**Fix:** Adjusted all position-dependent assertions to account for the inserted line.
 
-**Lesson:** Without Docker isolation, assertion ordering matters. Any assertion that writes to disk contaminates the shared fixture for all subsequent assertions.
+**Permanent fix shipped:** Fixture isolation. Each stdio assertion now automatically receives its own temporary copy of the fixture directory. The original fixture is never modified, so write-heavy assertions cannot shift line numbers or alter state for subsequent assertions. This eliminated the root cause entirely.
 
 ---
 

@@ -44,7 +44,7 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 |--------|----------|------------|----------|-------|
 | `agent-lsp` + gopls | Go | 63 | 100% (50/50 tools) | Internal dogfooding server |
 | `agent-lsp` skill protocols | N/A | 20 | 20/20 skills | Trajectory assertions |
-| `@modelcontextprotocol/server-filesystem` | TypeScript | 15 | 92% | Includes resource subscription test |
+| `@modelcontextprotocol/server-filesystem` | TypeScript | 14 | 92% | Read, list, search, info, write, edit, create dir, move, directory tree, path traversal rejection |
 | `@modelcontextprotocol/server-memory` | TypeScript | 5 | -- | Clean scan |
 | `mcp-server-sqlite` | Python | 6 | -- | Clean scan |
 | `mark3labs/mcp-go` everything | Go | 9 | 100% | stdio |
@@ -60,7 +60,7 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `mark3labs/mcp-go` elicitation | Go | 4 | 100% | Accept, decline, cancel, validation |
 | `PrefectHQ/fastmcp` testing_demo | Python | 16 | 100% | All 3 MCP feature categories |
 | `github/github-mcp-server` | Go | 6 | -- | Initial suite: get_me, search, list, file read |
-| **Total** | **3 languages** | **175** | | **18 suites** |
+| **Total** | **3 languages** | **174** | | **18 suites** |
 
 ## Target servers (next)
 

@@ -117,13 +117,13 @@ See the [CI Integration guide](https://blackwell-systems.github.io/mcp-assert/ci
 Full documentation is available at [blackwell-systems.github.io/mcp-assert](https://blackwell-systems.github.io/mcp-assert):
 
 - [Getting Started](https://blackwell-systems.github.io/mcp-assert/getting-started/): install, scaffold, first run
-- [Writing Assertions](https://blackwell-systems.github.io/mcp-assert/writing-assertions/): YAML format, all 15 assertion types + 4 trajectory types, setup steps, capture, fixtures
+- [Writing Assertions](https://blackwell-systems.github.io/mcp-assert/writing-assertions/): YAML format, all 15 assertion types + 4 trajectory types, 7 block types (assert, assert_prompts, assert_resources, assert_completion, assert_sampling, assert_logging, trajectory), setup steps, capture, fixtures
 - [CLI Reference](https://blackwell-systems.github.io/mcp-assert/cli/): full command reference with flags and examples
-- [Examples](https://blackwell-systems.github.io/mcp-assert/examples/): 17 example suites across 3 languages (169 assertions)
+- [Examples](https://blackwell-systems.github.io/mcp-assert/examples/): 18 example suites across 3 languages (174 assertions)
 - [CI Integration](https://blackwell-systems.github.io/mcp-assert/ci-integration/): GitHub Action, JUnit XML, regression detection
 - [Architecture](https://blackwell-systems.github.io/mcp-assert/architecture/): internals and design decisions
 - [Roadmap](https://blackwell-systems.github.io/mcp-assert/roadmap/): what's shipped and what's next
-- [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): real bugs found across 6 servers, 2 upstream issues filed
+- [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): real bugs found across 10 servers, 2 upstream issues filed
 - [Dogfooding](https://blackwell-systems.github.io/mcp-assert/dogfooding/): findings from testing our own servers
 
 ## License

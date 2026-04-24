@@ -61,19 +61,15 @@ The generated stubs don't mention that the server needs `GITHUB_PERSONAL_ACCESS_
 
 ### F2: Shell variable expansion not supported in YAML `env:` blocks
 
-Writing `GITHUB_PERSONAL_ACCESS_TOKEN: "${GITHUB_TOKEN}"` in the YAML `env:` block passes the literal string `${GITHUB_TOKEN}` to the subprocess. This overrides the correctly-set shell env var with a broken value.
+Writing `GITHUB_PERSONAL_ACCESS_TOKEN: "${GITHUB_TOKEN}"` in the YAML `env:` block passed the literal string `${GITHUB_TOKEN}` to the subprocess.
 
-**Workaround:** Don't use `env:` in YAML for secrets. Set the env var in the shell before running mcp-assert.
-
-**Fix needed:** Support `${VAR}` expansion in YAML env blocks, or at minimum document this behavior clearly.
-
-**Severity:** High. Every authenticated server hits this. The natural instinct is to put the token in the YAML, which silently breaks.
+**Status: Fixed.** `${VAR}` and `$VAR` expansion in YAML `env:` blocks is now supported. Variables are resolved from the host environment at runtime. If the variable is not set, the original string is preserved unchanged.
 
 ### F3: `--suite` doesn't accept a single file, only directories
 
-`mcp-assert run --suite path/to/single.yaml` fails with "not a directory". During development, you want to run one assertion at a time. The workaround is copying the file to a temp dir.
+`mcp-assert run --suite path/to/single.yaml` previously failed with "not a directory".
 
-**Severity:** Low. Minor inconvenience during iterative development.
+**Status: Fixed.** `--suite` now accepts both directories and single YAML files.
 
 ## Server Behavior Finding
 
@@ -99,8 +95,8 @@ Running the full generated suite against the GitHub MCP server with a valid toke
 
 ## Onboarding Improvements Identified
 
-1. **`mcp-assert init --server`**: One command to generate + snapshot + CI template. Would collapse steps 2-4 into 30 seconds.
-2. **Env var expansion**: `${VAR}` in YAML env blocks should resolve from the shell environment.
-3. **Single-file `--suite`**: Accept `--suite path/to/file.yaml` for iterative development.
-4. **Auth detection in `generate`**: When the server exits immediately (transport closed), suggest checking for required env vars.
-5. **Skip destructive stubs by default**: `generate` should check `destructiveHint` from tool annotations and set `skip: true` on write operations. Opt in with `--include-writes`.
+1. ~~**`mcp-assert init --server`**: One command to generate + snapshot + CI template.~~ **Shipped.** `mcp-assert init evals --server "cmd" --fixture ./fixtures` collapses generate + snapshot into one step.
+2. ~~**Env var expansion**: `${VAR}` in YAML env blocks should resolve from the shell environment.~~ **Shipped.** `${VAR}` and `$VAR` expansion now works in `env:` blocks.
+3. ~~**Single-file `--suite`**: Accept `--suite path/to/file.yaml` for iterative development.~~ **Shipped.** `--suite` accepts both directories and single YAML files.
+4. **Auth detection in `generate`**: When the server exits immediately (transport closed), suggest checking for required env vars. (Not yet implemented.)
+5. ~~**Skip destructive stubs by default**: `generate` should check `destructiveHint` from tool annotations and set `skip: true` on write operations. Opt in with `--include-writes`.~~ **Shipped.** Destructive tools are generated with `skip: true` by default; use `--include-writes` to include them.

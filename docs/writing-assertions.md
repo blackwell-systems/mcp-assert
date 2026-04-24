@@ -378,7 +378,7 @@ timeout: 30s
 
 `capture_progress` registers a notification handler before the tool call. After the tool returns, `min_progress` asserts the handler received at least that many `notifications/progress` messages.
 
-If `capture_progress: true` is set but `min_progress` is absent, progress notifications are collected but not checked — useful for ensuring the feature doesn't break existing assertions.
+If `capture_progress: true` is set but `min_progress` is absent, progress notifications are collected but not checked. This is useful for ensuring the feature doesn't break existing assertions.
 
 Note: progress capture requires the server to properly send `notifications/progress` notifications. The mcp-go `everything` server's `longRunningOperation` has a known stdio transport bug (`fmt.Printf` to stdout corrupts the JSON-RPC stream) that prevents reliable testing with that server. Test against servers that send progress correctly.
 
@@ -515,6 +515,93 @@ assert_resources:
     not_error: true
     contains: ["Alice"]
 ```
+
+## Completion Assertions
+
+MCP servers support `completion/complete` for argument autocompletion on prompts and resources. Use `assert_completion:` instead of `assert:` to test completion behavior.
+
+```yaml
+name: completion for prompt argument returns suggestions
+server:
+  command: /path/to/mcp-server
+assert_completion:
+  ref:
+    type: "ref/prompt"
+    name: "complex_prompt"
+  argument:
+    name: "style"
+    value: ""
+  expect:
+    not_empty: true
+    contains: ["formal"]
+timeout: 15s
+```
+
+The `ref` field identifies whether you are completing against a prompt (`ref/prompt`) or a resource (`ref/resource`). The `argument` field specifies which argument to complete and an optional partial value. All `expect` assertions work on the completion result.
+
+### Resource completion
+
+```yaml
+assert_completion:
+  ref:
+    type: "ref/resource"
+    name: "test://static/resource"
+  argument:
+    name: "uri"
+    value: "test://"
+  expect:
+    not_empty: true
+```
+
+## Sampling Assertions
+
+When testing a server that uses `sampling/createMessage`, use `assert_sampling:` to combine the mock LLM response and tool call in one block. This is a more concise alternative to setting `client_capabilities.sampling` in the server block.
+
+```yaml
+name: ask_llm returns mock sampling response
+server:
+  command: /path/to/sampling-server
+assert_sampling:
+  tool: ask_llm
+  args:
+    question: "What is the capital of France?"
+  mock_text: "The capital of France is Paris."
+  mock_model: mock-gpt
+  expect:
+    not_error: true
+    contains: ["Paris"]
+timeout: 15s
+```
+
+The runner automatically configures `client_capabilities.sampling` from `mock_text` and `mock_model`, calls the specified tool (which triggers the server's sampling request), and asserts on the final tool result.
+
+## Logging Assertions
+
+MCP servers support `logging/setLevel` to configure log verbosity and emit `notifications/message` events. Use `assert_logging:` to test logging behavior.
+
+```yaml
+name: logging captures notifications/message at debug level
+server:
+  command: /path/to/mcp-server
+assert_logging:
+  set_level: debug
+  tool: echo
+  args:
+    message: "test debug logging"
+  expect:
+    min_messages: 1
+    contains_level: ["debug"]
+    contains_data: ["test debug logging"]
+timeout: 15s
+```
+
+The `set_level` field calls `logging/setLevel` before executing the tool. After the tool call, captured `notifications/message` events are checked against the `expect` block. The `expect` block for logging assertions uses different fields than the standard `expect`:
+
+| Field | What it checks |
+|-------|----------------|
+| `min_messages` | At least N log messages were captured |
+| `contains_level` | At least one message has each listed log level |
+| `contains_data` | At least one message data field contains each listed string |
 
 ## Trajectory Assertions
 

@@ -6,14 +6,14 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 9 |
-| Server suites | 17 (including HTTP transport variant, prompts, resources, completion, and logging suites) |
+| Servers scanned | 10 |
+| Server suites | 18 (including HTTP transport variant, prompts, resources, completion, logging, and GitHub MCP suites) |
 | Languages tested | 3 (Go, TypeScript, Python) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 169 (149 server + 20 trajectory) |
+| Total assertions | 174 (154 server + 20 trajectory) |
 | Upstream bugs found | 2 |
 | Upstream issues filed | 2 |
-| Clean scans (no bugs) | 6 |
+| Clean scans (no bugs) | 7 |
 | Internal bugs fixed | 5 |
 
 ## Server Results
@@ -22,7 +22,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 15 | 92% (13/14) | 1 | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). `read_media_file` returns `type: "blob"`, violating MCP 2025-11-25 spec |
+| `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | 92% (13/14) | 1 | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). `read_media_file` returns `type: "blob"`, violating MCP 2025-11-25 spec |
 | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 | - | 0 | Clean |
 | `mcp-server-sqlite` | Python | stdio | 6 | - | 0 | Clean |
 
@@ -42,6 +42,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | `mark3labs/mcp-go` everything (completion) | Go | stdio | 3 | 100% | 0 | Clean. `completion/complete` for prompt argument, resource URI, and empty prefix. |
 | `mark3labs/mcp-go` everything (logging) | Go | stdio | 2 | 100% | 0 | Clean. `logging/setLevel` with info level, log message capture after tool call. |
 | `PrefectHQ/fastmcp` testing_demo | Python | stdio | 16 | 100% tools + resources + prompts | 0 | Clean. All three MCP feature categories: 11 tool assertions (100% coverage), 3 resource assertions (list, read static, read parameterized), 2 prompt assertions (list, get with argument). |
+| `github/github-mcp-server` | Go | stdio | 6 | -- (read-only subset) | 0 | Clean. 6 read-only tools: `get_me`, `search_repositories`, `get_file_contents`, `list_issues`, `search_code`, `list_branches`. |
 
 ### Internal (agent-lsp)
 

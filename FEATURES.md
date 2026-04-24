@@ -53,6 +53,22 @@ Used with `trajectory:` field to validate tool call sequences. Source is either 
 
 ---
 
+## Assertion Block Types (7)
+
+| Block | What it tests | Key fields |
+|-------|---------------|------------|
+| `assert:` | Tool call via `tools/call` | `tool`, `args`, `expect`, `capture_progress` |
+| `assert_prompts:` | `prompts/list` or `prompts/get` | `list: {}`, `get: {name, arguments}`, `expect` |
+| `assert_resources:` | `resources/list`, `resources/read`, subscribe/unsubscribe | `list: {}`, `read: "uri"`, `subscribe`, `unsubscribe`, `expect` |
+| `assert_completion:` | `completion/complete` for argument autocompletion | `ref: {type, name}`, `argument: {name, value}`, `expect` |
+| `assert_sampling:` | Tool call that triggers `sampling/createMessage` | `tool`, `args`, `mock_text`, `mock_model`, `expect` |
+| `assert_logging:` | `logging/setLevel` + `notifications/message` capture | `set_level`, `tool`, `args`, `expect: {min_messages, contains_level, contains_data}` |
+| `trajectory:` | Tool call sequence validation (no server) | `trace:` or `audit_log:` source, `trajectory:` checks |
+
+Each YAML file uses exactly one block type. The `assert:` block is the default for testing tool calls. The other block types test specific MCP protocol areas.
+
+---
+
 ## Output Formats (7)
 
 | Format | Flag | Description |
@@ -161,11 +177,11 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 
 ---
 
-## Example Suites (17 suites, 3 languages, 169 assertions)
+## Example Suites (18 suites, 3 languages, 174 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|
-| `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 15 | Read, list, search, info, write, edit, create dir, move, directory tree, path traversal rejection, resource subscription (92% tool coverage) |
+| `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | Read, list, search, info, write, edit, create dir, move, directory tree, path traversal rejection (92% tool coverage) |
 | `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 | Stateful setup (create → query), relations, observations |
 | `examples/sqlite/` | `mcp-server-sqlite` | Python | stdio | 6 | SQL queries, joins, counts, schema introspection, error handling |
 | `examples/agent-lsp-go/` | agent-lsp + gopls | Go | stdio | 63 | All 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, build (100% tool coverage) |
@@ -180,7 +196,8 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 | `examples/mcp-go-elicitation/` | mark3labs/mcp-go elicitation | Go | stdio | 4 | `create_project`, `cancel_flow`, `decline_flow`, `validation_constraints`; form-based elicitation via `client_capabilities.elicitation` |
 | `examples/mcp-go-everything-completion/` | mark3labs/mcp-go everything | Go | stdio | 3 | `completion/complete` for prompt argument, resource URI, and empty prefix |
 | `examples/mcp-go-everything-logging/` | mark3labs/mcp-go everything | Go | stdio | 2 | `logging/setLevel` with level setting and log message capture |
-| `examples/fastmcp-testing-demo/` | PrefectHQ/fastmcp testing_demo | Python | stdio | 16 | add, greet, async_multiply: edge cases, defaults, negative tests, missing-arg error (100% tool coverage); resources (list, read static, read parameterized), prompts (list, get with arguments) — all three MCP feature categories |
+| `examples/fastmcp-testing-demo/` | PrefectHQ/fastmcp testing_demo | Python | stdio | 16 | add, greet, async_multiply: edge cases, defaults, negative tests, missing-arg error (100% tool coverage); resources (list, read static, read parameterized), prompts (list, get with arguments), all three MCP feature categories |
+| `examples/github-mcp/` | github/github-mcp-server | Go | stdio | 6 | get_me, search_repositories, get_file_contents, list_issues, search_code, list_branches (read-only subset) |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 | All 20 agent-lsp skill protocols: required tool call sequences, safety gates (e.g. get_references before apply_edit), absence checks (e.g. no apply_edit in simulate), order constraints |
 
 ---
@@ -189,8 +206,8 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 
 | Job | What | Depends on |
 |-----|------|------------|
-| `build-and-test` | Build, vet, 111 unit tests with `-race` | - |
-| `e2e-filesystem` | 15 assertions against filesystem server | build-and-test |
+| `build-and-test` | Build, vet, 218 unit tests with `-race` | - |
+| `e2e-filesystem` | 14 assertions against filesystem server | build-and-test |
 | `e2e-memory` | 5 assertions against memory server | build-and-test |
 | `e2e-sqlite` | 6 assertions against SQLite server (Python/uv) | build-and-test |
 | `e2e-agent-lsp` | 63 assertions against agent-lsp + gopls | build-and-test |
@@ -203,10 +220,10 @@ All e2e jobs upload JUnit XML artifacts.
 
 | Package | Tests | What |
 |---------|-------|------|
-| `internal/assertion` | 26 | All 15 assertion types (including min_progress), loader (YAML parsing, subdirs, errors), snapshot comparison, CheckProgress |
-| `internal/report` | 36 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare |
-| `internal/runner` | 95 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, transport selection (stdio/SSE/HTTP), URL validation, generate schema parsing, stub generation, filename sanitization, CLI error paths, client capabilities (handler unit tests, fixture substitution, capability path selection, bad-server error paths), prompt assertions (list/get/validation/fixture), progress capture |
-| Total | 157 | Race-detector clean |
+| `internal/assertion` | 53 | All 15 assertion types (including min_progress), loader (YAML parsing, subdirs, errors), snapshot comparison, CheckProgress, completion JSON, logging checker, trajectory checker |
+| `internal/report` | 42 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare, diff formatting |
+| `internal/runner` | 123 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, transport selection (stdio/SSE/HTTP), URL validation, generate schema parsing, stub generation, filename sanitization, CLI error paths, client capabilities (handler unit tests, fixture substitution, capability path selection, bad-server error paths), prompt assertions (list/get/validation/fixture), progress capture, fix mode, fixture isolation, intercept, logging, sampling, completion |
+| Total | 218 | Race-detector clean |
 
 ---
 
@@ -280,6 +297,40 @@ assert_resources:
   expect:
     not_empty: true
 
+# OR: test MCP completion (autocompletion)
+assert_completion:
+  ref:
+    type: "ref/prompt"               # "ref/prompt" or "ref/resource"
+    name: "complex_prompt"
+  argument:
+    name: "style"
+    value: ""                        # partial value for completion
+  expect:
+    not_empty: true
+    contains: ["formal"]
+
+# OR: test sampling-triggered tool (mock LLM in one block)
+assert_sampling:
+  tool: ask_llm
+  args:
+    question: "What is the capital of France?"
+  mock_text: "The capital of France is Paris."
+  mock_model: mock-gpt               # optional
+  expect:
+    not_error: true
+    contains: ["Paris"]
+
+# OR: test logging (setLevel + message capture)
+assert_logging:
+  set_level: debug
+  tool: echo
+  args:
+    message: "test"
+  expect:
+    min_messages: 1
+    contains_level: ["debug"]
+    contains_data: ["test"]
+
 # OR: trajectory assertion (no server; uses trace: or audit_log:)
 trace:
   - tool: prepare_rename
@@ -306,19 +357,30 @@ trajectory:
 ```
 cmd/mcp-assert/main.go     CLI entry, command dispatch
 internal/assertion/
-  types.go                  Suite, Assertion, Expect, Result types
+  types.go                  Suite, Assertion, Expect, Result types + all block types
   loader.go                 YAML file loading, subdirectory recursion
-  checker.go                15 assertion type implementations (+ 4 trajectory types)
+  checker.go                15 assertion type implementations
+  trajectory.go             4 trajectory assertion types (order, presence, absence, args_contain)
+  sampling_types.go         SamplingAssertBlock type
+  logging_types.go          LoggingAssertBlock, LoggingExpect, LogMessage types
+  logging_checker.go        Logging assertion checker
 internal/runner/
   runner.go                 Run, Matrix, CI commands, MCP client lifecycle
-  runner_test.go            31 tests: substitution, overrides, error paths, timeout, Docker, generate
+  client.go                 MCP client creation, transport selection, client capabilities
+  commands.go               CLI command dispatch
+  execute.go                Assertion routing (assert, resources, prompts, completion, sampling, logging, trajectory)
   coverage.go               Coverage command, tools/list query, --coverage-json
   fix.go                    --fix mode: ScanNearbyPositions, FixSuggestion, YAML patch generation
+  fixture.go                Per-assertion fixture isolation (temp directory copy)
   generate.go               Auto-generate stub assertions from tools/list
-  init.go                   Scaffold assertion template and fixture directory
+  init.go                   Scaffold assertion template and fixture directory; init --server one-step generation
   intercept.go              intercept command: stdio proxy, live tool call capture, trajectory validation
+  logging.go                runLoggingAssertion: logging/setLevel + notifications/message
+  sampling.go               runSamplingAssertion: sampling-triggered tool calls
   snapshot.go               Snapshot capture/compare command
-  watch.go                  File-watching rerun loop
+  substitute.go             {{fixture}} and ${VAR} substitution
+  util.go                   Shared utilities
+  watch.go                  File-watching rerun loop with unified diff on status flips
 internal/report/
   report.go                 Terminal output (color-aware)
   color.go                  ANSI color, TTY detection, progress

@@ -166,7 +166,7 @@ Edit the generated YAMLs to replace `TODO` placeholders with real values, then r
 
 ## Next steps
 
-- [Writing Assertions](writing-assertions.md): YAML format, all 15 assertion types, setup steps, capture, fixtures, trajectory assertions
+- [Writing Assertions](writing-assertions.md): YAML format, all 15 assertion types, 7 block types, setup steps, capture, fixtures, trajectory assertions
 - [CLI Reference](cli.md): full command reference with flags and examples
 - [CI Integration](ci-integration.md): GitHub Action, JUnit XML, regression detection
-- [Examples](examples.md): 16 server suites + trajectory suite across Go, TypeScript, and Python (169 assertions total)
+- [Examples](examples.md): 17 server suites + trajectory suite across Go, TypeScript, and Python (174 assertions total)
