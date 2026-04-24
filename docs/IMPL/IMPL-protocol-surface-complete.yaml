@@ -503,7 +503,6 @@ waves:
             - internal/assertion/checker.go
             - internal/assertion/checker_test.go
             - internal/runner/execute.go
-            - internal/runner/runner_test.go
             - examples/mcp-go-everything-resources/subscribe.yaml
             - examples/mcp-go-everything-resources/unsubscribe.yaml
             - examples/mcp-go-everything-completion/prompt_completion.yaml
@@ -1085,13 +1084,13 @@ waves:
             ### Constraints
             - Do NOT modify internal/assertion/types.go (owned by Agent A).
             - Do NOT modify internal/runner/execute.go (owned by Agent A).
-            - Do NOT modify internal/runner/runner_test.go (owned by Agent A).
             - Only modify the staticElicitationHandler.Elicit() method in client.go.
             - Do not change staticRootsHandler, staticSamplingHandler, or
               createStdioClientWithCapabilities.
             - Do NOT modify the existing create_project.yaml file.
           files:
             - internal/runner/client.go
+            - internal/runner/runner_test.go
             - internal/runner/elicitation_test.go
             - examples/mcp-go-elicitation/decline_flow.yaml
             - examples/mcp-go-elicitation/cancel_flow.yaml
