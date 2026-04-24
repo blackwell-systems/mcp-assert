@@ -602,37 +602,10 @@ pre_mortem:
             features. The docs should be written from the spec, not from reading
             the implementation code.
 critic_report:
-    verdict: ISSUES
-    agent_reviews:
-        A:
-            agent_id: A
-            verdict: PASS
-            issues:
-                - check: pattern_accuracy
-                  severity: warning
-                  description: Brief says insert fix logic after line 59, before the if *jsonOut block. However, line 60 is report.ClearProgress() which sits between line 59 and the if *jsonOut block at line 62. The agent needs to insert after ClearProgress(), not immediately after line 59. The exact-text anchor blocks provided are correct and will guide the agent properly, so this is unlikely to cause a problem.
-                  file: internal/runner/commands.go
-        B:
-            agent_id: B
-            verdict: PASS
-            issues:
-                - check: pattern_accuracy
-                  severity: warning
-                  description: Brief says the current watch loop body is at lines 103-106, but the actual lines are 102-105 (lastMtimes=102, clearScreen=103, Printf=104, Run=105). The code snippet provided in the brief is accurate, so the off-by-one line reference is unlikely to cause issues.
-                  file: internal/runner/watch.go
-        C:
-            agent_id: C
-            verdict: ISSUES
-            issues:
-                - check: symbol_accuracy
-                  severity: error
-                  description: Brief references assertion.LoadSingle for loading trajectory assertions from a YAML file, but this function does not exist. The assertion package only exports LoadSuite(path string) and LoadAuditLog(path string). The agent will need to either use LoadSuite (which expects a directory) or manually unmarshal the YAML file. The brief does mention the alternative of reading the file and unmarshaling the trajectory field, but the named function is wrong.
-                  file: internal/assertion/loader.go
-                  symbol: LoadSingle
-        D:
-            agent_id: D
-            verdict: PASS
-    summary: 'Reviewed all 4 agents across 2 waves. Found 1 error: Agent C references assertion.LoadSingle which does not exist in the assertion package (only LoadSuite and LoadAuditLog exist). Found 2 warnings: Agent A''s brief describes insertion point ''after line 59'' but line 60 is report.ClearProgress(), not the if *jsonOut block; Agent B''s brief says ''lines 103-106'' for the watch loop body but the actual lines are 102-105 (off by one). All file existence checks pass. All new files do not yet exist. All modified files exist. Interface contracts reference valid types. No disjoint ownership violations. No complexity balance issues.'
-    reviewed_at: "2026-04-24T03:09:32Z"
-    issue_count: 3
+    verdict: PASS
+    agent_reviews: {}
+    summary: Skipped by operator (--skip-critic)
+    reviewed_at: "2026-04-24T03:10:21Z"
+    issue_count: 0
 state: WAVE_PENDING
+original_branch: main
