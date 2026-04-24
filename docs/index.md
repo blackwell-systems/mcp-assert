@@ -27,11 +27,13 @@ Most MCP servers are heavy on the first three and light on the last two. If your
 ## Quick Start
 
 ```bash
-# Install
+# Install (pick one)
 go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
+brew install blackwell-systems/tap/mcp-assert
+curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/install.sh | sh
 
 # Scaffold your first assertion
-mcp-assert init evals
+mcp-assert init evals                   # Or: init evals --server "my-server"
 
 # Run it
 mcp-assert run --suite evals/ --fixture evals/fixtures

@@ -49,12 +49,22 @@ You could. The assertion logic is straightforward. What you'd have to build your
 
 The value isn't in the assertion logic. It's in not writing MCP client boilerplate, having one tool that works across every MCP server regardless of implementation language, and getting CI-grade reporting for free.
 
+## Install
+
+```bash
+# Go
+go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
+
+# Homebrew
+brew install blackwell-systems/tap/mcp-assert
+
+# curl | sh (macOS / Linux)
+curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/install.sh | sh
+```
+
 ## Quick Start
 
 ```bash
-# Install
-go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
-
 # Scaffold your first assertion
 mcp-assert init evals                   # Or: init evals --server "my-server" for auto-generation
 

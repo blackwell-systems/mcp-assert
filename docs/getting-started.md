@@ -7,8 +7,17 @@
 
 ## Install
 
+Pick one:
+
 ```bash
+# Go
 go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
+
+# Homebrew
+brew install blackwell-systems/tap/mcp-assert
+
+# curl | sh (macOS / Linux)
+curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/install.sh | sh
 ```
 
 ## One-step suite generation (recommended)
