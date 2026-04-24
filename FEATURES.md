@@ -119,6 +119,14 @@ MCP is bidirectional: servers can request things from the client (roots, samplin
 
 ---
 
+## Fixture Isolation
+
+Each assertion automatically receives its own copy of the fixture directory (via a temporary directory). The original fixture is never modified, so assertions that write files, apply edits, or commit changes cannot affect subsequent assertions. The temp copy is cleaned up after each assertion finishes, regardless of pass or fail.
+
+Fixture isolation is automatic for stdio transport. Docker mode already isolates via fresh containers, so the copy is skipped when `--docker` is used.
+
+---
+
 ## Docker Isolation
 
 `--docker <image>` wraps the MCP server command in `docker run --rm -i` (stdio transport only):

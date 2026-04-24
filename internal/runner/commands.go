@@ -50,7 +50,9 @@ func Run(args []string) error {
 		for trial := 1; trial <= *trials; trial++ {
 			current++
 			report.ProgressLine(current, totalAssertions, a.Name)
-			r := runAssertion(a, *fixture, *timeout, *docker)
+			isoFixture, cleanup := isolateFixture(*fixture, *docker)
+			r := runAssertion(a, isoFixture, *timeout, *docker)
+			cleanup()
 			r.Trial = trial
 			allResults = append(allResults, r)
 		}
@@ -128,7 +130,9 @@ func Matrix(args []string) error {
 			// Override server config for matrix mode.
 			a.Server.Command = "agent-lsp"
 			a.Server.Args = []string{lang + ":" + server}
-			r := runAssertion(a, *fixture, *timeout, "")
+			isoFixture, cleanup := isolateFixture(*fixture, "")
+			r := runAssertion(a, isoFixture, *timeout, "")
+			cleanup()
 			r.Language = lang
 			allResults = append(allResults, r)
 		}
@@ -175,7 +179,9 @@ func CI(args []string) error {
 			applyServerOverride(&a, *server)
 		}
 		report.ProgressLine(i+1, len(suite.Assertions), a.Name)
-		r := runAssertion(a, *fixture, *timeout, *docker)
+		isoFixture, cleanup := isolateFixture(*fixture, *docker)
+		r := runAssertion(a, isoFixture, *timeout, *docker)
+		cleanup()
 		allResults = append(allResults, r)
 	}
 	report.ClearProgress()

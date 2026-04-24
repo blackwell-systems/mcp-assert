@@ -5,6 +5,7 @@
 //   - client.go    — MCP client creation (stdio, SSE, HTTP, capabilities)
 //   - execute.go   — runAssertion and its sub-dispatchers (resource, prompt, trajectory)
 //   - substitute.go — template substitution ({{fixture}}, captured variables, JSON path)
+//   - fixture.go   — per-assertion fixture isolation (copyDir, isolateFixture)
 //   - util.go      — writeReports, applyServerOverride, countFails, countPasses, extractText
 //   - snapshot.go  — Snapshot command and runAndCapture
 //   - coverage.go  — Coverage command

@@ -123,6 +123,8 @@ assert:
 
 Use fixtures for test data your server needs: sample files, databases, config. Keep them in version control alongside your assertions.
 
+**Fixture isolation:** Each assertion automatically receives its own copy of the fixture directory. The original fixture is never modified, even if the assertion writes files, applies edits, or commits changes. This prevents one assertion's side effects from shifting line numbers or altering state for subsequent assertions. Docker mode already isolates via fresh containers, so the copy is skipped when `--docker` is used.
+
 ## Negative tests (expecting errors)
 
 Test that your server rejects bad input correctly:

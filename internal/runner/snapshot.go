@@ -60,7 +60,9 @@ func SnapshotCore(opts SnapshotOpts) (*SnapshotResult, error) {
 		report.ProgressLine(i+1, total, a.Name)
 
 		// Run the tool call and capture the response.
-		text, isError, err := runAndCapture(a, opts.Fixture, opts.Timeout, opts.Docker)
+		isoFixture, cleanup := isolateFixture(opts.Fixture, opts.Docker)
+		text, isError, err := runAndCapture(a, isoFixture, opts.Timeout, opts.Docker)
+		cleanup()
 		if err != nil {
 			fmt.Printf("  ERROR  %s: %v\n", a.Name, err)
 			continue
