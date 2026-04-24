@@ -1,2 +1,4 @@
 # Compiled binary
 mcp-assert
+.saw-state/
+gate-cache.json
