@@ -31,6 +31,21 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 		return runPromptAssertion(a, fixture, timeout, dockerImage, start)
 	}
 
+	// Completion assertions call completion/complete.
+	if a.AssertCompletion != nil {
+		return runCompletionAssertion(a, fixture, timeout, dockerImage, start)
+	}
+
+	// Sampling assertions call a tool that triggers server-side sampling.
+	if a.AssertSampling != nil {
+		return runSamplingAssertion(a, fixture, timeout, dockerImage, start)
+	}
+
+	// Logging assertions test logging/setLevel and notifications/message.
+	if a.AssertLogging != nil {
+		return runLoggingAssertion(a, fixture, timeout, dockerImage, start)
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -167,11 +182,11 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 func runResourceAssertion(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string, start time.Time) assertion.Result {
 	// Validate up front — avoids starting the server for a malformed assertion.
 	rb := a.AssertResources
-	if rb.List == nil && rb.Read == "" {
+	if rb.List == nil && rb.Read == "" && rb.Subscribe == "" {
 		return assertion.Result{
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
-			Detail:   "assert_resources requires either 'list' or 'read'",
+			Detail:   "assert_resources requires 'list', 'read', or 'subscribe'",
 			Duration: time.Since(start),
 		}
 	}
@@ -214,6 +229,26 @@ func runResourceAssertion(a assertion.Assertion, fixture string, timeout time.Du
 				Name:     a.Name,
 				Status:   assertion.StatusFail,
 				Detail:   fmt.Sprintf("setup step %s failed: %v", step.Tool, err),
+				Duration: time.Since(start),
+			}
+		}
+	}
+
+	// Handle resource subscriptions.
+	var notificationCount int32
+	if rb.Subscribe != "" {
+		mcpClient.OnNotification(func(n mcp.JSONRPCNotification) {
+			if n.Method == "notifications/resources/updated" {
+				atomic.AddInt32(&notificationCount, 1)
+			}
+		})
+		subReq := mcp.SubscribeRequest{}
+		subReq.Params.URI = rb.Subscribe
+		if err := mcpClient.Subscribe(ctx, subReq); err != nil {
+			return assertion.Result{
+				Name:     a.Name,
+				Status:   assertion.StatusFail,
+				Detail:   fmt.Sprintf("resources/subscribe failed for %s: %v", rb.Subscribe, err),
 				Duration: time.Since(start),
 			}
 		}
@@ -286,6 +321,32 @@ func runResourceAssertion(a assertion.Assertion, fixture string, timeout time.Du
 			Status:   assertion.StatusFail,
 			Detail:   detail,
 			Duration: time.Since(start),
+		}
+	}
+
+	// Check notification expectation if set.
+	if rb.ExpectNotification != nil && *rb.ExpectNotification {
+		if atomic.LoadInt32(&notificationCount) == 0 {
+			return assertion.Result{
+				Name:     a.Name,
+				Status:   assertion.StatusFail,
+				Detail:   "expected resource update notification but received none",
+				Duration: time.Since(start),
+			}
+		}
+	}
+
+	// Unsubscribe if requested.
+	if rb.Unsubscribe != "" {
+		unsubReq := mcp.UnsubscribeRequest{}
+		unsubReq.Params.URI = rb.Unsubscribe
+		if err := mcpClient.Unsubscribe(ctx, unsubReq); err != nil {
+			return assertion.Result{
+				Name:     a.Name,
+				Status:   assertion.StatusFail,
+				Detail:   fmt.Sprintf("resources/unsubscribe failed for %s: %v", rb.Unsubscribe, err),
+				Duration: time.Since(start),
+			}
 		}
 	}
 
@@ -416,6 +477,91 @@ func runPromptAssertion(a assertion.Assertion, fixture string, timeout time.Dura
 	}
 
 	if err := assertion.Check(pb.Expect, resultText, false); err != nil {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   err.Error(),
+			Duration: time.Since(start),
+		}
+	}
+
+	return assertion.Result{
+		Name:     a.Name,
+		Status:   assertion.StatusPass,
+		Duration: time.Since(start),
+	}
+}
+
+// runCompletionAssertion tests MCP completion/complete.
+func runCompletionAssertion(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string, start time.Time) assertion.Result {
+	cb := a.AssertCompletion
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	mcpClient, err := createMCPClient(a.Server, fixture, dockerImage)
+	if err != nil {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   fmt.Sprintf("failed to start MCP server: %v", err),
+			Duration: time.Since(start),
+		}
+	}
+	defer mcpClient.Close()
+
+	initReq := mcp.InitializeRequest{}
+	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
+	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
+	if _, err := mcpClient.Initialize(ctx, initReq); err != nil {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   fmt.Sprintf("MCP initialize failed: %v", err),
+			Duration: time.Since(start),
+		}
+	}
+
+	// Build the completion request with the appropriate reference type.
+	completeReq := mcp.CompleteRequest{}
+	completeReq.Params.Argument = mcp.CompleteArgument{
+		Name:  cb.Argument.Name,
+		Value: cb.Argument.Value,
+	}
+	switch cb.Ref.Type {
+	case "ref/prompt":
+		completeReq.Params.Ref = mcp.PromptReference{
+			Type: "ref/prompt",
+			Name: cb.Ref.Name,
+		}
+	case "ref/resource":
+		completeReq.Params.Ref = mcp.ResourceReference{
+			Type: "ref/resource",
+			URI:  cb.Ref.Name,
+		}
+	default:
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   fmt.Sprintf("unsupported completion ref type: %q (use \"ref/prompt\" or \"ref/resource\")", cb.Ref.Type),
+			Duration: time.Since(start),
+		}
+	}
+
+	result, err := mcpClient.Complete(ctx, completeReq)
+	if err != nil {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusFail,
+			Detail:   fmt.Sprintf("completion/complete failed: %v", err),
+			Duration: time.Since(start),
+		}
+	}
+
+	data, _ := json.Marshal(result)
+	resultText := string(data)
+
+	if err := assertion.Check(cb.Expect, resultText, false); err != nil {
 		return assertion.Result{
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
