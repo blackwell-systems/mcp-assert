@@ -1,4 +1,4 @@
-# Compiled binary
-mcp-assert
+# Compiled binary (root only, not npm/mcp-assert/ package dir)
+/mcp-assert
 .saw-state/
 gate-cache.json

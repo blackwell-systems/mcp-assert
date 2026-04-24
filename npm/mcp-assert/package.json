@@ -1,0 +1,23 @@
+{
+  "name": "@blackwell-systems/mcp-assert",
+  "version": "0.2.0",
+  "description": "Deterministic correctness testing for MCP servers",
+  "bin": {
+    "mcp-assert": "bin/mcp-assert"
+  },
+  "optionalDependencies": {
+    "@blackwell-systems/mcp-assert-darwin-arm64": "0.2.0",
+    "@blackwell-systems/mcp-assert-darwin-x64": "0.2.0",
+    "@blackwell-systems/mcp-assert-linux-arm64": "0.2.0",
+    "@blackwell-systems/mcp-assert-linux-x64": "0.2.0",
+    "@blackwell-systems/mcp-assert-win32-x64": "0.2.0",
+    "@blackwell-systems/mcp-assert-win32-arm64": "0.2.0"
+  },
+  "keywords": ["mcp", "testing", "assertions", "eval", "ci", "model-context-protocol"],
+  "homepage": "https://github.com/blackwell-systems/mcp-assert",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blackwell-systems/mcp-assert.git"
+  },
+  "license": "MIT"
+}
