@@ -2,6 +2,19 @@
 
 ## Commands
 
+```
+mcp-assert init     [dir] [--server <cmd>] [--fixture <dir>] [--timeout <duration>]
+mcp-assert run      --suite <path> [--fix] [flags]
+mcp-assert ci       --suite <path> [--fix] [flags]
+mcp-assert matrix   --suite <dir> --languages <list> [flags]
+mcp-assert coverage --suite <dir> --server <cmd> [flags]
+mcp-assert generate --server <cmd> --output <dir> [flags]
+mcp-assert snapshot --suite <dir> --server <cmd> [flags]
+mcp-assert watch    --suite <dir> [flags]
+mcp-assert intercept --server <cmd> [--trajectory <path>] [--timeout <duration>]
+mcp-assert version
+```
+
 ### `mcp-assert init`
 
 Scaffold an assertion template, or generate a complete working suite from a live server.
@@ -45,6 +58,7 @@ mcp-assert run --suite <path> [flags]
 | `--badge <path>` | Write shields.io endpoint JSON |
 | `--baseline <path>` | Compare against saved baseline |
 | `--save-baseline <path>` | Save current results as baseline JSON |
+| `--fix` | Scan nearby positions when position-sensitive assertions fail and suggest corrections |
 | `--timeout <duration>` | Per-assertion timeout (default: `30s`) |
 
 **Exit codes:** 0 = all passed, 1 = one or more failures.
@@ -61,6 +75,7 @@ mcp-assert ci --suite <path> [flags]
 |------|-------------|
 | `--threshold <n>` | Minimum pass percentage (e.g., `95`) |
 | `--fail-on-regression` | Exit 1 if a previously-passing assertion now fails (requires `--baseline`) |
+| `--fix` | Scan nearby positions when position-sensitive assertions fail and suggest corrections |
 
 Auto-detects `$GITHUB_STEP_SUMMARY` for markdown output.
 
@@ -156,6 +171,24 @@ mcp-assert watch --suite <dir> [--server <cmd>] [--fixture <dir>] [--interval <d
 | `--interval <duration>` | Polling interval (default: `2s`) |
 
 Polls for changes, clears terminal between runs. The assertion development loop: edit YAML, save, see result.
+
+When an assertion's status changes between iterations (e.g., PASS to FAIL), watch mode displays a unified diff of the expected vs actual response to help diagnose the change.
+
+### `mcp-assert intercept`
+
+Proxy stdio between an agent and an MCP server, capturing every tool call in real time.
+
+```bash
+mcp-assert intercept --server <cmd> [--trajectory <path>] [--timeout <duration>]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--server <cmd>` | MCP server command to proxy traffic to (required) |
+| `--trajectory <path>` | YAML file containing trajectory assertions to validate on disconnect |
+| `--timeout <duration>` | Timeout for the proxy session (default: `30s`) |
+
+Sits between your agent (on stdin/stdout) and the MCP server, forwarding all JSON-RPC messages transparently while recording every `tools/call` invocation. When the agent disconnects, intercept validates the captured call sequence against any trajectory assertions in the `--trajectory` file and reports the results. Use this as an alternative to `trace:` or `audit_log:` when you want to validate a real agent session without modifying the agent itself.
 
 ### `mcp-assert version`
 

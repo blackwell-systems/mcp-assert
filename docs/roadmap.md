@@ -18,14 +18,6 @@
 | **npm wrapper** | Medium | `npx mcp-assert`: same pattern, TypeScript audience. |
 | **MCP registry integration** | Medium | Surface the mcp-assert test badge prominently on Glama and Smithery listings. Servers that pass a reference suite get a "verified" marker in the registry. |
 
-## Technical Depth
-
-| Item | Priority | Description |
-|------|----------|-------------|
-| **`--fix` mode for position errors** | High | When a position-sensitive assertion fails with "no identifier found" or "column is beyond end of line", suggest the correct line/column. Re-run scanning nearby positions, emit a suggested YAML patch. |
-| **Watch mode diff view** | Medium | When an assertion flips from PASS to FAIL in `--watch` mode, show a diff of expected vs actual response. |
-| **Live agent trajectory capture** | Low | Intercept tool calls made by a real agent session in real time (without needing a pre-recorded trace or audit log). Extends the existing `trace:` and `audit_log:` sources. |
-
 ## MCP Protocol Surface Coverage
 
 Tracking coverage of every method defined in the MCP 2025-11-25 specification.
@@ -87,7 +79,7 @@ Tracking coverage of every method defined in the MCP 2025-11-25 specification.
 | **Single tool responses** | Supported | 15 assertion types + 4 trajectory types |
 | **Multi-step workflows** | Supported | `setup:` steps with `capture:` for chaining outputs |
 | **Trajectory validation** | Supported | Inline `trace:` and `audit_log:` sources |
-| **Live agent trajectory capture** | Planned | Intercept tool calls in real time |
+| **Live agent trajectory capture** | Supported | `intercept` command proxies stdio and captures tool calls in real time |
 | **Snapshot regression** | Supported | `snapshot --update` captures outputs; subsequent runs detect changes |
 | **Cross-language conformance** | Supported | Matrix mode runs same assertions across N servers |
 
