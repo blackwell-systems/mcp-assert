@@ -549,6 +549,7 @@ waves:
             - A
             - B
             - C
+      base_commit: 1ba53db61d001db579c61083f6b7e8254b095a3c
 quality_gates:
     level: standard
     gates:
@@ -671,4 +672,3 @@ critic_report:
     reviewed_at: "2026-04-24T03:10:21Z"
     issue_count: 0
 state: WAVE_PENDING
-original_branch: main
