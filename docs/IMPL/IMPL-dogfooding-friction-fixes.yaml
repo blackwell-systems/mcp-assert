@@ -669,6 +669,7 @@ waves:
             - docs/cli.md
             - docs/writing-assertions.md
             - docs/getting-started.md
+      base_commit: 21e76c86a98da5f49b371fc8c1f858219f019344
 quality_gates:
     level: standard
     gates:
@@ -717,4 +718,3 @@ critic_report:
     reviewed_at: "2026-04-24T02:04:31Z"
     issue_count: 0
 state: WAVE_PENDING
-original_branch: main
