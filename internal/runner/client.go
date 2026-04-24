@@ -3,6 +3,7 @@ package runner
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -11,6 +12,13 @@ import (
 	clienttransport "github.com/mark3labs/mcp-go/client/transport"
 	"github.com/mark3labs/mcp-go/mcp"
 )
+
+// expandEnvVars resolves ${VAR} and $VAR patterns in a string
+// from the parent process environment. Unset variables are replaced
+// with empty string, matching shell behavior.
+func expandEnvVars(value string) string {
+	return os.ExpandEnv(value)
+}
 
 // createMCPClient creates the appropriate MCP client based on the server config's
 // transport type. For stdio (default), it launches a subprocess. For sse/http, it
@@ -43,7 +51,7 @@ func createMCPClient(server assertion.ServerConfig, fixture string, dockerImage 
 
 		var envSlice []string
 		for k, v := range server.Env {
-			envSlice = append(envSlice, k+"="+v)
+			envSlice = append(envSlice, k+"="+expandEnvVars(v))
 		}
 
 		// Docker isolation: wrap server command in docker run -i.
