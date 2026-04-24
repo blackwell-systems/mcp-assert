@@ -44,6 +44,16 @@ brews:
     test: |
       assert_match "mcp-assert", shell_output("#{bin}/mcp-assert version 2>&1", 0)
 
+scoops:
+  - name: mcp-assert
+    repository:
+      owner: blackwell-systems
+      name: scoop-bucket
+      token: "{{ .Env.GORELEASER_TAP_TOKEN }}"
+    homepage: "https://github.com/blackwell-systems/mcp-assert"
+    description: "Deterministic correctness testing for MCP servers"
+    license: "MIT"
+
 changelog:
   sort: asc
   filters:

@@ -32,6 +32,7 @@ npx @blackwell-systems/mcp-assert                                          # npm
 pip install mcp-assert                                                      # pip (no Go required)
 go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest   # Go
 brew install blackwell-systems/tap/mcp-assert                               # Homebrew
+scoop install mcp-assert                                                    # Scoop (Windows)
 curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/install.sh | sh
 
 # Scaffold your first assertion
