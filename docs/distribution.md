@@ -36,6 +36,12 @@ npx @blackwell-systems/mcp-assert
 ```
 Uses the platform-specific optional dependency pattern (same as esbuild, turbo). npm resolves the correct binary for the user's OS/arch automatically. No Go toolchain required. Published via `scripts/npm-publish.sh` on each release tag.
 
+### PyPI
+```bash
+pip install mcp-assert
+```
+Platform-specific wheels containing the Go binary. Each wheel is tagged with the correct platform (e.g. `macosx_11_0_arm64`, `manylinux2014_x86_64`), so pip resolves the right one automatically. Built via `scripts/pypi-build-wheels.sh` and published with twine on each release tag.
+
 ### Awesome MCP DevTools
 PR submitted ([punkpeye/awesome-mcp-devtools#144](https://github.com/punkpeye/awesome-mcp-devtools/pull/144)). Pending maintainer review. Listed under Testing Tools.
 
@@ -43,7 +49,6 @@ PR submitted ([punkpeye/awesome-mcp-devtools#144](https://github.com/punkpeye/aw
 
 | Channel | Priority | Description |
 |---------|----------|-------------|
-| PyPI wrapper | High | `pip install mcp-assert`: downloads Go binary. Python MCP server authors won't `go install`. |
 | Scoop (Windows) | Medium | `scoop install mcp-assert`: manifest in repo, same as agent-lsp. |
 | Nix flake | Low | Nix users are quality-focused and vocal. High signal in a niche community. |
 | MCP registry integration | Low | Test badge on Glama and Smithery listings. |

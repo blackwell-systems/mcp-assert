@@ -13,6 +13,9 @@ Pick one:
 # npm (no Go required)
 npx @blackwell-systems/mcp-assert
 
+# pip (no Go required)
+pip install mcp-assert
+
 # Go
 go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
 

@@ -55,6 +55,9 @@ The value isn't in the assertion logic. It's in not writing MCP client boilerpla
 # npm (no Go required)
 npx @blackwell-systems/mcp-assert
 
+# pip (no Go required)
+pip install mcp-assert
+
 # Go
 go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
 

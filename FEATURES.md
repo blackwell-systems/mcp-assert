@@ -202,11 +202,12 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 
 ---
 
-## Install Methods (4)
+## Install Methods (5)
 
 | Method | Command |
 |--------|---------|
 | npm | `npx @blackwell-systems/mcp-assert` |
+| pip | `pip install mcp-assert` |
 | Go | `go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest` |
 | Homebrew | `brew install blackwell-systems/tap/mcp-assert` |
 | curl\|sh | `curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/install.sh \| sh` |
