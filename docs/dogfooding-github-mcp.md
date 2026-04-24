@@ -13,7 +13,7 @@
 | Assertions written | 6 (targeted read-only) |
 | Passing | 6/6 |
 | Time to first pass | ~15 minutes |
-| Friction points found | 3 |
+| Friction points found | 4 |
 | Server behavior findings | 1 |
 
 ## Timeline
@@ -89,9 +89,18 @@ The actual file content is not in the MCP text response. It may be in a separate
 
 **Status:** Needs investigation. Not yet filed.
 
+### F4: Generated stubs execute write operations with placeholder values
+
+Running the full generated suite against the GitHub MCP server with a valid token caused `create_repository` to create a real repo called `TODO_NAME` on GitHub. Other write stubs (`delete_file`, `push_files`, `merge_pull_request`) failed only because their TODO args were invalid, not because anything prevented them from running.
+
+**Severity:** Critical. A user following the `generate` then `run` path will execute destructive operations against real infrastructure. The `generate` command should either skip tools with `destructiveHint: true` in their annotations, mark write operations as `skip: true` in the generated YAML, or require a `--include-writes` flag to opt in.
+
+**Workaround:** Manually delete stubs for write operations before running the suite.
+
 ## Onboarding Improvements Identified
 
 1. **`mcp-assert init --server`**: One command to generate + snapshot + CI template. Would collapse steps 2-4 into 30 seconds.
 2. **Env var expansion**: `${VAR}` in YAML env blocks should resolve from the shell environment.
 3. **Single-file `--suite`**: Accept `--suite path/to/file.yaml` for iterative development.
 4. **Auth detection in `generate`**: When the server exits immediately (transport closed), suggest checking for required env vars.
+5. **Skip destructive stubs by default**: `generate` should check `destructiveHint` from tool annotations and set `skip: true` on write operations. Opt in with `--include-writes`.
