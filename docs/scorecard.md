@@ -6,14 +6,14 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 24 |
+| Servers scanned | 25 |
 | Server suites | 23 (including HTTP transport variant, SSE variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
 | Languages tested | 4 (Go, TypeScript, Python, Rust) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 322 (302 server + 20 trajectory) |
+| Total assertions | 328 (308 server + 20 trajectory) |
 | Upstream bugs found | 13 (4 servers affected) |
 | Upstream issues filed | 4 (1 unfiled: repo archived) |
-| Clean scans (no bugs) | 18 |
+| Clean scans (no bugs) | 19 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -77,6 +77,12 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
 | `openai/sample-deep-research-mcp` | Python | stdio | 4 | 100% (2/2 tools) | 0 | Clean. "Cupcake MCP" sample server. Search and fetch against static JSON dataset. |
+
+### Google Cloud
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `@google-cloud/storage-mcp` | TypeScript | stdio | 6 | 35% (6/17 tools, no GCP credentials) | 0 | Clean. Bucket metadata, object listing, IAM policy, input validation. Graceful error handling without credentials. |
 
 ### Observability (Go)
 

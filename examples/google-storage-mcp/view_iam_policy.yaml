@@ -1,0 +1,11 @@
+name: view_iam_policy handles missing bucket gracefully
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@google-cloud/storage-mcp"]
+assert:
+  tool: view_iam_policy
+  args:
+    bucket_name: "nonexistent-bucket-99999"
+  expect:
+    not_error: true
+timeout: 15s

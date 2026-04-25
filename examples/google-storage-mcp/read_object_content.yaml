@@ -1,0 +1,12 @@
+name: read_object_content handles missing object gracefully
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@google-cloud/storage-mcp"]
+assert:
+  tool: read_object_content
+  args:
+    bucket_name: "nonexistent-bucket-99999"
+    object_name: "nonexistent-file.txt"
+  expect:
+    not_error: true
+timeout: 15s

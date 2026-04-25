@@ -1,0 +1,11 @@
+name: get_bucket_metadata handles missing bucket gracefully
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@google-cloud/storage-mcp"]
+assert:
+  tool: get_bucket_metadata
+  args:
+    bucket_name: "nonexistent-bucket-99999"
+  expect:
+    not_error: true
+timeout: 15s

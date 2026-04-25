@@ -1,0 +1,11 @@
+name: list_buckets requires project ID
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@google-cloud/storage-mcp"]
+assert:
+  tool: list_buckets
+  args: {}
+  expect:
+    is_error: true
+    contains: ["Project ID not specified"]
+timeout: 15s

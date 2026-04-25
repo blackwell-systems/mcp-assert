@@ -1,0 +1,12 @@
+name: create_bucket requires project_id
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@google-cloud/storage-mcp"]
+assert:
+  tool: create_bucket
+  args:
+    bucket_name: "mcp-assert-test-bucket"
+  expect:
+    is_error: true
+    contains: ["project_id", "Required"]
+timeout: 15s

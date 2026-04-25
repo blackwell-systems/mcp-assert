@@ -1,0 +1,11 @@
+name: list_objects handles missing bucket gracefully
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@google-cloud/storage-mcp"]
+assert:
+  tool: list_objects
+  args:
+    bucket_name: "nonexistent-bucket-99999"
+  expect:
+    not_error: true
+timeout: 15s
