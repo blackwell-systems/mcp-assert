@@ -83,6 +83,7 @@ func Run(args []string) error {
 		fmt.Println(string(data))
 	} else {
 		report.PrintResults(allResults)
+		report.PrintBadgeSnippet(allResults)
 		if *trials > 1 {
 			report.PrintReliability(allResults)
 		}
@@ -225,6 +226,7 @@ func CI(args []string) error {
 	}
 
 	report.PrintResults(allResults)
+	report.PrintBadgeSnippet(allResults)
 	PrintFixSuggestions(fixSuggestions)
 
 	// Auto-write GitHub Step Summary when in CI.

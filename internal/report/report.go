@@ -61,6 +61,20 @@ func PrintResults(results []assertion.Result) {
 	fmt.Println(strings.Join(parts, ", "))
 }
 
+// PrintBadgeSnippet prints a ready-to-paste badge markdown snippet when all
+// assertions pass. Skipped assertions are not counted as failures.
+func PrintBadgeSnippet(results []assertion.Result) {
+	for _, r := range results {
+		if r.Status == assertion.StatusFail {
+			return
+		}
+	}
+	fmt.Println()
+	fmt.Println(colorize(green, "Add this badge to your README:"))
+	fmt.Println()
+	fmt.Println(`  [![mcp-assert: passing](https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-passing.svg)](https://github.com/blackwell-systems/mcp-assert)`)
+}
+
 // PrintMatrix prints a cross-language matrix table.
 func PrintMatrix(results []assertion.Result) {
 	// Collect unique languages and assertion names.
