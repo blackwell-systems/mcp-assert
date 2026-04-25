@@ -1,0 +1,13 @@
+name: get_current_time returns time for UTC
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-time]
+assert:
+  tool: get_current_time
+  args:
+    timezone: UTC
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["UTC"]
+timeout: 30s

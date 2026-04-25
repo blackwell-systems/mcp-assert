@@ -1,0 +1,11 @@
+name: git_diff_unstaged on clean repo returns empty
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-git]
+assert:
+  tool: git_diff_unstaged
+  args:
+    repo_path: "{{fixture}}"
+  expect:
+    not_error: true
+timeout: 30s

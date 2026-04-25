@@ -1,0 +1,13 @@
+name: convert_time rejects invalid source timezone
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-time]
+assert:
+  tool: convert_time
+  args:
+    source_timezone: Invalid/Zone
+    target_timezone: UTC
+    time: "12:00"
+  expect:
+    is_error: true
+timeout: 30s

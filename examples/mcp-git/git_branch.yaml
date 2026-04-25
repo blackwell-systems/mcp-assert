@@ -1,0 +1,14 @@
+name: git_branch lists branches
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-git]
+assert:
+  tool: git_branch
+  args:
+    repo_path: "{{fixture}}"
+    branch_type: "local"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["main"]
+timeout: 30s

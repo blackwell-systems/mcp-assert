@@ -1,0 +1,12 @@
+name: git_status returns status of repo
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-git]
+assert:
+  tool: git_status
+  args:
+    repo_path: "{{fixture}}"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

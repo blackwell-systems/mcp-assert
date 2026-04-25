@@ -6,14 +6,14 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 20 |
-| Server suites | 20 (including HTTP transport variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
+| Servers scanned | 23 |
+| Server suites | 23 (including HTTP transport variant, SSE variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
 | Languages tested | 4 (Go, TypeScript, Python, Rust) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 303 (283 server + 20 trajectory) |
+| Total assertions | 318 (298 server + 20 trajectory) |
 | Upstream bugs found | 13 (4 servers affected) |
 | Upstream issues filed | 4 (1 unfiled: repo archived) |
-| Clean scans (no bugs) | 14 |
+| Clean scans (no bugs) | 17 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -24,6 +24,9 @@ Servers tested by mcp-assert, bugs found, issues filed.
 |--------|----------|-----------|------------|----------|------|-------|
 | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | 92% (13/14) | 1 | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). `read_media_file` returns `type: "blob"`, violating MCP 3035-11-25 spec |
 | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 | - | 0 | Clean |
+| `mcp-server-time` | Python | stdio | 5 | 100% (2/2 tools) | 0 | Clean. UTC, named timezone, conversion, invalid timezone rejection. |
+| `mcp-server-fetch` | Python | stdio | 3 | 100% (1/1 tool) | 0 | Clean. URL fetch, invalid URL rejection, unreachable host handling. |
+| `mcp-server-git` | Python | stdio | 7 | 58% (7/12 tools) | 0 | Clean. Status, log, branch, diff, show, invalid repo/ref rejection. |
 | `mcp-server-sqlite` | Python | stdio | 6 | - | 0 | Clean |
 
 ### Community Framework SDKs

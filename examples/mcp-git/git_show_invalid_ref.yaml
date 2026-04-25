@@ -1,0 +1,12 @@
+name: git_show rejects invalid revision
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-git]
+assert:
+  tool: git_show
+  args:
+    repo_path: "{{fixture}}"
+    revision: "nonexistent-ref-12345"
+  expect:
+    is_error: true
+timeout: 30s

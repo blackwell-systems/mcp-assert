@@ -1,0 +1,11 @@
+name: get_current_time rejects invalid timezone
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-time]
+assert:
+  tool: get_current_time
+  args:
+    timezone: Not/A/Timezone
+  expect:
+    is_error: true
+timeout: 30s

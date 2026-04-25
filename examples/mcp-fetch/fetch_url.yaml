@@ -1,0 +1,13 @@
+name: fetch retrieves content from a URL
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-fetch]
+assert:
+  tool: fetch
+  args:
+    url: "https://example.com"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["example.com"]
+timeout: 30s

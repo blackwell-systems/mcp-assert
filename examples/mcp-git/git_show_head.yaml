@@ -1,0 +1,13 @@
+name: git_show returns HEAD commit details
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-git]
+assert:
+  tool: git_show
+  args:
+    repo_path: "{{fixture}}"
+    revision: HEAD
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

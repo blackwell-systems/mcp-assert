@@ -1,0 +1,11 @@
+name: git_status rejects invalid repo path
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-git]
+assert:
+  tool: git_status
+  args:
+    repo_path: "/tmp/not-a-git-repo-99999"
+  expect:
+    is_error: true
+timeout: 30s

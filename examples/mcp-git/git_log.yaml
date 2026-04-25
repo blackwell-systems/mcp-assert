@@ -1,0 +1,13 @@
+name: git_log returns commit history
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-git]
+assert:
+  tool: git_log
+  args:
+    repo_path: "{{fixture}}"
+    max_count: 5
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

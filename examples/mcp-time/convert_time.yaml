@@ -1,0 +1,15 @@
+name: convert_time converts UTC to Tokyo
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-time]
+assert:
+  tool: convert_time
+  args:
+    source_timezone: UTC
+    target_timezone: Asia/Tokyo
+    time: "12:00"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["21:00"]
+timeout: 30s
