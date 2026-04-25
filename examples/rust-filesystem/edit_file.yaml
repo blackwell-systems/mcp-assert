@@ -1,0 +1,19 @@
+name: edit_file replaces text in a file
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}", "--allow-write"]
+setup:
+  - tool: write_file
+    args:
+      path: "{{fixture}}/edit_target.txt"
+      content: "before edit"
+assert:
+  tool: edit_file
+  args:
+    path: "{{fixture}}/edit_target.txt"
+    edits:
+      - oldText: "before edit"
+        newText: "after edit"
+  expect:
+    not_error: true
+timeout: 30s

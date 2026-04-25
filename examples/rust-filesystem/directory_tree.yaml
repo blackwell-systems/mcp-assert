@@ -1,0 +1,12 @@
+name: directory_tree returns recursive tree
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}"]
+assert:
+  tool: directory_tree
+  args:
+    path: "{{fixture}}"
+  expect:
+    not_error: true
+    contains: ["hello.txt", "nested.txt"]
+timeout: 30s

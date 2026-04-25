@@ -1,0 +1,11 @@
+name: find_duplicate_files scans for duplicates
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}"]
+assert:
+  tool: find_duplicate_files
+  args:
+    root_path: "{{fixture}}"
+  expect:
+    not_error: true
+timeout: 30s

@@ -1,0 +1,12 @@
+name: write_file creates a new file
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}", "--allow-write"]
+assert:
+  tool: write_file
+  args:
+    path: "{{fixture}}/written.txt"
+    content: "written by mcp-assert"
+  expect:
+    not_error: true
+timeout: 30s

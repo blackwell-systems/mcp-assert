@@ -1,0 +1,12 @@
+name: list_directory returns directory contents
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}"]
+assert:
+  tool: list_directory
+  args:
+    path: "{{fixture}}"
+  expect:
+    not_error: true
+    contains: ["hello.txt", "test.txt", "subdir"]
+timeout: 30s

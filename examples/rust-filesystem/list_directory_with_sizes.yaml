@@ -1,0 +1,12 @@
+name: list_directory_with_sizes includes file sizes
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}"]
+assert:
+  tool: list_directory_with_sizes
+  args:
+    path: "{{fixture}}"
+  expect:
+    not_error: true
+    contains: ["hello.txt"]
+timeout: 30s

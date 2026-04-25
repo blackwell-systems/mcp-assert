@@ -1,0 +1,12 @@
+name: zip_directory creates archive from a directory
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}", "--allow-write"]
+assert:
+  tool: zip_directory
+  args:
+    input_directory: "{{fixture}}/subdir"
+    target_zip_file: "{{fixture}}/subdir.zip"
+  expect:
+    not_error: true
+timeout: 30s

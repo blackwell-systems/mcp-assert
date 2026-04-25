@@ -1,0 +1,11 @@
+name: path traversal outside allowed directory is rejected
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}"]
+assert:
+  tool: read_text_file
+  args:
+    path: "/etc/passwd"
+  expect:
+    is_error: true
+timeout: 30s

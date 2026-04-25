@@ -1,0 +1,14 @@
+name: read_multiple_text_files reads two files at once
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}"]
+assert:
+  tool: read_multiple_text_files
+  args:
+    paths:
+      - "{{fixture}}/hello.txt"
+      - "{{fixture}}/test.txt"
+  expect:
+    not_error: true
+    contains: ["Hello, world!", "Second file"]
+timeout: 30s

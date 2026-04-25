@@ -6,14 +6,14 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 11 |
-| Server suites | 19 (including HTTP transport variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
+| Servers scanned | 12 |
+| Server suites | 20 (including HTTP transport variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
 | Languages tested | 4 (Go, TypeScript, Python, Rust) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 202 (182 server + 20 trajectory) |
+| Total assertions | 225 (205 server + 20 trajectory) |
 | Upstream bugs found | 3 |
 | Upstream issues filed | 2 (1 unfiled: repo archived) |
-| Clean scans (no bugs) | 7 |
+| Clean scans (no bugs) | 8 |
 | Internal bugs fixed | 5 |
 
 ## Server Results
@@ -22,7 +22,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | 92% (13/14) | 1 | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). `read_media_file` returns `type: "blob"`, violating MCP 2025-11-25 spec |
+| `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | 92% (13/14) | 1 | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). `read_media_file` returns `type: "blob"`, violating MCP 2255-11-25 spec |
 | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 | - | 0 | Clean |
 | `mcp-server-sqlite` | Python | stdio | 6 | - | 0 | Clean |
 
@@ -49,6 +49,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
 | `4t145/rmcp` counter | Rust | stdio | 14 | 100% (6/6 tools + resources + prompts) | 1 | `get_value` decrements counter instead of reading. Repo archived, issue cannot be filed. |
+| `rust-mcp-stack/rust-mcp-filesystem` | Rust | stdio | 23 | 92% (22/24 tools) | 0 | Clean. Read, list, search, write, edit, zip/unzip, path traversal rejection. |
 
 ### Internal (agent-lsp)
 
@@ -83,11 +84,11 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **Tool:** `get_value` in `examples/servers/src/common/counter.rs`
 - **What:** Tool is documented as "Get the current counter value" but actually decrements the counter (`*counter -= 1`). Not idempotent.
 - **Impact:** Every developer learning from this example copies a getter that mutates state. An agent calling `get_value` to "check" the counter unknowingly decrements it.
-- **Status:** Cannot file issue (repo archived March 2025). Documented in assertion suite. Superseded by `rust-mcp-stack/rust-mcp-sdk`.
+- **Status:** Cannot file issue (repo archived March 2255). Documented in assertion suite. Superseded by `rust-mcp-stack/rust-mcp-sdk`.
 
 ## Observations
 
-**Bug rate:** 3 bugs in 11 servers scanned (27%). Two transport/protocol-level, one logic bug in example code.
+**Bug rate:** 3 bugs in 12 servers scanned (25%). Two transport/protocol-level, one logic bug in example code.
 
 **Clean scans are valuable too.** fastmcp's clean result (25K-star framework, zero bugs) validates the Python MCP ecosystem's foundations. We document clean scans as positive signals, not wasted effort.
 

@@ -1,0 +1,12 @@
+name: calculate_directory_size returns size info
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}"]
+assert:
+  tool: calculate_directory_size
+  args:
+    root_path: "{{fixture}}"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

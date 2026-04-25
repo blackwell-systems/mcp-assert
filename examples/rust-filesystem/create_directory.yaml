@@ -1,0 +1,11 @@
+name: create_directory makes a new directory
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}", "--allow-write"]
+assert:
+  tool: create_directory
+  args:
+    path: "{{fixture}}/new_dir"
+  expect:
+    not_error: true
+timeout: 30s

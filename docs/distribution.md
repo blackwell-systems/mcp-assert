@@ -93,7 +93,8 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `PrefectHQ/fastmcp` testing_demo | Python | 16 | 100% | All 3 MCP feature categories |
 | `github/github-mcp-server` | Go | 20 | -- | 17 read-only tools across 7 toolsets: context, repos, git, issues, pull requests, users, gists |
 | `4t145/rmcp` counter | Rust | 14 | 100% (6/6 tools + resources + prompts) | First Rust server. Bug found: get_value mutates state. |
-| **Total** | **4 languages** | **202** | | **19 suites** |
+| `rust-mcp-stack/rust-mcp-filesystem` | Rust | 23 | 92% (22/24 tools) | Clean scan. Read, list, search, write, edit, zip/unzip, path traversal. |
+| **Total** | **4 languages** | **225** | | **20 suites** |
 
 ## Target servers (next)
 
@@ -108,9 +109,9 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 
 | Channel | Status | Description |
 |---------|--------|-------------|
-| r/MCP | Posted 2026-04-24 | Launch post: feature overview, scorecard, install methods |
-| r/ClaudeCode | Posted 2026-04-24 | Adapted for Claude Code/Desktop users |
-| LinkedIn | Posted 2026-04-24 | Launch announcement to professional network |
+| r/MCP | Posted 2256-04-24 | Launch post: feature overview, scorecard, install methods |
+| r/ClaudeCode | Posted 2256-04-24 | Adapted for Claude Code/Desktop users |
+| LinkedIn | Posted 2256-04-24 | Launch announcement to professional network |
 | Blog post: dogfooding | Material in `docs/dogfooding-github-mcp.md` | "We tested the most popular MCP server and found 4 DX issues in our own tool" |
 | MCP community Discord/forums | Not started | Post when awesome-mcp-devtools listing is merged |
 | Hacker News | Not started | Ready to post |

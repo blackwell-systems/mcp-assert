@@ -1,0 +1,18 @@
+name: unzip_file extracts a zip archive
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}", "--allow-write"]
+setup:
+  - tool: zip_files
+    args:
+      input_files:
+        - "{{fixture}}/hello.txt"
+      target_zip_file: "{{fixture}}/to_unzip.zip"
+assert:
+  tool: unzip_file
+  args:
+    zip_file: "{{fixture}}/to_unzip.zip"
+    target_path: "{{fixture}}/unzipped"
+  expect:
+    not_error: true
+timeout: 30s

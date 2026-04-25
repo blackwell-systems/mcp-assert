@@ -1,0 +1,14 @@
+name: read_file_lines returns specific line range
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}"]
+assert:
+  tool: read_file_lines
+  args:
+    path: "{{fixture}}/hello.txt"
+    offset: 0
+    limit: 1
+  expect:
+    not_error: true
+    contains: ["Hello, world!"]
+timeout: 30s

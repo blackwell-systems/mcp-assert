@@ -1,0 +1,14 @@
+name: search_files_content finds text inside files
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}"]
+assert:
+  tool: search_files_content
+  args:
+    path: "{{fixture}}"
+    query: "Hello"
+    pattern: "*.txt"
+  expect:
+    not_error: true
+    contains: ["hello.txt"]
+timeout: 30s

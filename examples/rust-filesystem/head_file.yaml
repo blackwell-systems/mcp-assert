@@ -1,0 +1,13 @@
+name: head_file returns beginning of file
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}"]
+assert:
+  tool: head_file
+  args:
+    path: "{{fixture}}/hello.txt"
+    lines: 1
+  expect:
+    not_error: true
+    contains: ["Hello, world!"]
+timeout: 30s

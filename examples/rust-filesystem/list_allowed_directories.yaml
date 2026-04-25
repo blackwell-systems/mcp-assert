@@ -1,0 +1,11 @@
+name: list_allowed_directories returns configured directories
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}"]
+assert:
+  tool: list_allowed_directories
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

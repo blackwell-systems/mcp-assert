@@ -1,0 +1,14 @@
+name: zip_files creates an archive from files
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}", "--allow-write"]
+assert:
+  tool: zip_files
+  args:
+    input_files:
+      - "{{fixture}}/hello.txt"
+      - "{{fixture}}/test.txt"
+    target_zip_file: "{{fixture}}/archive.zip"
+  expect:
+    not_error: true
+timeout: 30s

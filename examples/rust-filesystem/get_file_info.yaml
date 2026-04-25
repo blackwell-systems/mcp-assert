@@ -1,0 +1,12 @@
+name: get_file_info returns file metadata
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}"]
+assert:
+  tool: get_file_info
+  args:
+    path: "{{fixture}}/hello.txt"
+  expect:
+    not_error: true
+    contains: ["isFile: true"]
+timeout: 30s

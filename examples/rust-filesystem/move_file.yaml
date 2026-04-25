@@ -1,0 +1,17 @@
+name: move_file renames a file
+server:
+  command: rust-mcp-filesystem
+  args: ["{{fixture}}", "--allow-write"]
+setup:
+  - tool: write_file
+    args:
+      path: "{{fixture}}/to_move.txt"
+      content: "move me"
+assert:
+  tool: move_file
+  args:
+    source: "{{fixture}}/to_move.txt"
+    destination: "{{fixture}}/moved.txt"
+  expect:
+    not_error: true
+timeout: 30s
