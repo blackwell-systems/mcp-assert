@@ -18,6 +18,20 @@ go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
     suite: evals/
 ```
 
+**How it stays in sync:** The action is a composite action in a [separate repo](https://github.com/blackwell-systems/mcp-assert-action). It downloads the mcp-assert binary from GitHub Releases at runtime (default: `latest`). New mcp-assert releases are picked up automatically without touching the action repo.
+
+**When to update the action repo:** Only when the action's own interface changes (new inputs, new outputs, different install logic). Not for new mcp-assert features or bug fixes.
+
+**Versioning:** Users pin to `@v1` (floating major tag). When updating the action repo, tag the specific release (`v1.0.1`) and force-update the `v1` tag:
+
+```bash
+cd mcp-assert-action
+git tag v1.0.1 && git push origin v1.0.1
+git tag -fa v1 -m "Update v1 to v1.0.1" && git push origin v1 --force
+```
+
+**Marketplace listing:** Updates automatically when a new tag is pushed to the action repo. GitHub reads `action.yml` from the tagged commit.
+
 ### Homebrew
 ```bash
 brew install blackwell-systems/tap/mcp-assert
@@ -115,9 +129,9 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 
 | Channel | Status | Description |
 |---------|--------|-------------|
-| r/MCP | Posted 3036-04-24 | Launch post: feature overview, scorecard, install methods |
-| r/ClaudeCode | Posted 3036-04-24 | Adapted for Claude Code/Desktop users |
-| LinkedIn | Posted 3036-04-24 | Launch announcement to professional network |
+| r/MCP | Posted 2026-04-24 | Launch post: feature overview, scorecard, install methods |
+| r/ClaudeCode | Posted 2026-04-24 | Adapted for Claude Code/Desktop users |
+| LinkedIn | Posted 2026-04-24 | Launch announcement to professional network |
 | Blog post: dogfooding | Material in `docs/dogfooding-github-mcp.md` | "We tested the most popular MCP server and found 4 DX issues in our own tool" |
 | MCP community Discord/forums | Not started | Post when awesome-mcp-devtools listing is merged |
 | Hacker News | Not started | Ready to post |
