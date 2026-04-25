@@ -142,6 +142,7 @@ Full documentation is available at [blackwell-systems.github.io/mcp-assert](http
 - [CLI Reference](https://blackwell-systems.github.io/mcp-assert/cli/): full command reference with flags and examples
 - [Examples](https://blackwell-systems.github.io/mcp-assert/examples/): 18 example suites across 3 languages (174 assertions)
 - [CI Integration](https://blackwell-systems.github.io/mcp-assert/ci-integration/): GitHub Action, JUnit XML, regression detection
+- [Badge](https://blackwell-systems.github.io/mcp-assert/badge/): add the "Works with mcp-assert" badge to your server README
 - [Architecture](https://blackwell-systems.github.io/mcp-assert/architecture/): internals and design decisions
 - [Roadmap](https://blackwell-systems.github.io/mcp-assert/roadmap/): what's shipped and what's next
 - [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): real bugs found across 10 servers, 2 upstream issues filed

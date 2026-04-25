@@ -202,6 +202,19 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 
 ---
 
+## "Works with mcp-assert" Badge
+
+Add a badge to your MCP server's README to signal tested protocol correctness.
+
+| Variant | Description |
+|---------|-------------|
+| Static | `[![Works with mcp-assert](https://img.shields.io/badge/works%20with-mcp--assert-green)](https://github.com/blackwell-systems/mcp-assert)` |
+| Dynamic (CI-verified) | `--badge badge.json` generates shields.io endpoint JSON; host via GitHub Pages for live pass rate |
+
+See the [Badge guide](https://blackwell-systems.github.io/mcp-assert/badge/) for full setup.
+
+---
+
 ## Install Methods (6)
 
 | Method | Command |
