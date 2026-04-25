@@ -153,6 +153,7 @@ type AssertBlock struct {
 // Expect defines deterministic assertions on the tool result.
 type Expect struct {
 	Contains     []string          `yaml:"contains"`
+	ContainsAny  []string          `yaml:"contains_any,omitempty"`
 	NotContains  []string          `yaml:"not_contains"`
 	Equals       *string           `yaml:"equals"`
 	JSONPath     map[string]any    `yaml:"json_path"`
@@ -162,11 +163,13 @@ type Expect struct {
 	NotError      *bool             `yaml:"not_error"`
 	IsError       *bool             `yaml:"is_error"`
 	MatchesRegex  []string          `yaml:"matches_regex"`
-	FileContains  map[string]string `yaml:"file_contains"`
-	FileUnchanged []string          `yaml:"file_unchanged"`
+	FileContains     map[string]string `yaml:"file_contains"`
+	FileNotContains  map[string]string `yaml:"file_not_contains,omitempty"`
+	FileUnchanged    []string          `yaml:"file_unchanged"`
 	NetDelta      *int              `yaml:"net_delta"`
 	InOrder       []string          `yaml:"in_order"`
 	MinProgress   *int              `yaml:"min_progress,omitempty"` // minimum number of notifications/progress received
+	FileNotExists []string          `yaml:"file_not_exists,omitempty"`
 }
 
 // Result is the outcome of running a single assertion.

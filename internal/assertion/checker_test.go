@@ -85,6 +85,24 @@ func TestCheck_NotContains(t *testing.T) {
 	}
 }
 
+func TestCheck_ContainsAny(t *testing.T) {
+	// Should pass when response contains one of the values.
+	err := Check(Expect{ContainsAny: []string{"foo", "bar"}}, "only bar here", false)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	// Should fail when response contains none of the values.
+	err = Check(Expect{ContainsAny: []string{"foo", "bar"}}, "nothing relevant", false)
+	if err == nil {
+		t.Fatal("expected error when none of the values are present")
+	}
+	// Single value (equivalent to contains).
+	err = Check(Expect{ContainsAny: []string{"hello"}}, "hello world", false)
+	if err != nil {
+		t.Fatalf("unexpected error for single value: %v", err)
+	}
+}
+
 func TestCheck_MatchesRegex(t *testing.T) {
 	err := Check(Expect{MatchesRegex: []string{`\d+ items`}}, "found 42 items", false)
 	if err != nil {
@@ -201,6 +219,48 @@ func TestCheck_FileContains(t *testing.T) {
 	err = Check(Expect{FileContains: map[string]string{"/nonexistent": "x"}}, "", false)
 	if err == nil {
 		t.Fatal("expected error for missing file")
+	}
+}
+
+func TestCheck_FileNotContains(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "test.txt")
+	os.WriteFile(path, []byte("hello world"), 0644)
+
+	// Should pass when file does not contain the string.
+	err := Check(Expect{FileNotContains: map[string]string{path: "missing"}}, "", false)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	// Should fail when file does contain the string.
+	err = Check(Expect{FileNotContains: map[string]string{path: "world"}}, "", false)
+	if err == nil {
+		t.Fatal("expected error when file contains the unwanted string")
+	}
+	// Should fail for nonexistent file.
+	err = Check(Expect{FileNotContains: map[string]string{"/nonexistent": "x"}}, "", false)
+	if err == nil {
+		t.Fatal("expected error for missing file")
+	}
+}
+
+func TestCheck_FileNotExists_Pass(t *testing.T) {
+	// Path that does not exist: should pass.
+	err := Check(Expect{FileNotExists: []string{"/nonexistent/path/should/not/exist.txt"}}, "", false)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestCheck_FileNotExists_Fail(t *testing.T) {
+	// Create a temp file, then assert it should not exist: should fail.
+	dir := t.TempDir()
+	path := filepath.Join(dir, "exists.txt")
+	os.WriteFile(path, []byte("data"), 0644)
+
+	err := Check(Expect{FileNotExists: []string{path}}, "", false)
+	if err == nil {
+		t.Fatal("expected error when file exists")
 	}
 }
 

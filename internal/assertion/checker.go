@@ -8,63 +8,132 @@ import (
 	"strings"
 )
 
+// checkFunc evaluates a single expectation type against the tool result.
+// Returns nil if the check passes (or does not apply), or an error on failure.
+type checkFunc func(expect Expect, response string, isError bool) error
+
+// checkEntry pairs a name with its check function for ordered evaluation.
+type checkEntry struct {
+	name  string
+	check checkFunc
+}
+
+// checkRegistry defines the ordered list of expectation checks.
+// Evaluation order is preserved from the original if/else chain;
+// the first failing check short-circuits and returns its error.
+var checkRegistry = []checkEntry{
+	{"not_error", checkNotError},
+	{"is_error", checkIsError},
+	{"not_empty", checkNotEmpty},
+	{"equals", checkEquals},
+	{"contains", checkContains},
+	{"contains_any", checkContainsAny},
+	{"not_contains", checkNotContains},
+	{"matches_regex", checkMatchesRegex},
+	{"json_path", checkJSONPath},
+	{"min_max_results", checkMinMaxResults},
+	{"net_delta", checkNetDelta},
+	{"file_contains", checkFileContains},
+	{"file_not_contains", checkFileNotContains},
+	{"file_not_exists", checkFileNotExists},
+	{"in_order", checkInOrder},
+}
+
 // Check evaluates all expectations against the tool result text.
 // Returns nil if all assertions pass, or an error describing the first failure.
 func Check(expect Expect, resultText string, isError bool) error {
-	// not_error
+	for _, entry := range checkRegistry {
+		if err := entry.check(expect, resultText, isError); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func checkNotError(expect Expect, _ string, isError bool) error {
 	if expect.NotError != nil && *expect.NotError && isError {
 		return fmt.Errorf("expected no error but tool returned isError=true")
 	}
+	return nil
+}
 
-	// is_error
+func checkIsError(expect Expect, _ string, isError bool) error {
 	if expect.IsError != nil && *expect.IsError && !isError {
 		return fmt.Errorf("expected error but tool returned isError=false")
 	}
+	return nil
+}
 
-	// not_empty
+func checkNotEmpty(expect Expect, response string, _ bool) error {
 	if expect.NotEmpty != nil && *expect.NotEmpty {
-		trimmed := strings.TrimSpace(resultText)
+		trimmed := strings.TrimSpace(response)
 		if trimmed == "" || trimmed == "null" || trimmed == "[]" || trimmed == "{}" {
 			return fmt.Errorf("expected non-empty result, got: %q", trimmed)
 		}
 	}
+	return nil
+}
 
-	// equals
+func checkEquals(expect Expect, response string, _ bool) error {
 	if expect.Equals != nil {
-		if strings.TrimSpace(resultText) != strings.TrimSpace(*expect.Equals) {
-			return fmt.Errorf("expected exact match:\n  want: %s\n  got:  %s", *expect.Equals, resultText)
+		if strings.TrimSpace(response) != strings.TrimSpace(*expect.Equals) {
+			return fmt.Errorf("expected exact match:\n  want: %s\n  got:  %s", *expect.Equals, response)
 		}
 	}
+	return nil
+}
 
-	// contains
+func checkContains(expect Expect, response string, _ bool) error {
 	for _, s := range expect.Contains {
-		if !strings.Contains(resultText, s) {
-			return fmt.Errorf("expected result to contain %q, got: %.200s", s, resultText)
+		if !strings.Contains(response, s) {
+			return fmt.Errorf("expected result to contain %q, got: %.200s", s, response)
 		}
 	}
+	return nil
+}
 
-	// not_contains
+func checkContainsAny(expect Expect, response string, _ bool) error {
+	if len(expect.ContainsAny) > 0 {
+		found := false
+		for _, s := range expect.ContainsAny {
+			if strings.Contains(response, s) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("expected result to contain at least one of %q, got: %.200s", expect.ContainsAny, response)
+		}
+	}
+	return nil
+}
+
+func checkNotContains(expect Expect, response string, _ bool) error {
 	for _, s := range expect.NotContains {
-		if strings.Contains(resultText, s) {
+		if strings.Contains(response, s) {
 			return fmt.Errorf("expected result NOT to contain %q", s)
 		}
 	}
+	return nil
+}
 
-	// matches_regex
+func checkMatchesRegex(expect Expect, response string, _ bool) error {
 	for _, pattern := range expect.MatchesRegex {
 		re, err := regexp.Compile(pattern)
 		if err != nil {
 			return fmt.Errorf("matches_regex: invalid pattern %q: %w", pattern, err)
 		}
-		if !re.MatchString(resultText) {
-			return fmt.Errorf("expected result to match regex %q, got: %.200s", pattern, resultText)
+		if !re.MatchString(response) {
+			return fmt.Errorf("expected result to match regex %q, got: %.200s", pattern, response)
 		}
 	}
+	return nil
+}
 
-	// json_path
+func checkJSONPath(expect Expect, response string, _ bool) error {
 	if len(expect.JSONPath) > 0 {
 		var parsed any
-		if err := json.Unmarshal([]byte(resultText), &parsed); err != nil {
+		if err := json.Unmarshal([]byte(response), &parsed); err != nil {
 			return fmt.Errorf("json_path: result is not valid JSON: %w", err)
 		}
 		for path, expected := range expect.JSONPath {
@@ -79,14 +148,16 @@ func Check(expect Expect, resultText string, isError bool) error {
 			}
 		}
 	}
+	return nil
+}
 
-	// min_results / max_results
+func checkMinMaxResults(expect Expect, response string, _ bool) error {
 	if expect.MinResults != nil || expect.MaxResults != nil {
 		var arr []any
-		if err := json.Unmarshal([]byte(resultText), &arr); err != nil {
+		if err := json.Unmarshal([]byte(response), &arr); err != nil {
 			// Try object with common array fields.
 			var obj map[string]any
-			if err2 := json.Unmarshal([]byte(resultText), &obj); err2 == nil {
+			if err2 := json.Unmarshal([]byte(response), &obj); err2 == nil {
 				for _, key := range []string{"locations", "items", "results", "references", "symbols"} {
 					if v, ok := obj[key].([]any); ok {
 						arr = v
@@ -105,11 +176,13 @@ func Check(expect Expect, resultText string, isError bool) error {
 			return fmt.Errorf("expected at most %d results, got %d", *expect.MaxResults, len(arr))
 		}
 	}
+	return nil
+}
 
-	// net_delta
+func checkNetDelta(expect Expect, response string, _ bool) error {
 	if expect.NetDelta != nil {
 		var obj map[string]any
-		if err := json.Unmarshal([]byte(resultText), &obj); err != nil {
+		if err := json.Unmarshal([]byte(response), &obj); err != nil {
 			return fmt.Errorf("net_delta: result is not valid JSON: %w", err)
 		}
 		nd, ok := obj["net_delta"].(float64)
@@ -120,8 +193,10 @@ func Check(expect Expect, resultText string, isError bool) error {
 			return fmt.Errorf("expected net_delta=%d, got %d", *expect.NetDelta, int(nd))
 		}
 	}
+	return nil
+}
 
-	// file_contains
+func checkFileContains(expect Expect, _ string, _ bool) error {
 	for path, expected := range expect.FileContains {
 		content, err := os.ReadFile(path)
 		if err != nil {
@@ -131,21 +206,44 @@ func Check(expect Expect, resultText string, isError bool) error {
 			return fmt.Errorf("file_contains: %s does not contain %q", path, expected)
 		}
 	}
+	return nil
+}
 
-	// file_unchanged — caller passes snapshots via CheckWithSnapshots; standalone Check skips this.
+func checkFileNotContains(expect Expect, _ string, _ bool) error {
+	for path, unexpected := range expect.FileNotContains {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("file_not_contains: cannot read %s: %w", path, err)
+		}
+		if strings.Contains(string(content), unexpected) {
+			return fmt.Errorf("file_not_contains: %s contains %q", path, unexpected)
+		}
+	}
+	return nil
+}
 
-	// in_order — verify substrings appear in the given order within the result.
+func checkFileNotExists(expect Expect, _ string, _ bool) error {
+	for _, path := range expect.FileNotExists {
+		if _, err := os.Stat(path); err == nil {
+			return fmt.Errorf("file_not_exists: expected %s not to exist, but it does", path)
+		} else if !os.IsNotExist(err) {
+			return fmt.Errorf("file_not_exists: error checking %s: %w", path, err)
+		}
+	}
+	return nil
+}
+
+func checkInOrder(expect Expect, response string, _ bool) error {
 	if len(expect.InOrder) > 0 {
 		searchFrom := 0
 		for _, s := range expect.InOrder {
-			idx := strings.Index(resultText[searchFrom:], s)
+			idx := strings.Index(response[searchFrom:], s)
 			if idx < 0 {
 				return fmt.Errorf("in_order: %q not found after position %d in result", s, searchFrom)
 			}
 			searchFrom += idx + len(s)
 		}
 	}
-
 	return nil
 }
 
