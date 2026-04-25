@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, Semantic Versioning.
 
-## [0.2.2] - 2026-04-24
+## [0.2.4] - 2026-04-24
 
 ### Added
 
