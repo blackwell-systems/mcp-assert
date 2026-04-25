@@ -1,8 +1,6 @@
-# BUG: get_abstract returns isError=false with error content for invalid paper ID.
-# The response body contains {"status": "error", "message": "Paper ... not found"}
-# but isError is not set, so MCP clients treat this as a successful call.
-# Agents checking isError will miss the error.
-name: get_abstract returns error content but isError=false for invalid paper (BUG)
+# get_abstract with invalid paper ID should return isError=true.
+# Previously returned isError=false with error content in body (blazickjp/arxiv-mcp-server#92).
+name: get_abstract rejects invalid paper ID
 server:
   command: /Users/dayna.blackwell/.local/bin/uvx
   args: [arxiv-mcp-server]
@@ -11,6 +9,6 @@ assert:
   args:
     paper_id: "0000.00000"
   expect:
-    not_error: true
+    is_error: true
     contains: ["not found"]
 timeout: 30s
