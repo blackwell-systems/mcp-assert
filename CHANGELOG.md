@@ -5,6 +5,8 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-25
+
 ### Added
 
 - **Spring AI MCP server suite (Kotlin)**: 3 assertions, 100% tool coverage (2/2). First JVM language in the suite collection. Uses HTTP transport. Clean scan on `jamesward/hello-spring-mcp-server`.
