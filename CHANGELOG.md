@@ -16,11 +16,14 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **Badge snippet on passing runs**: `mcp-assert run` and `mcp-assert ci` print a ready-to-paste badge markdown snippet when all assertions pass.
 - **GitHub Action `badge_markdown` output**: set when all assertions pass, ready for PR comments or README update workflows.
 - **Fix PRs submitted**: mark3labs/mcp-go [#828](https://github.com/mark3labs/mcp-go/pull/828) (stderr hooks), antvis/mcp-server-chart [#292](https://github.com/antvis/mcp-server-chart/pull/292) (isError on chart failures), grafana/mcp-grafana [#793](https://github.com/grafana/mcp-grafana/pull/793) (timestamp validation), blazickjp/arxiv-mcp-server [#93](https://github.com/blazickjp/arxiv-mcp-server/pull/93) (isError flag).
-- **343 total assertions** across 27 servers, 4 languages, 3 transports. 14 bugs found, 5 issues filed, 5 fix PRs (4 ours). All 4 major tech companies covered (Anthropic, Google, OpenAI, Microsoft).
+- **git-mcp suite** (onmyway133): 7 assertions, 100% clean. Status, log, branches, diff, show, reflog, invalid repo rejection.
+- **pytest-mcp-assert plugin**: pytest plugin that runs YAML assertions as pytest test items. `pip install pytest-mcp-assert`, then `pytest --mcp-suite evals/`. Each YAML file becomes a pytest Item with pass/fail/skip semantics. 170 lines of Python, zero MCP logic; the Go binary does all the work.
+- **380 total assertions** across 28 servers, 5 languages, 3 transports. 14 bugs found, 5 issues filed, 5 fix PRs (4 ours). All 4 major tech companies covered (Anthropic, Google, OpenAI, Microsoft).
 
 ### Fixed
 
 - **SSE Start() test expectations**: updated createMCPClient tests to match SSE eager-connect vs HTTP lazy-connect behavior.
+- **git-mcp false positive**: our assertions used `repo_path` but the server's schema uses `cwd`. The server silently ignored the unknown param. Closed false positive issue immediately.
 
 ## [0.4.0] - 2026-04-25
 
