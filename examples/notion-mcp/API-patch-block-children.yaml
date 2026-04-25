@@ -1,0 +1,12 @@
+name: API-patch-block-children returns expected result
+server:
+    command: npx
+    args: [-y, '@notionhq/notion-mcp-server']
+assert:
+    tool: API-patch-block-children
+    args:
+        block_id: TODO
+        children: []
+    expect:
+        not_error: true
+timeout: 30s

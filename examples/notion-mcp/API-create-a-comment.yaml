@@ -1,0 +1,12 @@
+name: API-create-a-comment returns expected result
+server:
+    command: npx
+    args: [-y, '@notionhq/notion-mcp-server']
+assert:
+    tool: API-create-a-comment
+    args:
+        parent: {}
+        rich_text: []
+    expect:
+        not_error: true
+timeout: 30s

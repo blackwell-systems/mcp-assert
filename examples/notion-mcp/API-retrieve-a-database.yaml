@@ -1,0 +1,11 @@
+name: API-retrieve-a-database returns expected result
+server:
+    command: npx
+    args: [-y, '@notionhq/notion-mcp-server']
+assert:
+    tool: API-retrieve-a-database
+    args:
+        database_id: TODO
+    expect:
+        not_error: true
+timeout: 30s
