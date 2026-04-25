@@ -76,6 +76,72 @@ PR submitted ([punkpeye/awesome-mcp-devtools#144](https://github.com/punkpeye/aw
 | Nix flake | Low | Nix users are quality-focused and vocal. High signal in a niche community. |
 | MCP registry integration | Low | Test badge on Glama and Smithery listings. |
 
+## How to release
+
+A single `git tag` triggers the entire pipeline. Every channel is automated.
+
+### Step-by-step
+
+1. **Update CHANGELOG.md**: move items from `[Unreleased]` to a new version header (e.g., `## [0.5.0] - 2026-05-01`).
+
+2. **Tag and push**:
+   ```bash
+   git tag v0.5.0
+   git push origin v0.5.0
+   ```
+
+3. **The `release.yml` workflow does the rest** (triggered by the `v*` tag):
+
+   | Job | What it does | Channel updated |
+   |-----|-------------|-----------------|
+   | `release` (GoReleaser) | Builds binaries for 6 platforms, creates GitHub Release, pushes Homebrew formula to [homebrew-tap](https://github.com/blackwell-systems/homebrew-tap), pushes Scoop manifest to [scoop-bucket](https://github.com/blackwell-systems/scoop-bucket) | GitHub Releases, Homebrew, Scoop |
+   | `npm-publish` | Runs `scripts/npm-publish.sh`, downloads binaries from the Release, publishes platform packages to npm | npm |
+   | `pypi-publish` | Runs `scripts/pypi-publish.sh`, builds platform wheels with Go binary inside, publishes to PyPI with twine | PyPI |
+
+4. **Verify** (after CI completes, ~5 minutes):
+   ```bash
+   # GitHub Release exists
+   gh release view v0.5.0
+
+   # Homebrew updated
+   brew update && brew info blackwell-systems/tap/mcp-assert
+
+   # npm updated
+   npm view @blackwell-systems/mcp-assert version
+
+   # PyPI updated
+   pip index versions mcp-assert
+   ```
+
+### What is NOT automatic
+
+| Channel | How to update |
+|---------|--------------|
+| GitHub Action | Only update when the action's interface changes. See the GitHub Action section above. |
+| `install.sh` / `install.ps1` | These fetch `latest` from GitHub Releases. No update needed unless the script logic changes. |
+| Badges | Static SVGs in `assets/`. Update manually if the badge design changes. |
+| Awesome MCP DevTools listing | Manual PR to the upstream repo. |
+
+### Secrets required
+
+| Secret | Where | Purpose |
+|--------|-------|---------|
+| `GITHUB_TOKEN` | Automatic (GitHub provides) | GoReleaser, GitHub Release creation |
+| `NPM_TOKEN` | Repository secret | npm publish |
+| `PYPI_TOKEN` | Repository secret | twine upload to PyPI |
+
+### Rollback
+
+If a release has a critical bug: delete the GitHub Release and tag, then publish a patch.
+
+```bash
+gh release delete v0.5.0 --yes
+git push origin :refs/tags/v0.5.0
+# Fix the bug, then tag v0.5.1
+```
+
+npm and PyPI don't support deletion (npm has a 72-hour unpublish window). Publish a patch version instead.
+
 ## The scan-and-contribute flywheel
 
 mcp-assert spreads through the bugs it finds, not through marketing. Every issue filed on a popular MCP server is passive promotion with built-in credibility.
