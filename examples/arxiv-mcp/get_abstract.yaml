@@ -1,0 +1,12 @@
+name: get_abstract retrieves paper abstract
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [arxiv-mcp-server]
+assert:
+  tool: get_abstract
+  args:
+    paper_id: "1706.03762"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

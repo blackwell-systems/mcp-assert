@@ -1,0 +1,10 @@
+name: list_papers returns without error
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [arxiv-mcp-server]
+assert:
+  tool: list_papers
+  args: {}
+  expect:
+    not_error: true
+timeout: 30s

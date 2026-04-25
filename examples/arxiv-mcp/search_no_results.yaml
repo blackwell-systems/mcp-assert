@@ -1,0 +1,12 @@
+name: search_papers handles no results gracefully
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [arxiv-mcp-server]
+assert:
+  tool: search_papers
+  args:
+    query: "xyznonexistentpaper99999zzz"
+    max_results: 1
+  expect:
+    not_error: true
+timeout: 30s

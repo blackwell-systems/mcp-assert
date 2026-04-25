@@ -6,13 +6,13 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 26 |
-| Server suites | 24 (including HTTP transport variant, SSE variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
+| Servers scanned | 27 |
+| Server suites | 25 (including HTTP transport variant, SSE variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
 | Languages tested | 4 (Go, TypeScript, Python, Rust) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 338 (318 server + 20 trajectory) |
-| Upstream bugs found | 13 (4 servers affected) |
-| Upstream issues filed | 4 (1 unfiled: repo archived) |
+| Total assertions | 343 (323 server + 20 trajectory) |
+| Upstream bugs found | 14 (5 servers affected) |
+| Upstream issues filed | 5 (1 unfiled: repo archived) |
 | Clean scans (no bugs) | 20 |
 | Internal bugs fixed | 6 |
 
@@ -90,6 +90,12 @@ Servers tested by mcp-assert, bugs found, issues filed.
 |--------|----------|-----------|------------|----------|------|-------|
 | `@playwright/mcp` | TypeScript | stdio | 10 | 48% (10/21 tools) | 0 | Clean. Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, invalid URL rejection, empty page handling. |
 
+### Research (Python)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `blazickjp/arxiv-mcp-server` | Python | stdio | 5 | 50% (5/10 tools) | 1 | [blazickjp/arxiv-mcp-server#92](https://github.com/blazickjp/arxiv-mcp-server/issues/92). `get_abstract` returns error content in body but `isError` flag not set for invalid paper IDs. |
+
 ### Observability (Go)
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
@@ -149,9 +155,18 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **Issue:** [grafana/mcp-grafana#792](https://github.com/grafana/mcp-grafana/issues/792)
 - **Status:** Fix submitted ([#793](https://github.com/grafana/mcp-grafana/pull/793)), pending merge
 
+### Bug #6: arxiv-mcp-server: get_abstract returns error content without isError flag
+
+- **Severity:** Missing isError flag
+- **Tool:** `get_abstract`
+- **What:** Calling with an invalid paper ID (e.g., `0000.00000`) returns `{"status": "error", "message": "Paper 0000.00000 not found on arXiv"}` in the content body, but `isError` is not set to `true`.
+- **Impact:** Agents checking the `isError` flag treat this as a successful call. The agent may present "Paper not found" as a valid result instead of retrying or reporting failure.
+- **Issue:** [blazickjp/arxiv-mcp-server#92](https://github.com/blazickjp/arxiv-mcp-server/issues/92)
+- **Status:** Open
+
 ## Observations
 
-**Bug rate:** 13 bugs across 4 of 20 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server, one input validation gap in Grafana's MCP server.
+**Bug rate:** 14 bugs across 5 of 27 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server, one input validation gap in Grafana's MCP server, one missing isError flag in the arxiv server.
 
 **Clean scans are valuable too.** fastmcp's clean result (25K-star framework, zero bugs) validates the Python MCP ecosystem's foundations. We document clean scans as positive signals, not wasted effort.
 

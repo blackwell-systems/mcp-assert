@@ -1,0 +1,14 @@
+name: search_papers finds transformer papers
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [arxiv-mcp-server]
+assert:
+  tool: search_papers
+  args:
+    query: "attention is all you need"
+    max_results: 3
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["attention"]
+timeout: 30s
