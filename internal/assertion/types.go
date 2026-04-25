@@ -114,8 +114,9 @@ type ServerConfig struct {
 	Command            string             `yaml:"command"`
 	Args               []string           `yaml:"args"`
 	Env                map[string]string  `yaml:"env"`
-	Transport          string             `yaml:"transport,omitempty"` // "stdio" (default), "sse", "http"
-	URL                string             `yaml:"url,omitempty"`       // Required for sse/http transport
+	Transport          string             `yaml:"transport,omitempty"`  // "stdio" (default), "sse", "http"
+	URL                string             `yaml:"url,omitempty"`        // Required for sse/http transport
+	Headers            map[string]string  `yaml:"headers,omitempty"`    // Custom headers for sse/http transport (supports ${VAR} expansion)
 	ClientCapabilities ClientCapabilities `yaml:"client_capabilities,omitempty"`
 }
 

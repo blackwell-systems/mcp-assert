@@ -20,6 +20,15 @@ func expandEnvVars(value string) string {
 	return os.ExpandEnv(value)
 }
 
+// expandHeaderVars resolves ${VAR} patterns in header values from the environment.
+func expandHeaderVars(headers map[string]string) map[string]string {
+	expanded := make(map[string]string, len(headers))
+	for k, v := range headers {
+		expanded[k] = expandEnvVars(v)
+	}
+	return expanded
+}
+
 // createMCPClient creates the appropriate MCP client based on the server config's
 // transport type. For stdio (default), it launches a subprocess. For sse/http, it
 // connects to the specified URL. Docker isolation is only supported with stdio.
@@ -31,12 +40,22 @@ func createMCPClient(server assertion.ServerConfig, fixture string, dockerImage 
 		if server.URL == "" {
 			return nil, fmt.Errorf("transport %q requires a url field", transport)
 		}
-		return client.NewSSEMCPClient(server.URL)
+		var sseOpts []clienttransport.ClientOption
+		if len(server.Headers) > 0 {
+			expanded := expandHeaderVars(server.Headers)
+			sseOpts = append(sseOpts, clienttransport.WithHeaders(expanded))
+		}
+		return client.NewSSEMCPClient(server.URL, sseOpts...)
 	case "http":
 		if server.URL == "" {
 			return nil, fmt.Errorf("transport %q requires a url field", transport)
 		}
-		return client.NewStreamableHttpClient(server.URL)
+		var httpOpts []clienttransport.StreamableHTTPCOption
+		if len(server.Headers) > 0 {
+			expanded := expandHeaderVars(server.Headers)
+			httpOpts = append(httpOpts, clienttransport.WithHTTPHeaders(expanded))
+		}
+		return client.NewStreamableHttpClient(server.URL, httpOpts...)
 	case "stdio", "":
 		// Default: launch server as a subprocess via stdio.
 		serverCmd := server.Command
