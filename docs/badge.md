@@ -2,34 +2,48 @@
 
 Display a badge in your MCP server's README to signal that your tools are tested for protocol correctness.
 
+## Badge variants
+
+Three custom badges are available, hosted from the mcp-assert repository:
+
+| Preview | Variant | Use when |
+|---------|---------|----------|
+| ![passing](https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-passing.svg) | Passing | All assertions pass |
+| ![score](https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-score.svg) | Score | Show pass count (customize the SVG with your numbers) |
+| ![failing](https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-failing.svg) | Failing | Some assertions fail (for honesty in dashboards) |
+
 ## Quick Start
 
-Add this to your README:
+Add the passing badge to your README:
+
+```markdown
+[![mcp-assert: passing](https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-passing.svg)](https://github.com/blackwell-systems/mcp-assert)
+```
+
+Or use the score badge (download, edit the `20/20` text in the SVG to match your count, commit to your repo):
+
+```markdown
+[![mcp-assert: 20/20](https://raw.githubusercontent.com/your-org/your-repo/main/assets/mcp-assert-badge.svg)](https://github.com/blackwell-systems/mcp-assert)
+```
+
+## Shields.io alternative
+
+If you prefer shields.io's CDN and caching, a generic badge is also available:
 
 ```markdown
 [![Works with mcp-assert](https://img.shields.io/badge/works%20with-mcp--assert-green)](https://github.com/blackwell-systems/mcp-assert)
 ```
 
-It renders as:
+## Dynamic badge with CI
 
-[![Works with mcp-assert](https://img.shields.io/badge/works%20with-mcp--assert-green)](https://github.com/blackwell-systems/mcp-assert)
-
-## Badge with pass rate
-
-If you run mcp-assert in CI and publish a `badge.json` endpoint, you can show live pass rate instead of a static label:
+If you run mcp-assert in CI, you can publish a live pass rate badge:
 
 ```bash
 # In your CI workflow
 mcp-assert ci --suite evals/ --badge badge.json
 ```
 
-Then host `badge.json` via GitHub Pages, a CDN, or any static URL:
-
-```markdown
-![mcp-assert](https://img.shields.io/endpoint?url=https://your-site.com/badge.json)
-```
-
-The endpoint format is shields.io-compatible JSON:
+The `--badge` flag generates shields.io-compatible endpoint JSON:
 
 ```json
 {
@@ -38,6 +52,12 @@ The endpoint format is shields.io-compatible JSON:
   "message": "21/21 passed",
   "color": "green"
 }
+```
+
+Host `badge.json` via GitHub Pages, a CDN, or any static URL, then reference it:
+
+```markdown
+![mcp-assert](https://img.shields.io/endpoint?url=https://your-site.com/badge.json)
 ```
 
 ## Full CI setup
@@ -76,14 +96,6 @@ Then reference the live badge:
 ```markdown
 ![mcp-assert](https://img.shields.io/endpoint?url=https://your-org.github.io/your-repo/badges/badge.json)
 ```
-
-## Badge variants
-
-| Badge | Markdown |
-|-------|----------|
-| Static (green) | `[![Works with mcp-assert](https://img.shields.io/badge/works%20with-mcp--assert-green)](https://github.com/blackwell-systems/mcp-assert)` |
-| Static (with logo) | `[![Works with mcp-assert](https://img.shields.io/badge/works%20with-mcp--assert-green?logo=checkmarx&logoColor=white)](https://github.com/blackwell-systems/mcp-assert)` |
-| Dynamic (live pass rate) | `![mcp-assert](https://img.shields.io/endpoint?url=<your-badge-url>)` |
 
 ## What the badge means
 

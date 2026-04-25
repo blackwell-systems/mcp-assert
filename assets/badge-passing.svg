@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="186" height="28" viewBox="0 0 186 28">
+  <defs>
+    <linearGradient id="smooth" x2="0" y2="100%">
+      <stop offset="0" stop-color="#fff" stop-opacity=".1"/>
+      <stop offset="1" stop-opacity=".1"/>
+    </linearGradient>
+    <clipPath id="round">
+      <rect width="186" height="28" rx="5" fill="#fff"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#round)">
+    <!-- Left: dark background with "mcp☑assert" -->
+    <rect width="118" height="28" fill="#2d2d2d"/>
+    <!-- Right: score section -->
+    <rect x="118" width="68" height="28" fill="#2563eb"/>
+    <!-- Gradient overlay -->
+    <rect width="186" height="28" fill="url(#smooth)"/>
+  </g>
+  <!-- Checkbox icon (simplified) -->
+  <g transform="translate(8, 5)">
+    <!-- Rounded square -->
+    <rect x="0" y="2" width="14" height="14" rx="3" ry="3" fill="none" stroke="#ffffff" stroke-width="1.8"/>
+    <!-- Checkmark -->
+    <path d="M3.5 9.5 L6.5 12.5 L12 5" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- "mcp-assert" text -->
+  <text x="28" y="18.5" fill="#ffffff" font-family="'DejaVu Sans','Verdana','Geneva',sans-serif" font-size="12" font-weight="bold">
+    <tspan fill="#ffffff">mcp</tspan><tspan fill="#93c5fd">-assert</tspan>
+  </text>
+  <!-- Score text -->
+  <text x="152" y="18.5" fill="#ffffff" font-family="'DejaVu Sans','Verdana','Geneva',sans-serif" font-size="12" font-weight="bold" text-anchor="middle">passing</text>
+</svg>
