@@ -1,0 +1,11 @@
+name: echo returns expected result
+server:
+    command: npx
+    args: [-y, '@modelcontextprotocol/server-everything']
+assert:
+    tool: echo
+    args:
+        message: TODO
+    expect:
+        not_error: true
+timeout: 30s

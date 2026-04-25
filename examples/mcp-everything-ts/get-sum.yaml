@@ -1,0 +1,12 @@
+name: get-sum returns expected result
+server:
+    command: npx
+    args: [-y, '@modelcontextprotocol/server-everything']
+assert:
+    tool: get-sum
+    args:
+        a: 1
+        b: 1
+    expect:
+        not_error: true
+timeout: 30s

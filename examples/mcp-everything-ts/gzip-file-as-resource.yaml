@@ -1,0 +1,10 @@
+name: gzip-file-as-resource returns expected result
+server:
+    command: npx
+    args: [-y, '@modelcontextprotocol/server-everything']
+assert:
+    tool: gzip-file-as-resource
+    args: {}
+    expect:
+        not_error: true
+timeout: 30s

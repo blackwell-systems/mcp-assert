@@ -1,0 +1,12 @@
+name: "simulate-research-query requires taskSupport (not yet supported)"
+server:
+  command: npx
+  args: [-y, "@modelcontextprotocol/server-everything"]
+assert:
+  tool: simulate-research-query
+  args:
+    topic: "MCP protocol"
+  expect:
+    not_error: true
+skip: true
+timeout: 30s

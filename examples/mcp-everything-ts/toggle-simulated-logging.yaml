@@ -1,0 +1,10 @@
+name: toggle-simulated-logging returns expected result
+server:
+    command: npx
+    args: [-y, '@modelcontextprotocol/server-everything']
+assert:
+    tool: toggle-simulated-logging
+    args: {}
+    expect:
+        not_error: true
+timeout: 30s

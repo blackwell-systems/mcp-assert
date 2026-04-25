@@ -1,0 +1,10 @@
+name: toggle-subscriber-updates returns expected result
+server:
+    command: npx
+    args: [-y, '@modelcontextprotocol/server-everything']
+assert:
+    tool: toggle-subscriber-updates
+    args: {}
+    expect:
+        not_error: true
+timeout: 30s

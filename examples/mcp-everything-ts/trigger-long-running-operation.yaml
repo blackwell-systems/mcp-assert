@@ -1,0 +1,10 @@
+name: trigger-long-running-operation returns expected result
+server:
+    command: npx
+    args: [-y, '@modelcontextprotocol/server-everything']
+assert:
+    tool: trigger-long-running-operation
+    args: {}
+    expect:
+        not_error: true
+timeout: 30s

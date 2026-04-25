@@ -1,0 +1,12 @@
+name: get-annotated-message returns annotated error message
+server:
+  command: npx
+  args: [-y, "@modelcontextprotocol/server-everything"]
+assert:
+  tool: get-annotated-message
+  args:
+    messageType: error
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

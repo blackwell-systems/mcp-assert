@@ -1,0 +1,12 @@
+name: get-structured-content returns weather data for New York
+server:
+  command: npx
+  args: [-y, "@modelcontextprotocol/server-everything"]
+assert:
+  tool: get-structured-content
+  args:
+    location: "New York"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s
