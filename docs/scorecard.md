@@ -11,10 +11,10 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Languages tested | 5 (Go, TypeScript, Python, Rust, JavaScript) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
 | Total assertions | 380 (297 server + 63 agent-lsp + 20 trajectory) |
-| Upstream bugs found | 15 (6 servers affected) |
-| Upstream issues filed | 5 (2 unfiled: 1 repo archived, 1 npm package with no linked repo) |
+| Upstream bugs found | 14 (5 servers affected) |
+| Upstream issues filed | 5 (1 unfiled: repo archived) |
 | Upstream fix PRs submitted | 5 (4 ours, 1 community) |
-| Clean scans (no bugs) | 20 |
+| Clean scans (no bugs) | 21 |
 | Internal bugs fixed | 6 |
 
 ## Server Results

@@ -5,7 +5,7 @@ server:
 assert:
   tool: git_diff
   args:
-    repo_path: "{{fixture}}"
+    cwd: "{{fixture}}"
   expect:
     not_error: true
 timeout: 15s

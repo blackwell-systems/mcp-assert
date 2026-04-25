@@ -5,7 +5,7 @@ server:
 assert:
   tool: git_show
   args:
-    repo_path: "{{fixture}}"
+    cwd: "{{fixture}}"
     commit: HEAD
   expect:
     not_error: true

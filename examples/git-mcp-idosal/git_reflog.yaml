@@ -5,7 +5,7 @@ server:
 assert:
   tool: git_reflog
   args:
-    repo_path: "{{fixture}}"
+    cwd: "{{fixture}}"
   expect:
     not_error: true
     not_empty: true
