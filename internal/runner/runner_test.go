@@ -548,20 +548,24 @@ func TestCreateMCPClient_UnknownTransport(t *testing.T) {
 }
 
 func TestCreateMCPClient_SSEWithURL(t *testing.T) {
-	// SSE with a valid URL should succeed in creating the client
-	// (it won't connect until Initialize is called).
+	// SSE with a valid URL creates the client and calls Start(), which
+	// attempts to connect. With no server listening, Start() fails.
 	server := assertion.ServerConfig{
 		Transport: "sse",
 		URL:       "http://localhost:99999/sse",
 	}
-	c, err := createMCPClient(server, "", "")
-	if err != nil {
-		t.Fatalf("SSE client creation should succeed with valid URL: %v", err)
+	_, err := createMCPClient(server, "", "")
+	if err == nil {
+		t.Fatal("SSE client should fail to start when no server is listening")
 	}
-	defer c.Close()
+	if !strings.Contains(err.Error(), "SSE transport") {
+		t.Fatalf("expected SSE transport error, got: %v", err)
+	}
 }
 
 func TestCreateMCPClient_HTTPWithURL(t *testing.T) {
+	// Streamable HTTP is lazy: Start() succeeds without a server because
+	// connection happens on first request (Initialize), not on Start().
 	server := assertion.ServerConfig{
 		Transport: "http",
 		URL:       "http://localhost:99999/mcp",
@@ -574,28 +578,36 @@ func TestCreateMCPClient_HTTPWithURL(t *testing.T) {
 }
 
 func TestCreateMCPClient_TransportCaseInsensitive(t *testing.T) {
+	// Uppercase "SSE" should be recognized (and fail to start, same as lowercase).
 	server := assertion.ServerConfig{
 		Transport: "SSE",
 		URL:       "http://localhost:99999/sse",
 	}
-	c, err := createMCPClient(server, "", "")
-	if err != nil {
-		t.Fatalf("transport should be case-insensitive: %v", err)
+	_, err := createMCPClient(server, "", "")
+	if err == nil {
+		t.Fatal("transport should be case-insensitive and attempt SSE connection")
 	}
-	defer c.Close()
+	// If it got to the SSE transport error, case-insensitivity worked.
+	if !strings.Contains(err.Error(), "SSE transport") {
+		t.Fatalf("expected SSE transport error (case-insensitive), got: %v", err)
+	}
 }
 
 func TestCreateMCPClient_DockerIgnoredForHTTP(t *testing.T) {
-	// Docker flag is only used for stdio; HTTP/SSE should ignore it.
+	// Docker flag is only used for stdio; SSE should still attempt SSE connection
+	// even when docker image is set.
 	server := assertion.ServerConfig{
 		Transport: "sse",
 		URL:       "http://localhost:99999/sse",
 	}
-	c, err := createMCPClient(server, "", "some-docker-image")
-	if err != nil {
-		t.Fatalf("HTTP transport should succeed even with docker image set: %v", err)
+	_, err := createMCPClient(server, "", "some-docker-image")
+	if err == nil {
+		t.Fatal("SSE transport should attempt connection regardless of docker flag")
 	}
-	defer c.Close()
+	// The key check: it tried SSE, not Docker/stdio.
+	if !strings.Contains(err.Error(), "SSE transport") {
+		t.Fatalf("expected SSE transport error (docker ignored), got: %v", err)
+	}
 }
 
 func TestRunAssertion_SSEWithoutURL(t *testing.T) {

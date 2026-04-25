@@ -62,14 +62,7 @@ func createMCPClient(server assertion.ServerConfig, fixture string, dockerImage 
 			expanded := expandHeaderVars(server.Headers)
 			httpOpts = append(httpOpts, clienttransport.WithHTTPHeaders(expanded))
 		}
-		httpClient, err := client.NewStreamableHttpClient(server.URL, httpOpts...)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create HTTP client: %w", err)
-		}
-		if err := httpClient.Start(context.Background()); err != nil {
-			return nil, fmt.Errorf("failed to start HTTP transport: %w", err)
-		}
-		return httpClient, nil
+		return client.NewStreamableHttpClient(server.URL, httpOpts...)
 	case "stdio", "":
 		// Default: launch server as a subprocess via stdio.
 		serverCmd := server.Command
