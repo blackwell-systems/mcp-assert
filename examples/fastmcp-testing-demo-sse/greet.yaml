@@ -1,0 +1,15 @@
+name: greet with default greeting (SSE)
+server:
+  transport: sse
+  url: http://127.0.0.1:8082/sse
+assert:
+  tool: greet
+  args:
+    name: Alice
+  expect:
+    not_error: true
+    not_empty: true
+    contains:
+    - Hello
+    - Alice
+timeout: 30s

@@ -1,0 +1,15 @@
+name: async_multiply by zero returns zero (SSE)
+server:
+  transport: sse
+  url: http://127.0.0.1:8082/sse
+assert:
+  tool: async_multiply
+  args:
+    x: 99.0
+    y: 0.0
+  expect:
+    not_error: true
+    not_empty: true
+    contains:
+    - '0'
+timeout: 30s

@@ -1,0 +1,11 @@
+name: add with missing argument returns error (SSE)
+server:
+  transport: sse
+  url: http://127.0.0.1:8082/sse
+assert:
+  tool: add
+  args:
+    a: 5
+  expect:
+    is_error: true
+timeout: 30s

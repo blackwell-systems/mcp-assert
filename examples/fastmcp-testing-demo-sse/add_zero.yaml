@@ -1,0 +1,15 @@
+name: add with zero returns the other number (SSE)
+server:
+  transport: sse
+  url: http://127.0.0.1:8082/sse
+assert:
+  tool: add
+  args:
+    a: 42
+    b: 0
+  expect:
+    not_error: true
+    not_empty: true
+    contains:
+    - '42'
+timeout: 30s

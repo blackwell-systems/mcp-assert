@@ -1,0 +1,15 @@
+name: add handles negative numbers (SSE)
+server:
+  transport: sse
+  url: http://127.0.0.1:8082/sse
+assert:
+  tool: add
+  args:
+    a: -5
+    b: 3
+  expect:
+    not_error: true
+    not_empty: true
+    contains:
+    - '-2'
+timeout: 30s

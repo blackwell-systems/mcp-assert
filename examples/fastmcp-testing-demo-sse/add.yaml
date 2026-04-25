@@ -1,0 +1,15 @@
+name: add returns the sum of two numbers (SSE)
+server:
+  transport: sse
+  url: http://127.0.0.1:8082/sse
+assert:
+  tool: add
+  args:
+    a: 3
+    b: 7
+  expect:
+    not_error: true
+    not_empty: true
+    contains:
+    - '10'
+timeout: 30s

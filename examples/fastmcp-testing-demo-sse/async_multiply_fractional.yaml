@@ -1,0 +1,15 @@
+name: async_multiply with fractional result (SSE)
+server:
+  transport: sse
+  url: http://127.0.0.1:8082/sse
+assert:
+  tool: async_multiply
+  args:
+    x: 1.5
+    y: 2.0
+  expect:
+    not_error: true
+    not_empty: true
+    contains:
+    - '3'
+timeout: 30s

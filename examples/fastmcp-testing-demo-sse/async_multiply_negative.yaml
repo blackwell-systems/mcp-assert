@@ -1,0 +1,15 @@
+name: async_multiply with negative numbers (SSE)
+server:
+  transport: sse
+  url: http://127.0.0.1:8082/sse
+assert:
+  tool: async_multiply
+  args:
+    x: -3.0
+    y: 4.0
+  expect:
+    not_error: true
+    not_empty: true
+    contains:
+    - '-12'
+timeout: 30s
