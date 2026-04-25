@@ -100,7 +100,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **What:** Tool calls `time.Sleep()` which creates a timing window for `fmt.Printf` hooks to corrupt the stdio JSON-RPC stream.
 - **Impact:** Any mcp-go server with debug hooks and slow tool handlers will crash over stdio.
 - **Issue:** [mark3labs/mcp-go#826](https://github.com/mark3labs/mcp-go/issues/826)
-- **Status:** Open, linked to project board
+- **Status:** Fix submitted ([#828](https://github.com/mark3labs/mcp-go/pull/828)), pending merge
 
 ### Bug #3: rmcp SDK example: get_value mutates state
 
@@ -126,7 +126,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **What:** Passing a non-ISO-8601 timestamp (e.g., `"not-a-date"`) returns MCP internal error (-32603) instead of `isError: true`. The `time.Time` field is unmarshalled by the mcp-go SDK before the tool handler runs; invalid input triggers an unmarshal error that the SDK converts to an internal error rather than a tool error.
 - **Impact:** MCP clients treat -32603 as a server crash. Agents can't self-correct from internal errors the way they can from `isError: true` responses. All other tools in the server validate input correctly.
 - **Issue:** [grafana/mcp-grafana#792](https://github.com/grafana/mcp-grafana/issues/792)
-- **Status:** Open
+- **Status:** Fix submitted ([#793](https://github.com/grafana/mcp-grafana/pull/793)), pending merge
 
 ## Observations
 
