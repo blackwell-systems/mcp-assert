@@ -1,0 +1,2 @@
+[pytest11]
+mcp_assert = pytest_mcp_assert.plugin

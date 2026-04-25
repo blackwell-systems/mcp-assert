@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytest-mcp-assert"
+version = "0.1.0"
+description = "pytest plugin for mcp-assert: run MCP server assertions as pytest test items"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.8"
+keywords = ["pytest", "mcp", "testing", "assertions", "model-context-protocol"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Pytest",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "pytest>=7.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/blackwell-systems/mcp-assert"
+Documentation = "https://blackwell-systems.github.io/mcp-assert"
+Repository = "https://github.com/blackwell-systems/mcp-assert"
+
+[project.entry-points.pytest11]
+mcp_assert = "pytest_mcp_assert.plugin"
+
+[tool.setuptools.packages.find]
+include = ["pytest_mcp_assert*"]
