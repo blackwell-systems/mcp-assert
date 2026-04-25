@@ -157,7 +157,7 @@ Full documentation is available at [blackwell-systems.github.io/mcp-assert](http
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="assets/star-cta.png">
       <source media="(prefers-color-scheme: light)" srcset="assets/star-cta-light.png">
-      <img src="assets/star-cta-light.png" alt="Star mcp-assert on GitHub" width="480">
+      <img src="assets/star-cta-light.png" alt="Star mcp-assert on GitHub" width="600">
     </picture>
   </a>
 </p>
