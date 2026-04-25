@@ -1,0 +1,11 @@
+name: getEmployeesWithSkill returns empty for unknown skill
+server:
+  transport: http
+  url: http://localhost:8080/mcp
+assert:
+  tool: getEmployeesWithSkill
+  args:
+    skill: cobol
+  expect:
+    not_error: true
+timeout: 30s

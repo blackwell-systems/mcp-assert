@@ -1,0 +1,12 @@
+name: getEmployeesWithSkill returns employees matching a skill
+server:
+  transport: http
+  url: http://localhost:8080/mcp
+assert:
+  tool: getEmployeesWithSkill
+  args:
+    skill: java
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

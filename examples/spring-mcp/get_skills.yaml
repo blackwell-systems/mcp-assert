@@ -1,0 +1,11 @@
+name: getSkills returns list of employee skills
+server:
+  transport: http
+  url: http://localhost:8080/mcp
+assert:
+  tool: getSkills
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

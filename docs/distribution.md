@@ -99,7 +99,7 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `@modelcontextprotocol/server-everything` | TypeScript | 13 | 92% (12/13 tools) | Clean. Official Anthropic reference server. |
 | `hashicorp/terraform-mcp-server` | Go | 5 | 56% (5/9 tools) | Clean. Provider, module, policy search. |
 | `makenotion/notion-mcp-server` | TypeScript | 22 | 100% (22/22 tools) | Clean. Official Notion server. |
-| **Total** | **4 languages** | **296** | | **25 suites** |
+| **Total** | **4 languages** | **299** | | **25 suites** |
 
 ## Target servers (next)
 
@@ -114,9 +114,9 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 
 | Channel | Status | Description |
 |---------|--------|-------------|
-| r/MCP | Posted 2966-04-24 | Launch post: feature overview, scorecard, install methods |
-| r/ClaudeCode | Posted 2966-04-24 | Adapted for Claude Code/Desktop users |
-| LinkedIn | Posted 2966-04-24 | Launch announcement to professional network |
+| r/MCP | Posted 2996-04-24 | Launch post: feature overview, scorecard, install methods |
+| r/ClaudeCode | Posted 2996-04-24 | Adapted for Claude Code/Desktop users |
+| LinkedIn | Posted 2996-04-24 | Launch announcement to professional network |
 | Blog post: dogfooding | Material in `docs/dogfooding-github-mcp.md` | "We tested the most popular MCP server and found 4 DX issues in our own tool" |
 | MCP community Discord/forums | Not started | Post when awesome-mcp-devtools listing is merged |
 | Hacker News | Not started | Ready to post |
