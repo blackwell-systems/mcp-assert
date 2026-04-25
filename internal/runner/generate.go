@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mark3labs/mcp-go/client"
+	"github.com/blackwell-systems/mcp-assert/internal/assertion"
 	"github.com/mark3labs/mcp-go/mcp"
 	"gopkg.in/yaml.v3"
 )
@@ -29,20 +29,40 @@ type GenerateOpts struct {
 	Timeout       time.Duration
 	Overwrite     bool
 	IncludeWrites bool
+	Transport     string            // "stdio" (default), "http", "sse"
+	Headers       map[string]string // custom headers for http/sse
 }
 
 // GenerateCore queries tools/list and creates stub assertion YAMLs. It returns
 // a result summary without printing next-steps guidance (the caller decides).
 func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
-	parts := strings.Fields(opts.ServerSpec)
-	if len(parts) == 0 {
+	if opts.ServerSpec == "" {
 		return nil, fmt.Errorf("--server cannot be empty")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), opts.Timeout)
 	defer cancel()
 
-	mcpClient, err := client.NewStdioMCPClient(parts[0], nil, parts[1:]...)
+	transport := strings.ToLower(opts.Transport)
+	var serverCfg assertion.ServerConfig
+	if transport == "http" || transport == "sse" {
+		serverCfg = assertion.ServerConfig{
+			Transport: transport,
+			URL:       opts.ServerSpec,
+			Headers:   opts.Headers,
+		}
+	} else {
+		parts := strings.Fields(opts.ServerSpec)
+		if len(parts) == 0 {
+			return nil, fmt.Errorf("--server cannot be empty")
+		}
+		serverCfg = assertion.ServerConfig{
+			Command: parts[0],
+			Args:    parts[1:],
+		}
+	}
+
+	mcpClient, err := createMCPClient(serverCfg, "", "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to start server: %w", err)
 	}
@@ -84,7 +104,7 @@ func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
 		}
 
 		skip := !opts.IncludeWrites && isDestructiveTool(tool)
-		stub := generateStub(tool, opts.ServerSpec, opts.Fixture, skip)
+		stub := generateStub(tool, opts.ServerSpec, opts.Fixture, skip, opts)
 		data, err := yaml.Marshal(stub)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "warning: %s: %v\n", tool.Name, err)
@@ -123,12 +143,14 @@ func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
 // Generate queries tools/list and creates stub assertion YAMLs for each tool.
 func Generate(args []string) error {
 	fs := flag.NewFlagSet("generate", flag.ExitOnError)
-	serverSpec := fs.String("server", "", "Server command (e.g. 'agent-lsp go:gopls')")
+	serverSpec := fs.String("server", "", "Server command (stdio) or URL (http/sse)")
 	output := fs.String("output", "", "Output directory for generated YAML files")
 	fixture := fs.String("fixture", "", "Fixture directory to use in generated assertions")
 	timeout := fs.Duration("timeout", 15*time.Second, "Timeout for tools/list call")
 	overwrite := fs.Bool("overwrite", false, "Overwrite existing YAML files")
 	includeWrites := fs.Bool("include-writes", false, "Include write/destructive tools (skipped by default)")
+	transport := fs.String("transport", "stdio", "Transport type: stdio (default), http, sse")
+	headersFlag := fs.String("headers", "", "Custom headers as key=value pairs, comma-separated (e.g. 'Authorization=Bearer tok')")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -137,6 +159,8 @@ func Generate(args []string) error {
 		return fmt.Errorf("--server and --output are required")
 	}
 
+	headers := parseHeadersFlag(*headersFlag)
+
 	result, err := GenerateCore(GenerateOpts{
 		ServerSpec:    *serverSpec,
 		Output:        *output,
@@ -144,6 +168,8 @@ func Generate(args []string) error {
 		Timeout:       *timeout,
 		Overwrite:     *overwrite,
 		IncludeWrites: *includeWrites,
+		Transport:     *transport,
+		Headers:       headers,
 	})
 	if err != nil {
 		return err
@@ -171,8 +197,11 @@ type stubAssertion struct {
 }
 
 type stubServer struct {
-	Command string   `yaml:"command"`
-	Args    []string `yaml:"args,flow"`
+	Command   string            `yaml:"command,omitempty"`
+	Args      []string          `yaml:"args,omitempty,flow"`
+	Transport string            `yaml:"transport,omitempty"`
+	URL       string            `yaml:"url,omitempty"`
+	Headers   map[string]string `yaml:"headers,omitempty"`
 }
 
 type stubToolCall struct {
@@ -190,23 +219,39 @@ type stubExpect struct {
 	NotError bool `yaml:"not_error"`
 }
 
-func generateStub(tool mcp.Tool, serverSpec string, fixture string, skip bool) stubAssertion {
-	parts := strings.Fields(serverSpec)
-	cmd := parts[0]
-	var args []string
-	if len(parts) > 1 {
-		args = parts[1:]
-	}
-
+func generateStub(tool mcp.Tool, serverSpec string, fixture string, skip bool, opts ...GenerateOpts) stubAssertion {
 	// Generate placeholder args from the input schema.
 	toolArgs := generateArgsFromSchema(tool.InputSchema, fixture)
 
-	stub := stubAssertion{
-		Name: fmt.Sprintf("%s returns expected result", tool.Name),
-		Server: stubServer{
+	var server stubServer
+	var genOpts GenerateOpts
+	if len(opts) > 0 {
+		genOpts = opts[0]
+	}
+
+	transport := strings.ToLower(genOpts.Transport)
+	if transport == "http" || transport == "sse" {
+		server = stubServer{
+			Transport: transport,
+			URL:       serverSpec,
+			Headers:   genOpts.Headers,
+		}
+	} else {
+		parts := strings.Fields(serverSpec)
+		cmd := parts[0]
+		var args []string
+		if len(parts) > 1 {
+			args = parts[1:]
+		}
+		server = stubServer{
 			Command: cmd,
 			Args:    args,
-		},
+		}
+	}
+
+	stub := stubAssertion{
+		Name:    fmt.Sprintf("%s returns expected result", tool.Name),
+		Server:  server,
 		Assert: stubAssert{
 			Tool:   tool.Name,
 			Args:   toolArgs,
@@ -316,6 +361,21 @@ func isTransportError(err error) bool {
 	return strings.Contains(msg, "transport closed") ||
 		strings.Contains(msg, "EOF") ||
 		strings.Contains(msg, "connection refused")
+}
+
+// parseHeadersFlag parses "Key=Value,Key2=Value2" into a map.
+func parseHeadersFlag(raw string) map[string]string {
+	if strings.TrimSpace(raw) == "" {
+		return nil
+	}
+	headers := make(map[string]string)
+	for _, pair := range strings.Split(raw, ",") {
+		parts := strings.SplitN(strings.TrimSpace(pair), "=", 2)
+		if len(parts) == 2 {
+			headers[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+		}
+	}
+	return headers
 }
 
 func sanitizeFilename(name string) string {
