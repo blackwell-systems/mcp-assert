@@ -5,21 +5,15 @@
 | Item | Priority | Description |
 |------|----------|-------------|
 | **External adoption** | High | Get one MCP server author to use mcp-assert and report results. |
-| **Rust server suites** | Done | `4t145/rmcp` counter (14 assertions, bug found) and `rust-mcp-stack/rust-mcp-filesystem` (23 assertions, clean scan). First language community beyond Go/TypeScript/Python. |
-| **Excel MCP server suite** | Done | `haris-musa/excel-mcp-server` (15 assertions, clean scan). 3,750 stars, highest-visibility Python server scanned. |
 | **Underserved language suites** | Medium | Java and C# MCP servers remain untested. Java: MCP SDK for Spring, Quarkus MCP. C#: modelcontextprotocol/csharp-sdk. |
-| **"Works with mcp-assert" badge** | Done | Static and dynamic (CI-verified) badge variants. [Badge guide](badge.md). |
-| **Reference suite registry** | Medium | A canonical set of suites that any conforming server can run against, independent of server-specific fixtures. Addresses the duplicate suite problem (agent-lsp and mcp-assert each maintaining their own copy). Single source of truth. |
+| **Reference suite registry** | Medium | A canonical set of suites that any conforming server can run against, independent of server-specific fixtures. Single source of truth. |
 
 ## Distribution
 
 | Item | Priority | Description |
 |------|----------|-------------|
-| **Homebrew formula** | Done | `brew install blackwell-systems/tap/mcp-assert` |
-| **PyPI wrapper** | Done | `pip install mcp-assert` |
-| **npm wrapper** | Done | `npx @blackwell-systems/mcp-assert` |
-| **Scoop** | Done | `scoop install mcp-assert` via [blackwell-systems/scoop-bucket](https://github.com/blackwell-systems/scoop-bucket) |
 | **MCP registry integration** | Medium | Surface the mcp-assert test badge prominently on Glama and Smithery listings. Servers that pass a reference suite get a "verified" marker in the registry. |
+| **Nix flake** | Low | Nix users are quality-focused and vocal. High signal in a niche community. |
 
 ## MCP Protocol Surface Coverage
 
