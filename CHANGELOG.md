@@ -20,6 +20,10 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **pytest plugin on roadmap**: Framework integration layer planned. `pip install pytest-mcp-assert`, each YAML assertion becomes a pytest test case.
 - **256 total assertions** across 22 suites, 14 servers, 4 languages (Go, TypeScript, Python, Rust). 12 bugs found, 3 upstream issues filed.
 
+### Fixed
+
+- **`skip` field now works.** The `skip: true` field was defined in `types.go` and set by the `generate` command on destructive tools, but the runner never checked it. Assertions marked `skip: true` were silently running instead of being skipped. Now they return `SKIP` immediately without starting a server.
+
 ## [0.2.4] - 2026-04-24
 
 ### Added
