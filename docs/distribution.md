@@ -107,9 +107,12 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 
 | Channel | Status | Description |
 |---------|--------|-------------|
+| r/MCP | Posted 2026-04-24 | Launch post: feature overview, scorecard, install methods |
+| r/ClaudeCode | Posted 2026-04-24 | Adapted for Claude Code/Desktop users |
+| LinkedIn | Posted 2026-04-24 | Launch announcement to professional network |
 | Blog post: dogfooding | Material in `docs/dogfooding-github-mcp.md` | "We tested the most popular MCP server and found 4 DX issues in our own tool" |
 | MCP community Discord/forums | Not started | Post when awesome-mcp-devtools listing is merged |
-| Hacker News | Not started | Post when Homebrew formula is live |
+| Hacker News | Not started | Ready to post |
 
 ## Non-goals
 
