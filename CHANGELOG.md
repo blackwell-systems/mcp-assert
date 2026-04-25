@@ -12,6 +12,14 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **3 new assertion types**: `file_not_contains` (file must not contain string), `file_not_exists` (file must not exist), `contains_any` (response contains at least one of the listed strings). Total assertion types: 18 + 4 trajectory = 22.
 - **Condition registry refactor**: Checker internals refactored from if/else chain to ordered registry pattern. Adding a new assertion type is now a one-line registration.
 - **303 total assertions** across 27 suites, 19 servers, 5 languages (Go, TypeScript, Python, Rust, Kotlin/Java).
+- **HTTP/SSE transport support in `generate` command**: `--transport http|sse` and `--headers` flags for generating assertions against remote MCP servers. Reuses `createMCPClient` for transport selection.
+- **Release procedure documentation**: step-by-step guide in `docs/distribution.md` covering the full release pipeline (GoReleaser, npm, PyPI, Homebrew, Scoop), verification commands, required secrets, rollback procedure, and GitHub Action maintenance. A new maintainer can cut a release without tribal knowledge.
+- **GitHub Action maintenance guide**: how the action repo stays in sync with main project, when to update it, floating `v1` tag convention.
+
+### Fixed
+
+- **Scorecard transports count**: corrected from "3 (stdio, SSE, HTTP)" to "2 (stdio, HTTP)". SSE transport is supported by the tool but no server suite exercises it yet.
+- **Distribution doc date typos**: fixed "3036-04-24" to "2026-04-24" in content posting dates.
 
 ## [0.3.0] - 2026-04-24
 
