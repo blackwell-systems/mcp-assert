@@ -9,7 +9,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Servers scanned | 19 |
 | Server suites | 20 (including HTTP transport variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
 | Languages tested | 4 (Go, TypeScript, Python, Rust) |
-| Transports tested | 3 (stdio, SSE, HTTP) |
+| Transports tested | 2 (stdio, HTTP) |
 | Total assertions | 303 (283 server + 20 trajectory) |
 | Upstream bugs found | 12 (3 servers affected) |
 | Upstream issues filed | 3 (1 unfiled: repo archived) |
