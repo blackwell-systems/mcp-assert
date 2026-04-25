@@ -20,11 +20,12 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 
 ---
 
-## Assertion Types (15 + 4 trajectory)
+## Assertion Types (18 + 4 trajectory)
 
 | Type | Category | What it checks |
 |------|----------|----------------|
 | `contains` | Text | Response contains all specified substrings |
+| `contains_any` | Text | Response contains at least one of the specified substrings |
 | `not_contains` | Text | Response does not contain any specified substrings |
 | `equals` | Text | Response exactly matches expected value (whitespace-trimmed) |
 | `matches_regex` | Text | Response matches all specified regex patterns |
@@ -35,6 +36,8 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 | `not_error` | Status | Tool response has `isError: false` |
 | `is_error` | Status | Tool response has `isError: true` (negative testing) |
 | `file_contains` | Side effect | File on disk contains expected text after tool execution |
+| `file_not_contains` | Side effect | File on disk does NOT contain specified text after tool execution |
+| `file_not_exists` | Side effect | File does NOT exist on disk after tool execution |
 | `file_unchanged` | Side effect | File on disk was not modified (snapshot comparison) |
 | `net_delta` | Speculative | Diagnostic delta equals expected value |
 | `in_order` | Sequence | Substrings appear in specified order within response |

@@ -8,7 +8,10 @@ The format is based on Keep a Changelog, Semantic Versioning.
 ### Added
 
 - **Spring AI MCP server suite (Kotlin)**: 3 assertions, 100% tool coverage (2/2). First JVM language in the suite collection. Uses HTTP transport. Clean scan on `jamesward/hello-spring-mcp-server`.
-- **299 total assertions** across 26 suites, 18 servers, 5 languages (Go, TypeScript, Python, Rust, Kotlin/Java).
+- **MongoDB MCP server suite**: 4 assertions for the official MongoDB MCP server (1K stars). Knowledge search, error handling. Clean scan. Exemplary error messages with LLM-aware guidance.
+- **3 new assertion types**: `file_not_contains` (file must not contain string), `file_not_exists` (file must not exist), `contains_any` (response contains at least one of the listed strings). Total assertion types: 18 + 4 trajectory = 22.
+- **Condition registry refactor**: Checker internals refactored from if/else chain to ordered registry pattern. Adding a new assertion type is now a one-line registration.
+- **303 total assertions** across 27 suites, 19 servers, 5 languages (Go, TypeScript, Python, Rust, Kotlin/Java).
 
 ## [0.3.0] - 2026-04-24
 
