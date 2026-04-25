@@ -5,6 +5,23 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- **grafana/mcp-grafana suite**: 10 assertions, 1 bug found. `get_assertions` returns internal error (-32603) instead of `isError:true` on invalid timestamps. Issue filed ([#792](https://github.com/grafana/mcp-grafana/issues/792)), fix PR submitted ([#793](https://github.com/grafana/mcp-grafana/pull/793)).
+- **microsoft/playwright-mcp suite**: 10 assertions, 100% clean. Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, invalid URL rejection, empty page handling. 31K-star server.
+- **openai/sample-deep-research-mcp suite**: 4 assertions, 100% clean. OpenAI's official sample MCP server.
+- **@google-cloud/storage-mcp suite**: 6 assertions, 100% clean. Google Cloud's official Storage MCP server.
+- **Anthropic time/fetch/git suites**: 15 assertions across 3 more Anthropic official servers. All clean. 6 of 7 Anthropic servers now tested.
+- **blazickjp/arxiv-mcp-server suite**: 5 assertions, 1 bug found. `get_abstract` returns error content but `isError` flag not set. Issue filed ([#92](https://github.com/blazickjp/arxiv-mcp-server/issues/92)), fix PR submitted ([#93](https://github.com/blazickjp/arxiv-mcp-server/pull/93)).
+- **Badge snippet on passing runs**: `mcp-assert run` and `mcp-assert ci` print a ready-to-paste badge markdown snippet when all assertions pass.
+- **GitHub Action `badge_markdown` output**: set when all assertions pass, ready for PR comments or README update workflows.
+- **Fix PRs submitted**: mark3labs/mcp-go [#828](https://github.com/mark3labs/mcp-go/pull/828) (stderr hooks), antvis/mcp-server-chart [#292](https://github.com/antvis/mcp-server-chart/pull/292) (isError on chart failures), grafana/mcp-grafana [#793](https://github.com/grafana/mcp-grafana/pull/793) (timestamp validation), blazickjp/arxiv-mcp-server [#93](https://github.com/blazickjp/arxiv-mcp-server/pull/93) (isError flag).
+- **343 total assertions** across 27 servers, 4 languages, 3 transports. 14 bugs found, 5 issues filed, 5 fix PRs (4 ours). All 4 major tech companies covered (Anthropic, Google, OpenAI, Microsoft).
+
+### Fixed
+
+- **SSE Start() test expectations**: updated createMCPClient tests to match SSE eager-connect vs HTTP lazy-connect behavior.
+
 ## [0.4.0] - 2026-04-25
 
 ### Added
