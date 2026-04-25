@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- **Custom SVG badges**: Three branded badge variants (passing, score, failing) with checkbox icon matching the mcp-assert logo. [Badge guide](https://blackwell-systems.github.io/mcp-assert/badge/).
+- **github-mcp-server suite expanded**: 6 to 20 assertions covering 17 read-only tools across 7 toolsets (context, repos, git, issues, pull requests, users, gists). 
+- **rmcp (Rust MCP SDK) suite**: 14 assertions, 100% tool coverage (6/6 tools + resources + prompts). First Rust MCP server in the example suite collection. Found bug: `get_value` decrements counter instead of reading it (repo archived).
+- **rust-mcp-filesystem suite**: 23 assertions, 92% coverage (22/24 tools). Read, list, search, write, edit, zip/unzip, head, tail, line ranges, path traversal rejection. Clean scan on `rust-mcp-stack/rust-mcp-filesystem` (145 stars).
+- **excel-mcp-server suite**: 15 assertions covering workbook creation, data round-trip, formulas, charts, pivot tables, formatting, merge cells, validation. Clean scan on `haris-musa/excel-mcp-server` (3,750 stars).
+- **VHS demo GIF**: Terminal recording of the generate-and-run flow (Catppuccin Mocha theme, colorful window bar). Embedded in README.
+- **Dogfooding report: rmcp**: `docs/dogfooding-rmcp.md` documenting the Rust SDK testing experience and bug found.
+- **pytest plugin on roadmap**: Framework integration layer planned. `pip install pytest-mcp-assert`, each YAML assertion becomes a pytest test case.
+- **240 total assertions** across 21 suites, 13 servers, 4 languages (Go, TypeScript, Python, Rust).
+
 ## [0.2.4] - 2026-04-24
 
 ### Added

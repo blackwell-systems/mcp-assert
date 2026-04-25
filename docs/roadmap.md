@@ -5,7 +5,9 @@
 | Item | Priority | Description |
 |------|----------|-------------|
 | **External adoption** | High | Get one MCP server author to use mcp-assert and report results. |
-| **Underserved language suites** | Medium | Server suites for Rust, Java, and C# MCP servers: communities with few or no dedicated testing tools. Rust: `rmcp` SDK. Java: MCP SDK for Spring, Quarkus MCP. C#: modelcontextprotocol/csharp-sdk. High-signal distribution targets. |
+| **Rust server suites** | Done | `4t145/rmcp` counter (14 assertions, bug found) and `rust-mcp-stack/rust-mcp-filesystem` (23 assertions, clean scan). First language community beyond Go/TypeScript/Python. |
+| **Excel MCP server suite** | Done | `haris-musa/excel-mcp-server` (15 assertions, clean scan). 3,750 stars, highest-visibility Python server scanned. |
+| **Underserved language suites** | Medium | Java and C# MCP servers remain untested. Java: MCP SDK for Spring, Quarkus MCP. C#: modelcontextprotocol/csharp-sdk. |
 | **"Works with mcp-assert" badge** | Done | Static and dynamic (CI-verified) badge variants. [Badge guide](badge.md). |
 | **Reference suite registry** | Medium | A canonical set of suites that any conforming server can run against, independent of server-specific fixtures. Addresses the duplicate suite problem (agent-lsp and mcp-assert each maintaining their own copy). Single source of truth. |
 
