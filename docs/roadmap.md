@@ -65,7 +65,7 @@ Tracking coverage of every method defined in the MCP 2025-11-25 specification.
 | **HTTP servers (streamable)** | Supported | `transport: http` with `url:` field |
 | **SSE servers (legacy)** | Supported | `transport: sse` with `url:` field |
 | **Bidirectional (sampling, roots, elicitation)** | Supported | `client_capabilities` in server YAML config |
-| **Authenticated servers (OAuth, API keys)** | Partial | API key/token injection via `server.env:` with `${VAR}` expansion works. OAuth browser-based flows (e.g., Cloudflare MCP servers) are not supported: mcp-assert cannot open a browser, complete an OAuth handshake, or manage token refresh. This blocks testing any server that requires interactive OAuth (Cloudflare Radar, Cloudflare Workers, etc.). |
+| **Authenticated servers (OAuth, API keys)** | Mostly supported | Token/API key injection via `server.env:` (stdio) and `server.headers:` (HTTP/SSE) with `${VAR}` expansion. Covers any server that accepts bearer tokens or API keys. Interactive browser-based OAuth flows (e.g., Cloudflare MCP servers that use mcp-remote with OAuth) are not yet automated. |
 | **Streaming/long-running tools** | Partial | Progress notifications captured. Full streaming not yet supported. |
 | **Multi-server composition** | Not yet | Testing the composition layer requires intercepting outgoing calls. |
 

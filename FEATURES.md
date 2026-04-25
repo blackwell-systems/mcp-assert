@@ -112,10 +112,21 @@ Only PASS → non-PASS transitions are flagged. Previously-failing tests that st
 | Transport | Field | Description |
 |-----------|-------|-------------|
 | `stdio` (default) | `command`, `args`, `env` | Launch MCP server as a subprocess, communicate over stdin/stdout. `env` values support `${VAR}` and `$VAR` expansion from the parent shell environment. |
-| `sse` | `url` | Connect to an SSE-based MCP server (legacy transport) |
-| `http` | `url` | Connect to a streamable HTTP MCP server (modern transport) |
+| `sse` | `url`, `headers` | Connect to an SSE-based MCP server (legacy transport). Optional `headers` for authentication. |
+| `http` | `url`, `headers` | Connect to a streamable HTTP MCP server (modern transport). Optional `headers` for authentication. |
 
 Transport is configured per-assertion in YAML via the `transport` and `url` fields. When omitted, defaults to stdio. Case-insensitive. Docker isolation is only supported with stdio.
+
+The `headers` field accepts a map of header names to values. Values support `${VAR}` expansion from the environment:
+
+```yaml
+server:
+  transport: http
+  url: https://api.example.com/mcp
+  headers:
+    Authorization: "Bearer ${API_TOKEN}"
+    X-Custom-Header: "my-value"
+```
 
 ---
 

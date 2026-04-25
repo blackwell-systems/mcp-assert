@@ -96,7 +96,10 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `rust-mcp-stack/rust-mcp-filesystem` | Rust | 23 | 92% (22/24 tools) | Clean scan. Read, list, search, write, edit, zip/unzip, path traversal. |
 | `haris-musa/excel-mcp-server` | Python | 15 | 52% (13/25 tools) | Clean. Workbook, sheets, data, formulas, charts, pivots, formatting. |
 | `antvis/mcp-server-chart` | TypeScript | 16 | 59% (16/27 tools) | 9 bugs found ([#291](https://github.com/antvis/mcp-server-chart/issues/291)). Unhandled exceptions on default input. |
-| **Total** | **4 languages** | **296** | | **22 suites** |
+| `@modelcontextprotocol/server-everything` | TypeScript | 13 | 92% (12/13 tools) | Clean. Official Anthropic reference server. |
+| `hashicorp/terraform-mcp-server` | Go | 5 | 56% (5/9 tools) | Clean. Provider, module, policy search. |
+| `makenotion/notion-mcp-server` | TypeScript | 22 | 100% (22/22 tools) | Clean. Official Notion server. |
+| **Total** | **4 languages** | **296** | | **25 suites** |
 
 ## Target servers (next)
 

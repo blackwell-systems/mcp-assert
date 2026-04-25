@@ -443,6 +443,24 @@ Transport values are case-insensitive. When `transport` is omitted or set to `st
 
 Docker isolation (`--docker`) is only supported with stdio transport.
 
+## Custom headers (HTTP/SSE)
+
+For authenticated remote MCP servers, pass custom headers via the `headers` field. Values support `${VAR}` expansion from the environment:
+
+```yaml
+server:
+  transport: http
+  url: https://api.example.com/mcp
+  headers:
+    Authorization: "Bearer ${API_TOKEN}"
+```
+
+This works with any server that accepts bearer tokens, API keys, or custom headers. Set the token as an environment variable before running:
+
+```bash
+API_TOKEN=your-token mcp-assert run --suite evals/
+```
+
 ## Server environment variables
 
 Pass environment variables to the server process:

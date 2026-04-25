@@ -17,8 +17,12 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **antvis/mcp-server-chart suite**: 16 assertions for the AntV charting server (4K stars). Found 9 tools that crash with unhandled JavaScript exceptions on default input. Filed [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291).
 - **Architecture doc rewrite**: Comprehensive 600-line guide covering MCP primer, assertion lifecycle, package structure, transport layer, fixture isolation, block types, reporting, and extension points.
 - **Star CTA**: Dark/light mode star call-to-action image in README footer.
+- **MCP everything server (TypeScript) suite**: 13 assertions (12 pass, 1 skip) for the official Anthropic reference server. Clean scan.
+- **Terraform MCP server suite**: 5 assertions for HashiCorp's terraform-mcp-server (1.3K stars). Provider lookup, module search, policy search. Clean scan.
+- **Notion MCP server suite**: 22 assertions, 100% tool coverage (22/22) for the official Notion MCP server (4.2K stars). Clean scan.
+- **Custom HTTP/SSE headers**: New `headers` field on server config for authenticated remote MCP servers. Values support `${VAR}` expansion. Enables testing Cloudflare, Notion (with tokens), and any API-key-protected server.
 - **pytest plugin on roadmap**: Framework integration layer planned. `pip install pytest-mcp-assert`, each YAML assertion becomes a pytest test case.
-- **256 total assertions** across 22 suites, 14 servers, 4 languages (Go, TypeScript, Python, Rust). 12 bugs found, 3 upstream issues filed.
+- **296 total assertions** across 25 suites, 17 servers, 4 languages (Go, TypeScript, Python, Rust). 12 bugs found, 3 upstream issues filed.
 
 ### Fixed
 
