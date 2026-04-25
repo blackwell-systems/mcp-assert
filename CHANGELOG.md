@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- **Spring AI MCP server suite (Kotlin)**: 3 assertions, 100% tool coverage (2/2). First JVM language in the suite collection. Uses HTTP transport. Clean scan on `jamesward/hello-spring-mcp-server`.
+- **299 total assertions** across 26 suites, 18 servers, 5 languages (Go, TypeScript, Python, Rust, Kotlin/Java).
+
 ## [0.3.0] - 2026-04-24
 
 ### Added

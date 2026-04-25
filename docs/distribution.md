@@ -99,7 +99,8 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `@modelcontextprotocol/server-everything` | TypeScript | 13 | 92% (12/13 tools) | Clean. Official Anthropic reference server. |
 | `hashicorp/terraform-mcp-server` | Go | 5 | 56% (5/9 tools) | Clean. Provider, module, policy search. |
 | `makenotion/notion-mcp-server` | TypeScript | 22 | 100% (22/22 tools) | Clean. Official Notion server. |
-| **Total** | **4 languages** | **299** | | **25 suites** |
+| `jamesward/hello-spring-mcp-server` | Kotlin | 3 | 100% (2/2 tools) | Clean. First JVM server. Spring AI MCP, HTTP transport. |
+| **Total** | **5 languages** | **299** | | **26 suites** |
 
 ## Target servers (next)
 

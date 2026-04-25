@@ -63,6 +63,12 @@ Servers tested by mcp-assert, bugs found, issues filed.
 |--------|----------|-----------|------------|----------|------|-------|
 | `antvis/mcp-server-chart` | TypeScript | stdio | 16 | 59% (16/27 tools) | 9 | [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291). 9 tools crash with unhandled exceptions on default/minimal input. Stack traces leak to agents. |
 
+### JVM (Kotlin/Java)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `jamesward/hello-spring-mcp-server` | Kotlin | HTTP | 3 | 100% (2/2 tools) | 0 | Clean. First JVM server tested. Spring Boot + Spring AI MCP. |
+
 ### Internal (agent-lsp)
 
 | Server | Language | Transport | Assertions | Coverage | Bugs fixed |
