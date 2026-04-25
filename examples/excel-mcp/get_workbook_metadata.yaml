@@ -1,0 +1,18 @@
+name: get_workbook_metadata returns workbook info
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+setup:
+  - tool: create_workbook
+    args:
+      filepath: "{{fixture}}/meta.xlsx"
+assert:
+  tool: get_workbook_metadata
+  args:
+    filepath: "{{fixture}}/meta.xlsx"
+  expect:
+    not_error: true
+    contains: ["Sheet"]
+timeout: 30s

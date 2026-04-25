@@ -1,0 +1,27 @@
+name: format_range applies bold formatting to cells
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+setup:
+  - tool: create_workbook
+    args:
+      filepath: "{{fixture}}/format.xlsx"
+  - tool: write_data_to_excel
+    args:
+      filepath: "{{fixture}}/format.xlsx"
+      sheet_name: Sheet
+      data:
+        - ["Header"]
+        - ["Value"]
+assert:
+  tool: format_range
+  args:
+    filepath: "{{fixture}}/format.xlsx"
+    sheet_name: Sheet
+    start_cell: A1
+    bold: true
+  expect:
+    not_error: true
+timeout: 30s

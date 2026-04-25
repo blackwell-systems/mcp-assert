@@ -1,0 +1,32 @@
+name: create_pivot_table builds a pivot table
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+setup:
+  - tool: create_workbook
+    args:
+      filepath: "{{fixture}}/pivot.xlsx"
+  - tool: write_data_to_excel
+    args:
+      filepath: "{{fixture}}/pivot.xlsx"
+      sheet_name: Sheet
+      data:
+        - ["Region", "Product", "Sales"]
+        - ["East", "Widget", 100]
+        - ["West", "Widget", 150]
+        - ["East", "Gadget", 200]
+        - ["West", "Gadget", 250]
+assert:
+  tool: create_pivot_table
+  args:
+    filepath: "{{fixture}}/pivot.xlsx"
+    sheet_name: Sheet
+    data_range: A1:C5
+    target_cell: E1
+    rows: ["Region"]
+    values: ["Sales"]
+  expect:
+    not_error: true
+timeout: 30s

@@ -1,0 +1,27 @@
+name: insert_rows adds rows to a sheet
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+setup:
+  - tool: create_workbook
+    args:
+      filepath: "{{fixture}}/insert.xlsx"
+  - tool: write_data_to_excel
+    args:
+      filepath: "{{fixture}}/insert.xlsx"
+      sheet_name: Sheet
+      data:
+        - ["A", "B"]
+        - [1, 2]
+assert:
+  tool: insert_rows
+  args:
+    filepath: "{{fixture}}/insert.xlsx"
+    sheet_name: Sheet
+    start_row: 2
+    num_rows: 1
+  expect:
+    not_error: true
+timeout: 30s

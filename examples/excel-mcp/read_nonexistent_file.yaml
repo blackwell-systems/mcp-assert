@@ -1,0 +1,14 @@
+name: read_data_from_excel errors on missing file
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+assert:
+  tool: read_data_from_excel
+  args:
+    filepath: "{{fixture}}/does_not_exist.xlsx"
+    sheet_name: Sheet
+  expect:
+    is_error: true
+timeout: 30s

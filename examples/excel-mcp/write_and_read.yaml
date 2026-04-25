@@ -1,0 +1,27 @@
+name: write then read data round-trip
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+setup:
+  - tool: create_workbook
+    args:
+      filepath: "{{fixture}}/roundtrip.xlsx"
+  - tool: write_data_to_excel
+    args:
+      filepath: "{{fixture}}/roundtrip.xlsx"
+      sheet_name: Sheet
+      data:
+        - ["Name", "Score"]
+        - ["Alice", 95]
+        - ["Bob", 87]
+assert:
+  tool: read_data_from_excel
+  args:
+    filepath: "{{fixture}}/roundtrip.xlsx"
+    sheet_name: Sheet
+  expect:
+    not_error: true
+    contains: ["Alice", "Bob", "95", "87"]
+timeout: 30s

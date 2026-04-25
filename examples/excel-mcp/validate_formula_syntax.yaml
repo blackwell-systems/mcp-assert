@@ -1,0 +1,20 @@
+name: validate_formula_syntax checks valid formula
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+setup:
+  - tool: create_workbook
+    args:
+      filepath: "{{fixture}}/validate.xlsx"
+assert:
+  tool: validate_formula_syntax
+  args:
+    filepath: "{{fixture}}/validate.xlsx"
+    sheet_name: Sheet
+    cell: A1
+    formula: "=SUM(A1:A10)"
+  expect:
+    not_error: true
+timeout: 30s

@@ -1,0 +1,28 @@
+name: validate_formula_syntax rejects invalid formula
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+setup:
+  - tool: create_workbook
+    args:
+      filepath: "{{fixture}}/validate_bad.xlsx"
+  - tool: write_data_to_excel
+    args:
+      filepath: "{{fixture}}/validate_bad.xlsx"
+      sheet_name: Sheet
+      data:
+        - ["Value"]
+        - [1]
+assert:
+  tool: validate_formula_syntax
+  args:
+    filepath: "{{fixture}}/validate_bad.xlsx"
+    sheet_name: Sheet
+    cell: B1
+    formula: "=SUM(A1:A10"
+  expect:
+    not_error: true
+    contains: ["Invalid formula syntax"]
+timeout: 30s

@@ -1,0 +1,20 @@
+name: validate_excel_range checks valid range
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+setup:
+  - tool: create_workbook
+    args:
+      filepath: "{{fixture}}/range_check.xlsx"
+assert:
+  tool: validate_excel_range
+  args:
+    filepath: "{{fixture}}/range_check.xlsx"
+    sheet_name: Sheet
+    start_cell: A1
+    end_cell: Z100
+  expect:
+    not_error: true
+timeout: 30s

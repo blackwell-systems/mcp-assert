@@ -1,0 +1,30 @@
+name: create_chart generates a bar chart
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+setup:
+  - tool: create_workbook
+    args:
+      filepath: "{{fixture}}/chart.xlsx"
+  - tool: write_data_to_excel
+    args:
+      filepath: "{{fixture}}/chart.xlsx"
+      sheet_name: Sheet
+      data:
+        - ["Category", "Value"]
+        - ["A", 10]
+        - ["B", 20]
+        - ["C", 30]
+assert:
+  tool: create_chart
+  args:
+    filepath: "{{fixture}}/chart.xlsx"
+    sheet_name: Sheet
+    chart_type: bar
+    data_range: A1:B4
+    target_cell: D1
+  expect:
+    not_error: true
+timeout: 30s

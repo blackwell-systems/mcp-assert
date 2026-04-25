@@ -1,0 +1,23 @@
+name: rename_worksheet changes sheet name
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+setup:
+  - tool: create_workbook
+    args:
+      filepath: "{{fixture}}/rename.xlsx"
+  - tool: create_worksheet
+    args:
+      filepath: "{{fixture}}/rename.xlsx"
+      sheet_name: OldName
+assert:
+  tool: rename_worksheet
+  args:
+    filepath: "{{fixture}}/rename.xlsx"
+    old_name: OldName
+    new_name: NewName
+  expect:
+    not_error: true
+timeout: 30s

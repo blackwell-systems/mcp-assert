@@ -1,0 +1,29 @@
+name: apply_formula sets a formula in a cell
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+setup:
+  - tool: create_workbook
+    args:
+      filepath: "{{fixture}}/formula.xlsx"
+  - tool: write_data_to_excel
+    args:
+      filepath: "{{fixture}}/formula.xlsx"
+      sheet_name: Sheet
+      data:
+        - ["Value"]
+        - [10]
+        - [20]
+        - [30]
+assert:
+  tool: apply_formula
+  args:
+    filepath: "{{fixture}}/formula.xlsx"
+    sheet_name: Sheet
+    cell: B1
+    formula: "=SUM(A2:A4)"
+  expect:
+    not_error: true
+timeout: 30s

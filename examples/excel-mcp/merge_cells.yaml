@@ -1,0 +1,20 @@
+name: merge_cells merges a range
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+setup:
+  - tool: create_workbook
+    args:
+      filepath: "{{fixture}}/merge.xlsx"
+assert:
+  tool: merge_cells
+  args:
+    filepath: "{{fixture}}/merge.xlsx"
+    sheet_name: Sheet
+    start_cell: A1
+    end_cell: C1
+  expect:
+    not_error: true
+timeout: 30s

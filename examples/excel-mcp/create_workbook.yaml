@@ -1,0 +1,14 @@
+name: create_workbook creates a new Excel file
+server:
+  command: excel-mcp-server
+  args: [stdio]
+  env:
+    EXCEL_FILES_PATH: "{{fixture}}"
+assert:
+  tool: create_workbook
+  args:
+    filepath: "{{fixture}}/test.xlsx"
+  expect:
+    not_error: true
+    contains: ["test.xlsx"]
+timeout: 30s
