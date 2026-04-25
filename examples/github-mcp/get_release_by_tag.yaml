@@ -1,0 +1,15 @@
+name: get_release_by_tag returns v0.2.4 release details
+server:
+  command: github-mcp-server
+  args: [stdio]
+assert:
+  tool: get_release_by_tag
+  args:
+    owner: blackwell-systems
+    repo: mcp-assert
+    tag: v0.2.4
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["v0.2.4"]
+timeout: 30s

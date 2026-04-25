@@ -1,0 +1,14 @@
+name: list_releases returns releases for mcp-assert
+server:
+  command: github-mcp-server
+  args: [stdio]
+assert:
+  tool: list_releases
+  args:
+    owner: blackwell-systems
+    repo: mcp-assert
+  expect:
+    not_error: true
+    not_empty: true
+    min_results: 1
+timeout: 30s

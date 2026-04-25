@@ -91,8 +91,8 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `mark3labs/mcp-go` sampling_server | Go | 3 | 100% | Bidirectional sampling |
 | `mark3labs/mcp-go` elicitation | Go | 4 | 100% | Accept, decline, cancel, validation |
 | `PrefectHQ/fastmcp` testing_demo | Python | 16 | 100% | All 3 MCP feature categories |
-| `github/github-mcp-server` | Go | 6 | -- | Initial suite: get_me, search, list, file read |
-| **Total** | **3 languages** | **174** | | **18 suites** |
+| `github/github-mcp-server` | Go | 20 | -- | 17 read-only tools across 7 toolsets: context, repos, git, issues, pull requests, users, gists |
+| **Total** | **3 languages** | **188** | | **18 suites** |
 
 ## Target servers (next)
 

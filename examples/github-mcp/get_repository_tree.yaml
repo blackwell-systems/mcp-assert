@@ -1,0 +1,15 @@
+name: get_repository_tree returns file tree for mcp-assert
+server:
+  command: github-mcp-server
+  args: [stdio]
+assert:
+  tool: get_repository_tree
+  args:
+    owner: blackwell-systems
+    repo: mcp-assert
+    recursive: false
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["README.md", "go.mod"]
+timeout: 30s

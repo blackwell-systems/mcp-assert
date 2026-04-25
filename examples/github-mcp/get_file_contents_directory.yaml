@@ -1,0 +1,15 @@
+name: get_file_contents lists directory contents
+server:
+  command: github-mcp-server
+  args: [stdio]
+assert:
+  tool: get_file_contents
+  args:
+    owner: blackwell-systems
+    repo: mcp-assert
+    path: internal/assertion
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["checker.go"]
+timeout: 30s

@@ -1,6 +1,6 @@
 # Examples
 
-mcp-assert ships with 18 suites (17 server suites + 1 trajectory suite) for 12 MCP servers in three languages (Go, TypeScript, Python), plus a trajectory suite that runs without a server. All built-in server suites use stdio transport except the HTTP conformance suite. 174 total assertions.
+mcp-assert ships with 18 suites (17 server suites + 1 trajectory suite) for 12 MCP servers in three languages (Go, TypeScript, Python), plus a trajectory suite that runs without a server. All built-in server suites use stdio transport except the HTTP conformance suite. 188 total assertions.
 
 ## Summary
 
@@ -22,7 +22,7 @@ mcp-assert ships with 18 suites (17 server suites + 1 trajectory suite) for 12 M
 | `examples/mcp-go-elicitation/` | mark3labs/mcp-go elicitation | Go | stdio | 4 |
 | `examples/mcp-go-everything-completion/` | mark3labs/mcp-go everything | Go | stdio | 3 |
 | `examples/mcp-go-everything-logging/` | mark3labs/mcp-go everything | Go | stdio | 2 |
-| `examples/github-mcp/` | github/github-mcp-server | Go | stdio | 6 |
+| `examples/github-mcp/` | github/github-mcp-server | Go | stdio | 20 |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 |
 
 ---
@@ -207,7 +207,7 @@ mcp-assert run --suite examples/mcp-go-everything-logging
 
 **Directory:** `examples/github-mcp/`
 
-Tests [github/github-mcp-server](https://github.com/github/github-mcp-server) (28K+ stars), the most popular MCP server. 6 assertions targeting read-only tools: `get_me`, `search_repositories`, `get_file_contents`, `list_issues`, `search_code`, `list_branches`. Requires a `GITHUB_PERSONAL_ACCESS_TOKEN` environment variable.
+Tests [github/github-mcp-server](https://github.com/github/github-mcp-server) (28K+ stars), the most popular MCP server. 20 assertions targeting 17 read-only tools across 7 toolsets: context (`get_me`), repos (`get_file_contents`, `search_repositories`, `search_code`, `list_branches`, `list_commits`, `list_tags`, `list_releases`, `get_latest_release`, `get_release_by_tag`), git (`get_repository_tree`), issues (`list_issues`, `search_issues`), pull requests (`list_pull_requests`, `search_pull_requests`), users (`search_users`), gists (`list_gists`). Requires a `GITHUB_PERSONAL_ACCESS_TOKEN` environment variable.
 
 The assertions reference `github-mcp-server` in PATH. Build and install the server before running:
 

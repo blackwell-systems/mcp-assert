@@ -1,0 +1,13 @@
+name: search_repositories finds popular MCP repos
+server:
+  command: github-mcp-server
+  args: [stdio]
+assert:
+  tool: search_repositories
+  args:
+    query: "topic:mcp-server stars:>100"
+  expect:
+    not_error: true
+    not_empty: true
+    min_results: 1
+timeout: 30s

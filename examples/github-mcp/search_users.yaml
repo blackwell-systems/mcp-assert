@@ -1,0 +1,12 @@
+name: search_users finds GitHub users
+server:
+  command: github-mcp-server
+  args: [stdio]
+assert:
+  tool: search_users
+  args:
+    query: blackwell-systems
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

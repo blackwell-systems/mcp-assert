@@ -1,0 +1,11 @@
+name: list_gists returns gists for authenticated user
+server:
+  command: github-mcp-server
+  args: [stdio]
+assert:
+  tool: list_gists
+  args:
+    perPage: 5
+  expect:
+    not_error: true
+timeout: 30s

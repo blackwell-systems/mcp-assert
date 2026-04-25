@@ -1,0 +1,11 @@
+name: search_issues finds issues across GitHub
+server:
+  command: github-mcp-server
+  args: [stdio]
+assert:
+  tool: search_issues
+  args:
+    query: "repo:blackwell-systems/mcp-assert is:issue"
+  expect:
+    not_error: true
+timeout: 30s

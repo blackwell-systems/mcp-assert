@@ -27,4 +27,16 @@ GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_TOKEN mcp-assert run --suite examples/githu
 
 ## Coverage
 
-6 assertions covering read-only tools: `get_me`, `search_repositories`, `get_file_contents`, `list_issues`, `search_code`, `list_branches`.
+20 assertions covering read-only tools across 6 toolsets:
+
+| Toolset | Tools | Assertions |
+|---------|-------|------------|
+| Context | `get_me` | 1 |
+| Repos | `get_file_contents`, `search_repositories`, `search_code`, `list_branches`, `list_commits`, `list_tags`, `list_releases`, `get_latest_release`, `get_release_by_tag` | 11 |
+| Git | `get_repository_tree` | 2 |
+| Issues | `list_issues`, `search_issues` | 2 |
+| Pull Requests | `list_pull_requests`, `search_pull_requests` | 2 |
+| Users | `search_users` | 1 |
+| Gists | `list_gists` | 1 |
+
+All assertions are read-only. No write operations are performed against GitHub.

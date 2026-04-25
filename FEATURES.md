@@ -177,7 +177,7 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 
 ---
 
-## Example Suites (18 suites, 3 languages, 174 assertions)
+## Example Suites (18 suites, 3 languages, 188 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|
@@ -197,7 +197,7 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 | `examples/mcp-go-everything-completion/` | mark3labs/mcp-go everything | Go | stdio | 3 | `completion/complete` for prompt argument, resource URI, and empty prefix |
 | `examples/mcp-go-everything-logging/` | mark3labs/mcp-go everything | Go | stdio | 2 | `logging/setLevel` with level setting and log message capture |
 | `examples/fastmcp-testing-demo/` | PrefectHQ/fastmcp testing_demo | Python | stdio | 16 | add, greet, async_multiply: edge cases, defaults, negative tests, missing-arg error (100% tool coverage); resources (list, read static, read parameterized), prompts (list, get with arguments), all three MCP feature categories |
-| `examples/github-mcp/` | github/github-mcp-server | Go | stdio | 6 | get_me, search_repositories, get_file_contents, list_issues, search_code, list_branches (read-only subset) |
+| `examples/github-mcp/` | github/github-mcp-server | Go | stdio | 20 | 17 read-only tools across 7 toolsets: context, repos, git, issues, pull requests, users, gists |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 | All 20 agent-lsp skill protocols: required tool call sequences, safety gates (e.g. get_references before apply_edit), absence checks (e.g. no apply_edit in simulate), order constraints |
 
 ---

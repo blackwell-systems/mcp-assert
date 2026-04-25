@@ -1,0 +1,15 @@
+name: list_commits returns recent commits for mcp-assert
+server:
+  command: github-mcp-server
+  args: [stdio]
+assert:
+  tool: list_commits
+  args:
+    owner: blackwell-systems
+    repo: mcp-assert
+    perPage: 5
+  expect:
+    not_error: true
+    not_empty: true
+    min_results: 1
+timeout: 30s

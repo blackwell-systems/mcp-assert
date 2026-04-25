@@ -1,0 +1,11 @@
+name: search_pull_requests finds PRs across GitHub
+server:
+  command: github-mcp-server
+  args: [stdio]
+assert:
+  tool: search_pull_requests
+  args:
+    query: "repo:blackwell-systems/mcp-assert is:pr"
+  expect:
+    not_error: true
+timeout: 30s
