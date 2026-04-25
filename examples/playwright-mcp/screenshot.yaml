@@ -1,0 +1,15 @@
+name: browser_take_screenshot captures page
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@playwright/mcp", --headless]
+setup:
+  - tool: browser_navigate
+    args:
+      url: "https://example.com"
+assert:
+  tool: browser_take_screenshot
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

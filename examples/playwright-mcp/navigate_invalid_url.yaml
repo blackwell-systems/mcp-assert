@@ -1,0 +1,11 @@
+name: browser_navigate rejects invalid URL
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@playwright/mcp", --headless]
+assert:
+  tool: browser_navigate
+  args:
+    url: "not-a-url"
+  expect:
+    is_error: true
+timeout: 30s

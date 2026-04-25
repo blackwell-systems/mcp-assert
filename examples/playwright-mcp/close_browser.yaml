@@ -1,0 +1,10 @@
+name: browser_close succeeds
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@playwright/mcp", --headless]
+assert:
+  tool: browser_close
+  args: {}
+  expect:
+    not_error: true
+timeout: 30s

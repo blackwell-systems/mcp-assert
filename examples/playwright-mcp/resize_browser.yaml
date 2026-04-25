@@ -1,0 +1,12 @@
+name: browser_resize changes viewport
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@playwright/mcp", --headless]
+assert:
+  tool: browser_resize
+  args:
+    width: 1920
+    height: 1080
+  expect:
+    not_error: true
+timeout: 30s

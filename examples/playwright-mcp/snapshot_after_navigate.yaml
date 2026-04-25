@@ -1,0 +1,16 @@
+name: browser_snapshot returns page content
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@playwright/mcp", --headless]
+setup:
+  - tool: browser_navigate
+    args:
+      url: "https://example.com"
+assert:
+  tool: browser_snapshot
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Example Domain"]
+timeout: 30s

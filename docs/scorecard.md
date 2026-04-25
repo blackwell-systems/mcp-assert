@@ -6,14 +6,14 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 25 |
-| Server suites | 23 (including HTTP transport variant, SSE variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
+| Servers scanned | 26 |
+| Server suites | 24 (including HTTP transport variant, SSE variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
 | Languages tested | 4 (Go, TypeScript, Python, Rust) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 328 (308 server + 20 trajectory) |
+| Total assertions | 338 (318 server + 20 trajectory) |
 | Upstream bugs found | 13 (4 servers affected) |
 | Upstream issues filed | 4 (1 unfiled: repo archived) |
-| Clean scans (no bugs) | 19 |
+| Clean scans (no bugs) | 20 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -83,6 +83,12 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
 | `@google-cloud/storage-mcp` | TypeScript | stdio | 6 | 35% (6/17 tools, no GCP credentials) | 0 | Clean. Bucket metadata, object listing, IAM policy, input validation. Graceful error handling without credentials. |
+
+### Microsoft
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `@playwright/mcp` | TypeScript | stdio | 10 | 48% (10/21 tools) | 0 | Clean. Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, invalid URL rejection, empty page handling. |
 
 ### Observability (Go)
 
