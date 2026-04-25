@@ -1,6 +1,6 @@
 # Examples
 
-mcp-assert ships with 21 suites (17 server suites + 1 trajectory suite) for 12 MCP servers in three languages (Go, TypeScript, Python), plus a trajectory suite that runs without a server. All built-in server suites use stdio transport except the HTTP conformance suite. 240 total assertions.
+mcp-assert ships with 22 suites (17 server suites + 1 trajectory suite) for 12 MCP servers in three languages (Go, TypeScript, Python), plus a trajectory suite that runs without a server. All built-in server suites use stdio transport except the HTTP conformance suite. 256 total assertions.
 
 ## Summary
 

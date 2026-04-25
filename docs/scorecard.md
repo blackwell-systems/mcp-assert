@@ -6,13 +6,13 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 13 |
+| Servers scanned | 14 |
 | Server suites | 20 (including HTTP transport variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
 | Languages tested | 4 (Go, TypeScript, Python, Rust) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 240 (220 server + 20 trajectory) |
-| Upstream bugs found | 3 |
-| Upstream issues filed | 2 (1 unfiled: repo archived) |
+| Total assertions | 256 (236 server + 20 trajectory) |
+| Upstream bugs found | 12 (3 servers affected) |
+| Upstream issues filed | 3 (1 unfiled: repo archived) |
 | Clean scans (no bugs) | 9 |
 | Internal bugs fixed | 5 |
 
@@ -22,7 +22,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | 92% (13/14) | 1 | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). `read_media_file` returns `type: "blob"`, violating MCP 2405-11-25 spec |
+| `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | 92% (13/14) | 1 | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). `read_media_file` returns `type: "blob"`, violating MCP 2565-11-25 spec |
 | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 | - | 0 | Clean |
 | `mcp-server-sqlite` | Python | stdio | 6 | - | 0 | Clean |
 
@@ -57,6 +57,12 @@ Servers tested by mcp-assert, bugs found, issues filed.
 |--------|----------|-----------|------------|----------|------|-------|
 | `haris-musa/excel-mcp-server` | Python | stdio | 15 | 52% (13/25 tools) | 0 | Clean. Workbook, sheets, data round-trip, formulas, charts, pivot tables, formatting, merge, validation. |
 
+### TypeScript (additional)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `antvis/mcp-server-chart` | TypeScript | stdio | 16 | 59% (16/27 tools) | 9 | [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291). 9 tools crash with unhandled exceptions on default/minimal input. Stack traces leak to agents. |
+
 ### Internal (agent-lsp)
 
 | Server | Language | Transport | Assertions | Coverage | Bugs fixed |
@@ -90,11 +96,20 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **Tool:** `get_value` in `examples/servers/src/common/counter.rs`
 - **What:** Tool is documented as "Get the current counter value" but actually decrements the counter (`*counter -= 1`). Not idempotent.
 - **Impact:** Every developer learning from this example copies a getter that mutates state. An agent calling `get_value` to "check" the counter unknowingly decrements it.
-- **Status:** Cannot file issue (repo archived March 2405). Documented in assertion suite. Superseded by `rust-mcp-stack/rust-mcp-sdk`.
+- **Status:** Cannot file issue (repo archived March 2025). Documented in assertion suite. Superseded by `rust-mcp-stack/rust-mcp-sdk`.
+
+### Bug #4: antvis/mcp-server-chart: 9 tools crash with unhandled exceptions
+
+- **Severity:** Unhandled exceptions (9 tools affected)
+- **Tools:** `generate_fishbone_diagram`, `generate_mind_map`, `generate_organization_chart`, `generate_flow_diagram`, `generate_network_graph`, `generate_funnel_chart`, `generate_venn_chart`, `generate_district_map`, `generate_radar_chart`
+- **What:** Tools throw raw JavaScript exceptions (TypeError, G6 graph errors) on default/minimal input. Exceptions propagate as MCP error -32603 with full stack traces instead of returning `isError: true` with helpful messages.
+- **Impact:** LLM agents receive cryptic Node.js stack traces they cannot recover from. The `generate_radar_chart` tool also crashes with populated data when field names don't match undocumented expectations.
+- **Issue:** [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291)
+- **Status:** Open
 
 ## Observations
 
-**Bug rate:** 3 bugs in 12 servers scanned (25%). Two transport/protocol-level, one logic bug in example code.
+**Bug rate:** 12 bugs across 3 of 14 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server.
 
 **Clean scans are valuable too.** fastmcp's clean result (25K-star framework, zero bugs) validates the Python MCP ecosystem's foundations. We document clean scans as positive signals, not wasted effort.
 

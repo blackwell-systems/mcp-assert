@@ -14,8 +14,11 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **excel-mcp-server suite**: 15 assertions covering workbook creation, data round-trip, formulas, charts, pivot tables, formatting, merge cells, validation. Clean scan on `haris-musa/excel-mcp-server` (3,750 stars).
 - **VHS demo GIF**: Terminal recording of the generate-and-run flow (Catppuccin Mocha theme, colorful window bar). Embedded in README.
 - **Dogfooding report: rmcp**: `docs/dogfooding-rmcp.md` documenting the Rust SDK testing experience and bug found.
+- **antvis/mcp-server-chart suite**: 16 assertions for the AntV charting server (4K stars). Found 9 tools that crash with unhandled JavaScript exceptions on default input. Filed [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291).
+- **Architecture doc rewrite**: Comprehensive 600-line guide covering MCP primer, assertion lifecycle, package structure, transport layer, fixture isolation, block types, reporting, and extension points.
+- **Star CTA**: Dark/light mode star call-to-action image in README footer.
 - **pytest plugin on roadmap**: Framework integration layer planned. `pip install pytest-mcp-assert`, each YAML assertion becomes a pytest test case.
-- **240 total assertions** across 21 suites, 13 servers, 4 languages (Go, TypeScript, Python, Rust).
+- **256 total assertions** across 22 suites, 14 servers, 4 languages (Go, TypeScript, Python, Rust). 12 bugs found, 3 upstream issues filed.
 
 ## [0.2.4] - 2026-04-24
 
