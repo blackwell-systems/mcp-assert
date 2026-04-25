@@ -1,0 +1,11 @@
+name: connect returns error for invalid connection string
+server:
+  command: npx
+  args: [-y, "mongodb-mcp-server@latest", "--readOnly"]
+assert:
+  tool: connect
+  args:
+    connectionStringOrClusterName: "invalid://not-a-real-connection"
+  expect:
+    is_error: true
+timeout: 30s

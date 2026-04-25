@@ -1,0 +1,13 @@
+name: find returns helpful error without connection
+server:
+  command: npx
+  args: [-y, "mongodb-mcp-server@latest", "--readOnly"]
+assert:
+  tool: find
+  args:
+    collection: test
+    database: test
+  expect:
+    is_error: true
+    contains: ["connect to a MongoDB instance"]
+timeout: 30s

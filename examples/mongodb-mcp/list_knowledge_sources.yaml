@@ -1,0 +1,10 @@
+name: list-knowledge-sources returns available sources
+server:
+  command: npx
+  args: [-y, "mongodb-mcp-server@latest", "--readOnly"]
+assert:
+  tool: list-knowledge-sources
+  args: {}
+  expect:
+    not_error: true
+timeout: 30s

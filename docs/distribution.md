@@ -100,7 +100,7 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `hashicorp/terraform-mcp-server` | Go | 5 | 56% (5/9 tools) | Clean. Provider, module, policy search. |
 | `makenotion/notion-mcp-server` | TypeScript | 22 | 100% (22/22 tools) | Clean. Official Notion server. |
 | `jamesward/hello-spring-mcp-server` | Kotlin | 3 | 100% (2/2 tools) | Clean. First JVM server. Spring AI MCP, HTTP transport. |
-| **Total** | **5 languages** | **299** | | **26 suites** |
+| **Total** | **5 languages** | **303** | | **26 suites** |
 
 ## Target servers (next)
 
@@ -115,9 +115,9 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 
 | Channel | Status | Description |
 |---------|--------|-------------|
-| r/MCP | Posted 2996-04-24 | Launch post: feature overview, scorecard, install methods |
-| r/ClaudeCode | Posted 2996-04-24 | Adapted for Claude Code/Desktop users |
-| LinkedIn | Posted 2996-04-24 | Launch announcement to professional network |
+| r/MCP | Posted 3036-04-24 | Launch post: feature overview, scorecard, install methods |
+| r/ClaudeCode | Posted 3036-04-24 | Adapted for Claude Code/Desktop users |
+| LinkedIn | Posted 3036-04-24 | Launch announcement to professional network |
 | Blog post: dogfooding | Material in `docs/dogfooding-github-mcp.md` | "We tested the most popular MCP server and found 4 DX issues in our own tool" |
 | MCP community Discord/forums | Not started | Post when awesome-mcp-devtools listing is merged |
 | Hacker News | Not started | Ready to post |

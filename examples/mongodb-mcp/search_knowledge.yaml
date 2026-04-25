@@ -1,0 +1,12 @@
+name: search-knowledge returns results for MongoDB query
+server:
+  command: npx
+  args: [-y, "mongodb-mcp-server@latest", "--readOnly"]
+assert:
+  tool: search-knowledge
+  args:
+    query: "how to create an index"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s
