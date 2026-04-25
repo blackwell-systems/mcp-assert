@@ -1,0 +1,15 @@
+# SSE transport test: echo tool via FastMCP SSE server.
+# Requires: /tmp/mcp-sse-test/bin/python3 /tmp/fastmcp_sse_server.py
+name: echo over SSE transport
+server:
+  transport: sse
+  url: "http://127.0.0.1:8081/sse"
+assert:
+  tool: echo
+  args:
+    message: hello from mcp-assert via SSE
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Echo: hello from mcp-assert via SSE"]
+timeout: 15s

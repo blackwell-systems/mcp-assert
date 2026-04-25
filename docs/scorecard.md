@@ -9,12 +9,12 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Servers scanned | 19 |
 | Server suites | 20 (including HTTP transport variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
 | Languages tested | 4 (Go, TypeScript, Python, Rust) |
-| Transports tested | 2 (stdio, HTTP) |
+| Transports tested | 3 (stdio, SSE, HTTP) |
 | Total assertions | 303 (283 server + 20 trajectory) |
 | Upstream bugs found | 12 (3 servers affected) |
 | Upstream issues filed | 3 (1 unfiled: repo archived) |
 | Clean scans (no bugs) | 14 |
-| Internal bugs fixed | 5 |
+| Internal bugs fixed | 6 |
 
 ## Server Results
 
@@ -73,7 +73,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs fixed |
 |--------|----------|-----------|------------|----------|------------|
-| agent-lsp + gopls | Go | stdio | 63 | 100% (50/50 tools) | 5: `character`→`column` param rename, `format_range` 0-indexed docs, undocumented `simulate_edit_atomic` params, missing warmup pattern, shared fixture mutation |
+| agent-lsp + gopls | Go | stdio | 63 | 100% (50/50 tools) | 6: `character`→`column` param rename, `format_range` 0-indexed docs, undocumented `simulate_edit_atomic` params, missing warmup pattern, shared fixture mutation, SSE/HTTP transport `Start()` not called |
 | agent-lsp skill protocols | N/A (inline trace) | N/A | 20 | 20/20 skills | Trajectory assertions: all 20 skills have required tool call sequences, safety gates, and absence checks verified |
 
 ## Bug Details

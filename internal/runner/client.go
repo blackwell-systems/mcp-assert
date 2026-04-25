@@ -45,7 +45,14 @@ func createMCPClient(server assertion.ServerConfig, fixture string, dockerImage 
 			expanded := expandHeaderVars(server.Headers)
 			sseOpts = append(sseOpts, clienttransport.WithHeaders(expanded))
 		}
-		return client.NewSSEMCPClient(server.URL, sseOpts...)
+		sseClient, err := client.NewSSEMCPClient(server.URL, sseOpts...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create SSE client: %w", err)
+		}
+		if err := sseClient.Start(context.Background()); err != nil {
+			return nil, fmt.Errorf("failed to start SSE transport: %w", err)
+		}
+		return sseClient, nil
 	case "http":
 		if server.URL == "" {
 			return nil, fmt.Errorf("transport %q requires a url field", transport)
@@ -55,7 +62,14 @@ func createMCPClient(server assertion.ServerConfig, fixture string, dockerImage 
 			expanded := expandHeaderVars(server.Headers)
 			httpOpts = append(httpOpts, clienttransport.WithHTTPHeaders(expanded))
 		}
-		return client.NewStreamableHttpClient(server.URL, httpOpts...)
+		httpClient, err := client.NewStreamableHttpClient(server.URL, httpOpts...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create HTTP client: %w", err)
+		}
+		if err := httpClient.Start(context.Background()); err != nil {
+			return nil, fmt.Errorf("failed to start HTTP transport: %w", err)
+		}
+		return httpClient, nil
 	case "stdio", "":
 		// Default: launch server as a subprocess via stdio.
 		serverCmd := server.Command

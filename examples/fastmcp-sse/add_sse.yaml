@@ -1,0 +1,14 @@
+# SSE transport test: add tool via FastMCP SSE server.
+name: add over SSE transport
+server:
+  transport: sse
+  url: "http://127.0.0.1:8081/sse"
+assert:
+  tool: add
+  args:
+    a: 7
+    b: 35
+  expect:
+    not_error: true
+    contains: ["42"]
+timeout: 15s

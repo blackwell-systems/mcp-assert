@@ -1,0 +1,13 @@
+# SSE transport test: greet tool via FastMCP SSE server.
+name: greet over SSE transport
+server:
+  transport: sse
+  url: "http://127.0.0.1:8081/sse"
+assert:
+  tool: greet
+  args:
+    name: World
+  expect:
+    not_error: true
+    contains: ["Hello, World!"]
+timeout: 15s
