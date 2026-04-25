@@ -1,0 +1,12 @@
+# create_annotation with no text: should return isError explaining text is required.
+name: create_annotation requires text field
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: create_annotation
+  args: {}
+  expect:
+    is_error: true
+    contains: ["text", "required"]
+timeout: 15s

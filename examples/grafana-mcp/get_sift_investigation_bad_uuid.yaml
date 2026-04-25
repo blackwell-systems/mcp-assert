@@ -1,0 +1,13 @@
+# get_sift_investigation with invalid UUID: should return isError.
+name: get_sift_investigation rejects invalid UUID
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: get_sift_investigation
+  args:
+    investigationId: "not-a-uuid"
+  expect:
+    is_error: true
+    contains: ["invalid"]
+timeout: 15s

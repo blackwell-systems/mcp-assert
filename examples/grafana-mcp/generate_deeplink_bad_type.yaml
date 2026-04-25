@@ -1,0 +1,13 @@
+# generate_deeplink with invalid resource type: should return isError with supported types.
+name: generate_deeplink rejects invalid resource type
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: generate_deeplink
+  args:
+    resourceType: "invalid-type"
+  expect:
+    is_error: true
+    contains: ["unsupported resource type", "dashboard", "panel", "explore"]
+timeout: 15s

@@ -1,0 +1,10 @@
+name: list_incidents handles missing backend gracefully
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: list_incidents
+  args: {}
+  expect:
+    not_error: true
+timeout: 15s

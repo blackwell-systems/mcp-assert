@@ -6,13 +6,13 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 19 |
+| Servers scanned | 20 |
 | Server suites | 20 (including HTTP transport variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
 | Languages tested | 4 (Go, TypeScript, Python, Rust) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
 | Total assertions | 303 (283 server + 20 trajectory) |
-| Upstream bugs found | 12 (3 servers affected) |
-| Upstream issues filed | 3 (1 unfiled: repo archived) |
+| Upstream bugs found | 13 (4 servers affected) |
+| Upstream issues filed | 4 (1 unfiled: repo archived) |
 | Clean scans (no bugs) | 14 |
 | Internal bugs fixed | 6 |
 
@@ -69,6 +69,12 @@ Servers tested by mcp-assert, bugs found, issues filed.
 |--------|----------|-----------|------------|----------|------|-------|
 | `jamesward/hello-spring-mcp-server` | Kotlin | HTTP | 3 | 100% (2/2 tools) | 0 | Clean. First JVM server tested. Spring Boot + Spring AI MCP. |
 
+### Observability (Go)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `grafana/mcp-grafana` | Go | stdio | 10 | 20% (10/50 tools, no Grafana backend) | 1 | [grafana/mcp-grafana#792](https://github.com/grafana/mcp-grafana/issues/792). `get_assertions` returns internal error (-32603) instead of `isError:true` on invalid timestamp. |
+
 ### Internal (agent-lsp)
 
 | Server | Language | Transport | Assertions | Coverage | Bugs fixed |
@@ -113,9 +119,18 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **Issue:** [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291)
 - **Status:** Open
 
+### Bug #5: grafana/mcp-grafana: get_assertions returns internal error on invalid input
+
+- **Severity:** Input validation gap
+- **Tool:** `get_assertions`
+- **What:** Passing a non-ISO-8601 timestamp (e.g., `"not-a-date"`) returns MCP internal error (-32603) instead of `isError: true`. The `time.Time` field is unmarshalled by the mcp-go SDK before the tool handler runs; invalid input triggers an unmarshal error that the SDK converts to an internal error rather than a tool error.
+- **Impact:** MCP clients treat -32603 as a server crash. Agents can't self-correct from internal errors the way they can from `isError: true` responses. All other tools in the server validate input correctly.
+- **Issue:** [grafana/mcp-grafana#792](https://github.com/grafana/mcp-grafana/issues/792)
+- **Status:** Open
+
 ## Observations
 
-**Bug rate:** 12 bugs across 3 of 14 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server.
+**Bug rate:** 13 bugs across 4 of 20 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server, one input validation gap in Grafana's MCP server.
 
 **Clean scans are valuable too.** fastmcp's clean result (25K-star framework, zero bugs) validates the Python MCP ecosystem's foundations. We document clean scans as positive signals, not wasted effort.
 

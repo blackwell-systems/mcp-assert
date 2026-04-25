@@ -1,0 +1,12 @@
+# create_folder with empty title: tests graceful handling with no Grafana backend.
+name: create_folder handles missing backend gracefully
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: create_folder
+  args:
+    title: "mcp-assert-test"
+  expect:
+    not_error: true
+timeout: 15s

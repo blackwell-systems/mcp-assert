@@ -1,0 +1,20 @@
+# BUG: get_assertions returns internal error (-32603) instead of isError:true
+# when given an invalid timestamp. Every other tool in the server validates
+# input and returns isError:true properly. This tool crashes at the JSON
+# unmarshal layer because time.Time parsing happens before input validation.
+#
+# Expected: isError:true with "invalid timestamp format" message.
+# Actual: internal error: unmarshal args: parsing time "not-a-date" ...
+name: get_assertions returns internal error on bad timestamp (BUG)
+skip: true
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: get_assertions
+  args:
+    startTime: "not-a-date"
+    endTime: "also-not-a-date"
+  expect:
+    not_error: true
+timeout: 15s

@@ -1,0 +1,10 @@
+name: get_annotation_tags handles missing backend gracefully
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: get_annotation_tags
+  args: {}
+  expect:
+    not_error: true
+timeout: 15s

@@ -1,0 +1,12 @@
+# get_datasource with no uid or name: should return isError with helpful message.
+name: get_datasource requires uid or name
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: get_datasource
+  args: {}
+  expect:
+    is_error: true
+    contains: ["uid", "name", "must be provided"]
+timeout: 15s

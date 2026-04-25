@@ -1,0 +1,13 @@
+# alerting_manage_routing with invalid operation: should return isError listing valid operations.
+name: alerting_manage_routing rejects invalid operation
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: alerting_manage_routing
+  args:
+    operation: "invalid-op"
+  expect:
+    is_error: true
+    contains: ["unknown operation"]
+timeout: 15s
