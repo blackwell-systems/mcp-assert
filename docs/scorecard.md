@@ -10,7 +10,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server suites | 18 (including HTTP transport variant, prompts, resources, completion, logging, and GitHub MCP suites) |
 | Languages tested | 3 (Go, TypeScript, Python) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 174 (154 server + 20 trajectory) |
+| Total assertions | 188 (168 server + 20 trajectory) |
 | Upstream bugs found | 2 |
 | Upstream issues filed | 2 |
 | Clean scans (no bugs) | 7 |
@@ -42,7 +42,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | `mark3labs/mcp-go` everything (completion) | Go | stdio | 3 | 100% | 0 | Clean. `completion/complete` for prompt argument, resource URI, and empty prefix. |
 | `mark3labs/mcp-go` everything (logging) | Go | stdio | 2 | 100% | 0 | Clean. `logging/setLevel` with info level, log message capture after tool call. |
 | `PrefectHQ/fastmcp` testing_demo | Python | stdio | 16 | 100% tools + resources + prompts | 0 | Clean. All three MCP feature categories: 11 tool assertions (100% coverage), 3 resource assertions (list, read static, read parameterized), 2 prompt assertions (list, get with argument). |
-| `github/github-mcp-server` | Go | stdio | 6 | -- (read-only subset) | 0 | Clean. 6 read-only tools: `get_me`, `search_repositories`, `get_file_contents`, `list_issues`, `search_code`, `list_branches`. |
+| `github/github-mcp-server` | Go | stdio | 20 | -- (read-only subset, 17 tools across 7 toolsets) | 0 | Clean. Context, repos, git, issues, pull requests, users, gists toolsets. |
 
 ### Internal (agent-lsp)
 
