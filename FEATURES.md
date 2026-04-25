@@ -177,7 +177,7 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 
 ---
 
-## Example Suites (20 suites, 4 languages, 225 assertions)
+## Example Suites (21 suites, 4 languages, 240 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|
