@@ -6,16 +6,17 @@
 |------|----------|-------------|
 | **External adoption** | High | Get one MCP server author to use mcp-assert and report results. |
 | **Underserved language suites** | Medium | Server suites for Rust, Java, and C# MCP servers: communities with few or no dedicated testing tools. Rust: `rmcp` SDK. Java: MCP SDK for Spring, Quarkus MCP. C#: modelcontextprotocol/csharp-sdk. High-signal distribution targets. |
-| **"Works with mcp-assert" badge** | Medium | A standard badge + registry that MCP server authors can claim after passing a reference suite. Drives discoverability: every badge is a backlink. |
+| **"Works with mcp-assert" badge** | Done | Static and dynamic (CI-verified) badge variants. [Badge guide](badge.md). |
 | **Reference suite registry** | Medium | A canonical set of suites that any conforming server can run against, independent of server-specific fixtures. Addresses the duplicate suite problem (agent-lsp and mcp-assert each maintaining their own copy). Single source of truth. |
 
 ## Distribution
 
 | Item | Priority | Description |
 |------|----------|-------------|
-| **Homebrew formula** | High | `brew install mcp-assert` |
-| **PyPI wrapper** | High | `pip install mcp-assert`: downloads the Go binary. Python MCP server authors won't `go install`. |
-| **npm wrapper** | Medium | `npx mcp-assert`: same pattern, TypeScript audience. |
+| **Homebrew formula** | Done | `brew install blackwell-systems/tap/mcp-assert` |
+| **PyPI wrapper** | Done | `pip install mcp-assert` |
+| **npm wrapper** | Done | `npx @blackwell-systems/mcp-assert` |
+| **Scoop** | Done | `scoop install mcp-assert` via [blackwell-systems/scoop-bucket](https://github.com/blackwell-systems/scoop-bucket) |
 | **MCP registry integration** | Medium | Surface the mcp-assert test badge prominently on Glama and Smithery listings. Servers that pass a reference suite get a "verified" marker in the registry. |
 
 ## MCP Protocol Surface Coverage

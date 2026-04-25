@@ -56,6 +56,24 @@ mcp-assert run --suite evals/ --badge badge.json
 # Then use: ![mcp-assert](https://img.shields.io/endpoint?url=<badge-url>)
 ```
 
+## "Works with mcp-assert" Badge
+
+Add a badge to your server's README to signal tested MCP correctness. See the full [Badge guide](badge.md) for static badges, dynamic CI-verified badges, and GitHub Pages setup.
+
+Quick start (static):
+
+```markdown
+[![Works with mcp-assert](https://img.shields.io/badge/works%20with-mcp--assert-green)](https://github.com/blackwell-systems/mcp-assert)
+```
+
+Dynamic (live pass rate from CI):
+
+```bash
+mcp-assert ci --suite evals/ --badge badge.json
+# Host badge.json, then:
+# ![mcp-assert](https://img.shields.io/endpoint?url=https://your-site.com/badge.json)
+```
+
 ## Baseline and Regression Detection
 
 Save a baseline, then detect regressions on future runs:
