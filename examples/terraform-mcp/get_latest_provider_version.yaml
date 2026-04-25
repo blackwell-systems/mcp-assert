@@ -1,0 +1,13 @@
+name: get_latest_provider_version returns AWS provider version
+server:
+  command: terraform-mcp-server
+  args: [stdio]
+assert:
+  tool: get_latest_provider_version
+  args:
+    name: aws
+    namespace: hashicorp
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

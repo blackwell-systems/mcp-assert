@@ -6,14 +6,14 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 15 |
+| Servers scanned | 16 |
 | Server suites | 20 (including HTTP transport variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
 | Languages tested | 4 (Go, TypeScript, Python, Rust) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 269 (249 server + 20 trajectory) |
+| Total assertions | 274 (254 server + 20 trajectory) |
 | Upstream bugs found | 12 (3 servers affected) |
 | Upstream issues filed | 3 (1 unfiled: repo archived) |
-| Clean scans (no bugs) | 10 |
+| Clean scans (no bugs) | 11 |
 | Internal bugs fixed | 5 |
 
 ## Server Results
@@ -22,7 +22,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | 92% (13/14) | 1 | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). `read_media_file` returns `type: "blob"`, violating MCP 2695-11-25 spec |
+| `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | 92% (13/14) | 1 | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). `read_media_file` returns `type: "blob"`, violating MCP 2745-11-25 spec |
 | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 | - | 0 | Clean |
 | `mcp-server-sqlite` | Python | stdio | 6 | - | 0 | Clean |
 

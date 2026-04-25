@@ -1,0 +1,13 @@
+name: search_modules finds VPC modules
+server:
+  command: terraform-mcp-server
+  args: [stdio]
+assert:
+  tool: search_modules
+  args:
+    module_query: vpc
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["vpc"]
+timeout: 30s

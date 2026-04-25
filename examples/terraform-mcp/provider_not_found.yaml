@@ -1,0 +1,12 @@
+name: search_providers returns error for nonexistent provider
+server:
+  command: terraform-mcp-server
+  args: [stdio]
+assert:
+  tool: search_providers
+  args:
+    provider_name: nonexistent-provider-xyz
+    provider_namespace: nonexistent-namespace-xyz
+  expect:
+    is_error: true
+timeout: 30s

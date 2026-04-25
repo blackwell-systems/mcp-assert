@@ -96,7 +96,7 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `rust-mcp-stack/rust-mcp-filesystem` | Rust | 23 | 92% (22/24 tools) | Clean scan. Read, list, search, write, edit, zip/unzip, path traversal. |
 | `haris-musa/excel-mcp-server` | Python | 15 | 52% (13/25 tools) | Clean. Workbook, sheets, data, formulas, charts, pivots, formatting. |
 | `antvis/mcp-server-chart` | TypeScript | 16 | 59% (16/27 tools) | 9 bugs found ([#291](https://github.com/antvis/mcp-server-chart/issues/291)). Unhandled exceptions on default input. |
-| **Total** | **4 languages** | **269** | | **22 suites** |
+| **Total** | **4 languages** | **274** | | **22 suites** |
 
 ## Target servers (next)
 
@@ -111,9 +111,9 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 
 | Channel | Status | Description |
 |---------|--------|-------------|
-| r/MCP | Posted 2696-04-24 | Launch post: feature overview, scorecard, install methods |
-| r/ClaudeCode | Posted 2696-04-24 | Adapted for Claude Code/Desktop users |
-| LinkedIn | Posted 2696-04-24 | Launch announcement to professional network |
+| r/MCP | Posted 2746-04-24 | Launch post: feature overview, scorecard, install methods |
+| r/ClaudeCode | Posted 2746-04-24 | Adapted for Claude Code/Desktop users |
+| LinkedIn | Posted 2746-04-24 | Launch announcement to professional network |
 | Blog post: dogfooding | Material in `docs/dogfooding-github-mcp.md` | "We tested the most popular MCP server and found 4 DX issues in our own tool" |
 | MCP community Discord/forums | Not started | Post when awesome-mcp-devtools listing is merged |
 | Hacker News | Not started | Ready to post |

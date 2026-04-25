@@ -1,0 +1,13 @@
+name: get_provider_capabilities returns AWS capabilities
+server:
+  command: terraform-mcp-server
+  args: [stdio]
+assert:
+  tool: get_provider_capabilities
+  args:
+    name: aws
+    namespace: hashicorp
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

@@ -1,0 +1,11 @@
+name: search_policies finds security policies
+server:
+  command: terraform-mcp-server
+  args: [stdio]
+assert:
+  tool: search_policies
+  args:
+    policy_query: security
+  expect:
+    not_error: true
+timeout: 30s
