@@ -6,14 +6,14 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 23 |
+| Servers scanned | 24 |
 | Server suites | 23 (including HTTP transport variant, SSE variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
 | Languages tested | 4 (Go, TypeScript, Python, Rust) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 318 (298 server + 20 trajectory) |
+| Total assertions | 322 (302 server + 20 trajectory) |
 | Upstream bugs found | 13 (4 servers affected) |
 | Upstream issues filed | 4 (1 unfiled: repo archived) |
-| Clean scans (no bugs) | 17 |
+| Clean scans (no bugs) | 18 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -71,6 +71,12 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
 | `jamesward/hello-spring-mcp-server` | Kotlin | HTTP | 3 | 100% (2/2 tools) | 0 | Clean. First JVM server tested. Spring Boot + Spring AI MCP. |
+
+### OpenAI
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `openai/sample-deep-research-mcp` | Python | stdio | 4 | 100% (2/2 tools) | 0 | Clean. "Cupcake MCP" sample server. Search and fetch against static JSON dataset. |
 
 ### Observability (Go)
 

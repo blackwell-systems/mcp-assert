@@ -1,0 +1,12 @@
+name: fetch retrieves order by ID
+server:
+  command: /tmp/run-cupcake-mcp.sh
+assert:
+  tool: fetch
+  args:
+    id: "1"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Alice", "vanilla"]
+timeout: 30s

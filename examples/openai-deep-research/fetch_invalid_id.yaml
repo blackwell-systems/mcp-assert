@@ -1,0 +1,10 @@
+name: fetch rejects unknown ID
+server:
+  command: /tmp/run-cupcake-mcp.sh
+assert:
+  tool: fetch
+  args:
+    id: "99999"
+  expect:
+    is_error: true
+timeout: 30s

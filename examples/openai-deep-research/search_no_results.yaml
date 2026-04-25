@@ -1,0 +1,10 @@
+name: search returns empty for nonexistent query
+server:
+  command: /tmp/run-cupcake-mcp.sh
+assert:
+  tool: search
+  args:
+    query: xyznonexistent99999
+  expect:
+    not_error: true
+timeout: 30s

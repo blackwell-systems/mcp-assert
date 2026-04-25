@@ -1,0 +1,12 @@
+name: search finds vanilla cupcake orders
+server:
+  command: /tmp/run-cupcake-mcp.sh
+assert:
+  tool: search
+  args:
+    query: vanilla
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["vanilla", "Alice"]
+timeout: 30s
