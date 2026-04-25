@@ -6,13 +6,13 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 10 |
-| Server suites | 18 (including HTTP transport variant, prompts, resources, completion, logging, and GitHub MCP suites) |
-| Languages tested | 3 (Go, TypeScript, Python) |
+| Servers scanned | 11 |
+| Server suites | 19 (including HTTP transport variant, prompts, resources, completion, logging, GitHub MCP, and rmcp suites) |
+| Languages tested | 4 (Go, TypeScript, Python, Rust) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 188 (168 server + 20 trajectory) |
-| Upstream bugs found | 2 |
-| Upstream issues filed | 2 |
+| Total assertions | 202 (182 server + 20 trajectory) |
+| Upstream bugs found | 3 |
+| Upstream issues filed | 2 (1 unfiled: repo archived) |
 | Clean scans (no bugs) | 7 |
 | Internal bugs fixed | 5 |
 
@@ -44,6 +44,12 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | `PrefectHQ/fastmcp` testing_demo | Python | stdio | 16 | 100% tools + resources + prompts | 0 | Clean. All three MCP feature categories: 11 tool assertions (100% coverage), 3 resource assertions (list, read static, read parameterized), 2 prompt assertions (list, get with argument). |
 | `github/github-mcp-server` | Go | stdio | 20 | -- (read-only subset, 17 tools across 7 toolsets) | 0 | Clean. Context, repos, git, issues, pull requests, users, gists toolsets. |
 
+### Rust SDK
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `4t145/rmcp` counter | Rust | stdio | 14 | 100% (6/6 tools + resources + prompts) | 1 | `get_value` decrements counter instead of reading. Repo archived, issue cannot be filed. |
+
 ### Internal (agent-lsp)
 
 | Server | Language | Transport | Assertions | Coverage | Bugs fixed |
@@ -71,9 +77,17 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **Issue:** [mark3labs/mcp-go#826](https://github.com/mark3labs/mcp-go/issues/826)
 - **Status:** Open, linked to project board
 
+### Bug #3: rmcp SDK example: get_value mutates state
+
+- **Severity:** Logic bug in example code
+- **Tool:** `get_value` in `examples/servers/src/common/counter.rs`
+- **What:** Tool is documented as "Get the current counter value" but actually decrements the counter (`*counter -= 1`). Not idempotent.
+- **Impact:** Every developer learning from this example copies a getter that mutates state. An agent calling `get_value` to "check" the counter unknowingly decrements it.
+- **Status:** Cannot file issue (repo archived March 2025). Documented in assertion suite. Superseded by `rust-mcp-stack/rust-mcp-sdk`.
+
 ## Observations
 
-**Bug rate:** 2 bugs in 6 servers scanned (33%). Both were transport/protocol-level issues, not logic bugs.
+**Bug rate:** 3 bugs in 11 servers scanned (27%). Two transport/protocol-level, one logic bug in example code.
 
 **Clean scans are valuable too.** fastmcp's clean result (25K-star framework, zero bugs) validates the Python MCP ecosystem's foundations. We document clean scans as positive signals, not wasted effort.
 

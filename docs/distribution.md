@@ -92,7 +92,8 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `mark3labs/mcp-go` elicitation | Go | 4 | 100% | Accept, decline, cancel, validation |
 | `PrefectHQ/fastmcp` testing_demo | Python | 16 | 100% | All 3 MCP feature categories |
 | `github/github-mcp-server` | Go | 20 | -- | 17 read-only tools across 7 toolsets: context, repos, git, issues, pull requests, users, gists |
-| **Total** | **3 languages** | **188** | | **18 suites** |
+| `4t145/rmcp` counter | Rust | 14 | 100% (6/6 tools + resources + prompts) | First Rust server. Bug found: get_value mutates state. |
+| **Total** | **4 languages** | **202** | | **19 suites** |
 
 ## Target servers (next)
 
