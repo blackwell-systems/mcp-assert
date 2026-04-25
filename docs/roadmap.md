@@ -84,6 +84,12 @@ Tracking coverage of every method defined in the MCP 2025-11-25 specification.
 | **Snapshot regression** | Supported | `snapshot --update` captures outputs; subsequent runs detect changes |
 | **Cross-language conformance** | Supported | Matrix mode runs same assertions across N servers |
 
+## Framework Integrations
+
+| Item | Priority | Description |
+|------|----------|-------------|
+| **pytest plugin** | High | Thin Python wrapper that calls the Go binary and reports results as pytest test cases. Python MCP server authors get `pytest` in their test runner output without rewriting the engine. `pip install pytest-mcp-assert`, then `pytest --mcp-suite evals/`. Each YAML assertion becomes a pytest item with pass/fail/skip semantics, fixtures, markers, and `-k` filtering. The Go binary remains the single source of truth for assertion logic. |
+
 ## Bigger Bets
 
 | Item | Priority | Description |
