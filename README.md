@@ -152,6 +152,16 @@ Full documentation is available at [blackwell-systems.github.io/mcp-assert](http
 - [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): real bugs found across 10 servers, 2 upstream issues filed
 - [Dogfooding](https://blackwell-systems.github.io/mcp-assert/dogfooding/): findings from testing our own servers
 
+<p align="center">
+  <a href="https://github.com/blackwell-systems/mcp-assert">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/star-cta.png">
+      <source media="(prefers-color-scheme: light)" srcset="assets/star-cta-light.png">
+      <img src="assets/star-cta-light.png" alt="Star mcp-assert on GitHub" width="480">
+    </picture>
+  </a>
+</p>
+
 ## License
 
 MIT
