@@ -15,10 +15,11 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **HTTP/SSE transport support in `generate` command**: `--transport http|sse` and `--headers` flags for generating assertions against remote MCP servers. Reuses `createMCPClient` for transport selection.
 - **Release procedure documentation**: step-by-step guide in `docs/distribution.md` covering the full release pipeline (GoReleaser, npm, PyPI, Homebrew, Scoop), verification commands, required secrets, rollback procedure, and GitHub Action maintenance. A new maintainer can cut a release without tribal knowledge.
 - **GitHub Action maintenance guide**: how the action repo stays in sync with main project, when to update it, floating `v1` tag convention.
+- **FastMCP SSE transport suite**: 11 assertions against the official FastMCP testing_demo server over SSE transport. Same server that passes 16/16 over stdio now verified over SSE. First SSE transport coverage in the suite collection. All pass.
 
 ### Fixed
 
-- **Scorecard transports count**: corrected from "3 (stdio, SSE, HTTP)" to "2 (stdio, HTTP)". SSE transport is supported by the tool but no server suite exercises it yet.
+- **SSE and HTTP transports missing `Start()` call**: `createMCPClient` returned SSE and HTTP clients without calling `Start()`, causing "transport not started yet" on `Initialize()`. The mcp-go SDK requires `Start()` before `Initialize()` for all transport types; our code only did this for stdio. Found by dogfooding: created SSE assertions, immediately hit the bug.
 - **Distribution doc date typos**: fixed "3036-04-24" to "2026-04-24" in content posting dates.
 
 ## [0.3.0] - 2026-04-24
