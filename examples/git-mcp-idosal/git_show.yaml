@@ -1,0 +1,13 @@
+name: git_show returns HEAD details
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, git-mcp]
+assert:
+  tool: git_show
+  args:
+    repo_path: "{{fixture}}"
+    commit: HEAD
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

@@ -1,0 +1,12 @@
+name: git_reflog returns reflog
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, git-mcp]
+assert:
+  tool: git_reflog
+  args:
+    repo_path: "{{fixture}}"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

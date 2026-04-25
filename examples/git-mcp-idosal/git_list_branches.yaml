@@ -1,0 +1,12 @@
+name: git_list_branches lists branches
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, git-mcp]
+assert:
+  tool: git_list_branches
+  args:
+    repo_path: "{{fixture}}"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

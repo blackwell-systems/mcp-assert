@@ -1,0 +1,11 @@
+name: git_diff on clean repo
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, git-mcp]
+assert:
+  tool: git_diff
+  args:
+    repo_path: "{{fixture}}"
+  expect:
+    not_error: true
+timeout: 15s

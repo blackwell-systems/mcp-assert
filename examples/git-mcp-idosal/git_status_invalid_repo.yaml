@@ -1,0 +1,14 @@
+# BUG: git_status returns isError=false for invalid repo path.
+# The response body contains an error message but isError is not set.
+name: git_status returns isError=false for invalid repo (BUG)
+skip: true
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, git-mcp]
+assert:
+  tool: git_status
+  args:
+    repo_path: /tmp/not-a-repo-99999
+  expect:
+    is_error: true
+timeout: 15s
