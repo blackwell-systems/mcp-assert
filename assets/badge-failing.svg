@@ -1,30 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="186" height="28" viewBox="0 0 186 28">
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="20" viewBox="0 0 120 20">
   <defs>
-    <linearGradient id="smooth" x2="0" y2="100%">
-      <stop offset="0" stop-color="#fff" stop-opacity=".1"/>
+    <linearGradient id="s" x2="0" y2="100%">
+      <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
       <stop offset="1" stop-opacity=".1"/>
     </linearGradient>
-    <clipPath id="round">
-      <rect width="186" height="28" rx="5" fill="#fff"/>
+    <clipPath id="r">
+      <rect width="120" height="20" rx="3" fill="#fff"/>
     </clipPath>
   </defs>
-  <g clip-path="url(#round)">
-    <!-- Left: dark background -->
-    <rect width="118" height="28" fill="#2d2d2d"/>
-    <!-- Right: red for failing -->
-    <rect x="118" width="68" height="28" fill="#dc2626"/>
-    <!-- Gradient overlay -->
-    <rect width="186" height="28" fill="url(#smooth)"/>
+  <g clip-path="url(#r)">
+    <rect width="84" height="20" fill="#555"/>
+    <rect x="84" width="36" height="20" fill="#dc2626"/>
+    <rect width="120" height="20" fill="url(#s)"/>
   </g>
-  <!-- Checkbox icon (unchecked / X mark for failing) -->
-  <g transform="translate(8, 5)">
-    <rect x="0" y="2" width="14" height="14" rx="3" ry="3" fill="none" stroke="#ffffff" stroke-width="1.8"/>
-    <path d="M4 5 L10 13 M10 5 L4 13" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round"/>
+  <!-- Checkbox with X -->
+  <g transform="translate(5, 4)">
+    <rect x="0" y="0" width="10" height="10" rx="2" ry="2" fill="none" stroke="#fff" stroke-width="1.3"/>
+    <path d="M3 3 L7 7 M7 3 L3 7" fill="none" stroke="#f87171" stroke-width="1.5" stroke-linecap="round"/>
   </g>
-  <!-- "mcp-assert" text -->
-  <text x="28" y="18.5" fill="#ffffff" font-family="'DejaVu Sans','Verdana','Geneva',sans-serif" font-size="12" font-weight="bold">
-    <tspan fill="#ffffff">mcp</tspan><tspan fill="#93c5fd">-assert</tspan>
-  </text>
-  <!-- Status text -->
-  <text x="152" y="18.5" fill="#ffffff" font-family="'DejaVu Sans','Verdana','Geneva',sans-serif" font-size="12" font-weight="bold" text-anchor="middle">failing</text>
+  <text x="20" y="14" fill="#fff" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">mcp-assert</text>
+  <text x="102" y="14" fill="#fff" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11" text-anchor="middle">failing</text>
 </svg>
