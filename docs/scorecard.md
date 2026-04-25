@@ -91,7 +91,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **What:** Returns `type: "blob"` which is not a valid MCP content type. The spec allows `text`, `image`, `audio`, `resource_link`, `resource`.
 - **Impact:** Any MCP client receiving this response crashes at the transport layer.
 - **Issue:** [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029)
-- **Status:** Open
+- **Status:** Fix submitted ([#4044](https://github.com/modelcontextprotocol/servers/pull/4044)), pending merge
 
 ### Bug #2: mcp-go SDK: stdio transport crash on slow tools
 
