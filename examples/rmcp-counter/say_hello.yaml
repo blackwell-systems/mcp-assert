@@ -1,0 +1,11 @@
+name: say_hello returns hello
+server:
+  command: rmcp-counter-server
+  args: []
+assert:
+  tool: say_hello
+  args: {}
+  expect:
+    not_error: true
+    contains: ["hello"]
+timeout: 30s

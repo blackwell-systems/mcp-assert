@@ -1,0 +1,11 @@
+name: increment returns incremented counter
+server:
+  command: rmcp-counter-server
+  args: []
+assert:
+  tool: increment
+  args: {}
+  expect:
+    not_error: true
+    contains: ["1"]
+timeout: 30s

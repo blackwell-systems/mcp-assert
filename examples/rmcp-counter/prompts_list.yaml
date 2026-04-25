@@ -1,0 +1,10 @@
+name: prompts/list returns available prompts
+server:
+  command: rmcp-counter-server
+  args: []
+assert_prompts:
+  list: {}
+  expect:
+    not_empty: true
+    contains: ["example_prompt"]
+timeout: 30s

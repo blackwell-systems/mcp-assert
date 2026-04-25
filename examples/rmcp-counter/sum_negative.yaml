@@ -1,0 +1,13 @@
+name: sum handles negative numbers
+server:
+  command: rmcp-counter-server
+  args: []
+assert:
+  tool: sum
+  args:
+    a: -5
+    b: 3
+  expect:
+    not_error: true
+    contains: ["-2"]
+timeout: 30s

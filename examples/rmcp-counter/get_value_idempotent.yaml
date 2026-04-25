@@ -1,0 +1,20 @@
+name: "BUG: get_value mutates state (should be read-only)"
+server:
+  command: rmcp-counter-server
+  args: []
+setup:
+  - tool: increment
+    args: {}
+  - tool: increment
+    args: {}
+  - tool: increment
+    args: {}
+  - tool: get_value
+    args: {}
+assert:
+  tool: get_value
+  args: {}
+  expect:
+    not_error: true
+    contains: ["2"]
+timeout: 30s

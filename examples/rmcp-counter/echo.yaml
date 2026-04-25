@@ -1,0 +1,12 @@
+name: echo repeats input
+server:
+  command: rmcp-counter-server
+  args: []
+assert:
+  tool: echo
+  args:
+    saying: "mcp-assert test"
+  expect:
+    not_error: true
+    contains: ["mcp-assert test"]
+timeout: 30s

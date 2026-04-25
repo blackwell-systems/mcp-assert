@@ -1,0 +1,16 @@
+name: get_value returns current counter without modifying it
+server:
+  command: rmcp-counter-server
+  args: []
+setup:
+  - tool: increment
+    args: {}
+  - tool: increment
+    args: {}
+assert:
+  tool: get_value
+  args: {}
+  expect:
+    not_error: true
+    contains: ["2"]
+timeout: 30s

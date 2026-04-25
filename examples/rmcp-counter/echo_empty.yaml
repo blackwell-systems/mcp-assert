@@ -1,0 +1,11 @@
+name: echo handles empty string
+server:
+  command: rmcp-counter-server
+  args: []
+assert:
+  tool: echo
+  args:
+    saying: ""
+  expect:
+    not_error: true
+timeout: 30s

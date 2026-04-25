@@ -1,0 +1,13 @@
+name: sum with zero returns other operand
+server:
+  command: rmcp-counter-server
+  args: []
+assert:
+  tool: sum
+  args:
+    a: 0
+    b: 42
+  expect:
+    not_error: true
+    contains: ["42"]
+timeout: 30s

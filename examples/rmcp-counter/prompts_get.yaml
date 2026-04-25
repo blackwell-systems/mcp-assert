@@ -1,0 +1,13 @@
+name: prompts/get returns example prompt template
+server:
+  command: rmcp-counter-server
+  args: []
+assert_prompts:
+  get:
+    name: example_prompt
+    arguments:
+      message: "test input"
+  expect:
+    not_empty: true
+    contains: ["example prompt"]
+timeout: 30s

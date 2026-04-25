@@ -1,0 +1,11 @@
+name: resources/read returns memo content
+server:
+  command: rmcp-counter-server
+  args: []
+assert_resources:
+  read: "memo://insights"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Business Intelligence"]
+timeout: 30s

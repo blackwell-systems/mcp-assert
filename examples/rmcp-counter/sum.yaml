@@ -1,0 +1,13 @@
+name: sum adds two numbers
+server:
+  command: rmcp-counter-server
+  args: []
+assert:
+  tool: sum
+  args:
+    a: 3
+    b: 7
+  expect:
+    not_error: true
+    contains: ["10"]
+timeout: 30s
