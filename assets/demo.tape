@@ -16,9 +16,9 @@ Set Margin 10
 Set MarginFill "#1e1e2e"
 Set BorderRadius 12
 
-# Setup: clean slate, suppress progress counter
+# Setup
 Hide
-Type "rm -rf /tmp/excel-demo && export EXCEL_FILES_PATH=/tmp && export NO_COLOR=1 && mkdir -p /tmp/excel-fixtures"
+Type "rm -rf /tmp/excel-demo && export EXCEL_FILES_PATH=/tmp && mkdir -p /tmp/excel-fixtures"
 Enter
 Sleep 500ms
 Type "cd /Users/dayna.blackwell/code/mcp-assert"
@@ -26,26 +26,20 @@ Enter
 Sleep 500ms
 Show
 
-# Step 1: Auto-generate assertions from a live server
-Type "# Discover tools from a running MCP server"
-Enter
-Sleep 800ms
+Sleep 500ms
+
+# Generate
 Type "mcp-assert generate --server 'excel-mcp-server stdio' --output /tmp/excel-demo/"
 Sleep 200ms
 Enter
-Sleep 5s
+Sleep 3.5s
 
-# Pause to read
-Sleep 1.5s
+Sleep 500ms
 
-# Step 2: Run the hand-crafted suite (all pass)
-Type "# Run assertions against the server"
-Enter
-Sleep 800ms
+# Run
 Type "mcp-assert run --suite examples/excel-mcp/ --fixture /tmp/excel-fixtures 2>/dev/null"
 Sleep 200ms
 Enter
-Sleep 8s
+Sleep 7s
 
-# Hold on results
-Sleep 3s
+Sleep 2s
