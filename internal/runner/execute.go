@@ -16,6 +16,14 @@ import (
 func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string) assertion.Result {
 	start := time.Now()
 
+	if a.Skip {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusSkip,
+			Duration: time.Since(start),
+		}
+	}
+
 	// Trajectory assertions check a tool call sequence without calling the server.
 	if len(a.Trajectory) > 0 {
 		return runTrajectoryAssertion(a, fixture, start)
