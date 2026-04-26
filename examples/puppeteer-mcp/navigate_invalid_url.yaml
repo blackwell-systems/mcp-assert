@@ -1,0 +1,12 @@
+name: "BUG: puppeteer_navigate crashes on invalid URL (should return isError)"
+server:
+  command: npx
+  args: [-y, "@modelcontextprotocol/server-puppeteer"]
+assert:
+  tool: puppeteer_navigate
+  args:
+    url: "not-a-valid-url"
+  expect:
+    is_error: true
+timeout: 15s
+skip: true  # Known bug: returns -32603 internal error instead of isError. PR #4051.

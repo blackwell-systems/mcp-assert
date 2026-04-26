@@ -1,0 +1,12 @@
+name: puppeteer_fill returns isError for nonexistent selector
+server:
+  command: npx
+  args: [-y, "@modelcontextprotocol/server-puppeteer"]
+assert:
+  tool: puppeteer_fill
+  args:
+    selector: "#nonexistent-input"
+    value: "test"
+  expect:
+    is_error: true
+timeout: 15s

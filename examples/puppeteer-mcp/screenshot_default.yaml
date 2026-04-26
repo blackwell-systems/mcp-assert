@@ -1,0 +1,12 @@
+name: puppeteer_screenshot captures default page
+server:
+  command: npx
+  args: [-y, "@modelcontextprotocol/server-puppeteer"]
+assert:
+  tool: puppeteer_screenshot
+  args:
+    name: "test-screenshot"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

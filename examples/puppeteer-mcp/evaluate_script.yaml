@@ -1,0 +1,11 @@
+name: puppeteer_evaluate runs JavaScript on page
+server:
+  command: npx
+  args: [-y, "@modelcontextprotocol/server-puppeteer"]
+assert:
+  tool: puppeteer_evaluate
+  args:
+    script: "document.title"
+  expect:
+    not_error: true
+timeout: 15s

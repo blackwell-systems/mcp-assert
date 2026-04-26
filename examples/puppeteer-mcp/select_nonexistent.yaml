@@ -1,0 +1,12 @@
+name: puppeteer_select returns isError for nonexistent selector
+server:
+  command: npx
+  args: [-y, "@modelcontextprotocol/server-puppeteer"]
+assert:
+  tool: puppeteer_select
+  args:
+    selector: "#nonexistent-select"
+    value: "option1"
+  expect:
+    is_error: true
+timeout: 15s
