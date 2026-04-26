@@ -1,0 +1,16 @@
+name: browser_tabs lists open tabs
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@playwright/mcp", --headless]
+setup:
+  - tool: browser_navigate
+    args:
+      url: "https://example.com"
+assert:
+  tool: browser_tabs
+  args:
+    action: list
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

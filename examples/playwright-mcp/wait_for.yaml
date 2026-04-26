@@ -1,0 +1,15 @@
+name: browser_wait_for waits for element
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@playwright/mcp", --headless]
+setup:
+  - tool: browser_navigate
+    args:
+      url: "https://example.com"
+assert:
+  tool: browser_wait_for
+  args:
+    text: "Example Domain"
+  expect:
+    not_error: true
+timeout: 15s

@@ -1,0 +1,14 @@
+name: browser_navigate_back goes back in history
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@playwright/mcp", --headless]
+setup:
+  - tool: browser_navigate
+    args:
+      url: "https://example.com"
+assert:
+  tool: browser_navigate_back
+  args: {}
+  expect:
+    not_error: true
+timeout: 15s

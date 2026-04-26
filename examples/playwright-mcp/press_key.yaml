@@ -1,0 +1,15 @@
+name: browser_press_key sends keyboard input
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@playwright/mcp", --headless]
+setup:
+  - tool: browser_navigate
+    args:
+      url: "https://example.com"
+assert:
+  tool: browser_press_key
+  args:
+    key: "Tab"
+  expect:
+    not_error: true
+timeout: 15s
