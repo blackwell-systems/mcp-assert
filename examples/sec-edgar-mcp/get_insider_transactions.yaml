@@ -1,0 +1,15 @@
+name: get_insider_transactions returns data for known company
+skip_unless_env: SEC_EDGAR_USER_AGENT
+server:
+  command: uvx
+  args: [sec-edgar-mcp]
+  env:
+    SEC_EDGAR_USER_AGENT: "${SEC_EDGAR_USER_AGENT}"
+assert:
+  tool: get_insider_transactions
+  args:
+    identifier: "MSFT"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 20s

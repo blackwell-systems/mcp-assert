@@ -1,0 +1,15 @@
+name: get_recent_filings returns filings for Apple
+skip_unless_env: SEC_EDGAR_USER_AGENT
+server:
+  command: uvx
+  args: [sec-edgar-mcp]
+  env:
+    SEC_EDGAR_USER_AGENT: "${SEC_EDGAR_USER_AGENT}"
+assert:
+  tool: get_recent_filings
+  args:
+    ticker: "AAPL"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 20s

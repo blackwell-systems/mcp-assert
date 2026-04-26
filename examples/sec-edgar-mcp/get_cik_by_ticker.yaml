@@ -1,0 +1,16 @@
+name: get_cik_by_ticker resolves Apple ticker
+skip_unless_env: SEC_EDGAR_USER_AGENT
+server:
+  command: uvx
+  args: [sec-edgar-mcp]
+  env:
+    SEC_EDGAR_USER_AGENT: "${SEC_EDGAR_USER_AGENT}"
+assert:
+  tool: get_cik_by_ticker
+  args:
+    ticker: "AAPL"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["AAPL"]
+timeout: 20s
