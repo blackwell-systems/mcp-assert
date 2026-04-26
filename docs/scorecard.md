@@ -6,15 +6,15 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 40 |
-| Server suites | 46 total (44 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
+| Servers scanned | 45 |
+| Server suites | 51 total (49 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
 | Languages tested | 6 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 479 (396 server + 63 agent-lsp + 20 trajectory) |
-| Upstream bugs found | 16 (8 servers affected) |
+| Total assertions | 504 (421 server + 63 agent-lsp + 20 trajectory) |
+| Upstream bugs found | 20 (9 servers affected) |
 | Upstream issues filed | 6 (1 unfiled: repo archived) |
-| Upstream fix PRs submitted | 5 (4 ours pending, 1 closed after maintainer fix) |
-| Clean scans (no bugs) | 32 |
+| Upstream fix PRs submitted | 6 (5 ours pending, 1 closed after maintainer fix) |
+| Clean scans (no bugs) | 36 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -83,6 +83,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
 | `hashicorp/terraform-mcp-server` | Go | stdio | 5 | 56% (5/9 tools) | 0 | Clean. Provider, module, policy search. |
+| `sammcj/mcp-devtools` | Go | stdio | 5 | 56% (5/9 tools) | 4 | [sammcj/mcp-devtools#258](https://github.com/sammcj/mcp-devtools/pull/258). Tool handler returns `-32603` internal error instead of `isError:true` for all input validation failures. Affects calculator, get_tool_help, internet_search, search_packages. Fix PR submitted. |
 
 ### JVM (Kotlin/Java)
 
@@ -150,6 +151,31 @@ Servers tested by mcp-assert, bugs found, issues filed.
 |--------|----------|-----------|------------|----------|------|-------|
 | `u14app/deep-research` | JavaScript | HTTP | 5 | 100% (5/5 tools) | 0 | Clean. All tools return `isError:true` with "Unsupported Provider" when no LLM credentials configured. |
 | `perplexityai/mcp-server` | TypeScript | stdio | 4 | 100% (4/4 tools) | 0 | Clean. All tools return `isError:true` with 401 and API key guidance when credentials invalid. |
+
+### Browser Automation (TypeScript)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `chrome-devtools-mcp` | TypeScript | stdio | 7 | 24% (7/29 tools) | 0 | Clean. 29 tools, all return `isError:true` properly. Page management, console, network, performance, screenshots. |
+| `mozilla/firefox-devtools-mcp` | TypeScript | stdio | 7 | 24% (7/29 tools) | 0 | Clean. 29 tools via WebDriver BiDi. All return `isError:true` when Firefox not running. Mozilla-backed. |
+
+### Documentation (TypeScript)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `@upstash/context7-mcp` | TypeScript | stdio | 2 | 100% (2/2 tools) | 0 | Clean. Library resolution and documentation search. Upstash-backed. |
+
+### Diagram Generation (Python)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `excalidraw-architect-mcp` | Python | stdio | 4 | 100% (4/4 tools) | 0 | Clean. Architecture diagrams, mermaid conversion. Zero auth. |
+
+### Financial Data (Python)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `sec-edgar-mcp` | Python | stdio | 5 | 24% (5/21 tools) | 0 | Clean. SEC EDGAR filings, insider trading, financials. Free public API (requires user-agent string only). Uses `skip_unless_env`. |
 
 ### Memory (Go)
 
@@ -237,9 +263,18 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **Fix PR:** [modelcontextprotocol/servers#4051](https://github.com/modelcontextprotocol/servers/pull/4051)
 - **Status:** Open (server archived to `archive-servers` branch, but npm package still published)
 
+### Bug #9: sammcj/mcp-devtools: tool handler returns internal error instead of isError
+
+- **Severity:** Internal error instead of isError (affects all tools)
+- **Tools:** calculator, get_tool_help, internet_search, search_packages
+- **What:** The central tool handler in `main.go` returns `(nil, fmt.Errorf(...))` when `Execute()` fails. In mcp-go, this causes a JSON-RPC `-32603` internal error. The error messages are actually helpful and descriptive, but they're wrapped in the wrong error type. Individual tools like `get_library_documentation` already use `mcp.NewToolResultError()` correctly; the bug is in the shared handler.
+- **Impact:** Agents cannot distinguish between "the server crashed" and "I sent bad input." All tool execution failures look like server crashes.
+- **Fix PR:** [sammcj/mcp-devtools#258](https://github.com/sammcj/mcp-devtools/pull/258)
+- **Status:** Open
+
 ## Observations
 
-**Bug rate:** 15 bugs across 7 of 38 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server, one input validation gap in Grafana's MCP server, one missing isError flag in the arxiv server, one internal error for missing macOS permissions in Peekaboo.
+**Bug rate:** 20 bugs across 9 of 45 servers scanned. The most common pattern: unhandled exceptions propagating as JSON-RPC `-32603` internal errors instead of returning `isError: true`. This affects antvis (9 tools), mcp-devtools (4 tools), Puppeteer (1 tool), Grafana (1 tool), Peekaboo (1 tool). Less common: missing isError flag (arxiv), logic bugs (rmcp), spec violations (filesystem blob type), transport corruption (mcp-go stdio).
 
 **Clean scans are valuable too.** fastmcp's clean result (25K-star framework, zero bugs) validates the Python MCP ecosystem's foundations. We document clean scans as positive signals, not wasted effort.
 

@@ -1,0 +1,10 @@
+name: "BUG: calculator returns internal error for missing expression (should return isError)"
+server:
+  command: /tmp/mcp-devtools
+assert:
+  tool: calculator
+  args: {}
+  expect:
+    is_error: true
+timeout: 10s
+skip: true  # Known bug: returns -32603 instead of isError. PR sammcj/mcp-devtools#258.

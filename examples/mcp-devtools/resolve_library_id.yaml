@@ -1,0 +1,11 @@
+name: resolve_library_id finds a known library
+server:
+  command: /tmp/mcp-devtools
+assert:
+  tool: resolve_library_id
+  args:
+    libraryName: "react"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

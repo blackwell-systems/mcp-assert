@@ -1,0 +1,11 @@
+name: think tool accepts reasoning input
+server:
+  command: /tmp/mcp-devtools
+assert:
+  tool: think
+  args:
+    thought: "analyzing the problem"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 10s

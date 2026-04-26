@@ -1,0 +1,12 @@
+name: "BUG: search_packages returns internal error for invalid ecosystem (should return isError)"
+server:
+  command: /tmp/mcp-devtools
+assert:
+  tool: search_packages
+  args:
+    ecosystem: "nonexistent"
+    query: "test"
+  expect:
+    is_error: true
+timeout: 10s
+skip: true  # Known bug: returns -32603 instead of isError. PR sammcj/mcp-devtools#258.

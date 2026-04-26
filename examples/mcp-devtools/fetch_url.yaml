@@ -1,0 +1,12 @@
+name: fetch_url retrieves web content
+server:
+  command: /tmp/mcp-devtools
+assert:
+  tool: fetch_url
+  args:
+    url: "https://example.com"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Example Domain"]
+timeout: 15s

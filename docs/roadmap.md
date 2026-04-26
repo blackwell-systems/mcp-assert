@@ -103,6 +103,7 @@ Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-
 | mark3labs/mcp-go#828 | Fix: stderr hooks | Open | Update scorecard |
 | modelcontextprotocol/servers#4044 | Fix: blob content type (community) | Open | Update scorecard, unskip filesystem assertion |
 | modelcontextprotocol/servers#4051 | Fix: puppeteer_navigate isError | Open (archived branch) | Update scorecard, unskip assertion |
+| sammcj/mcp-devtools#258 | Fix: isError instead of internal error | Open | Update scorecard, unskip assertions |
 | steipete/Peekaboo#108 | Issue: internal error on missing perms | Open | Swift fix, not pursuing PR |
 
 ## Coverage Expansion Opportunities
