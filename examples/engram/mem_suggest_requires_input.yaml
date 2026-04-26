@@ -1,0 +1,11 @@
+name: mem_suggest_topic_key requires title or content
+server:
+  command: engram
+  args: [mcp]
+assert:
+  tool: mem_suggest_topic_key
+  args: {}
+  expect:
+    is_error: true
+    contains: ["title", "content"]
+timeout: 15s

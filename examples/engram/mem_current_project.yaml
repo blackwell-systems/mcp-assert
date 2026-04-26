@@ -1,0 +1,10 @@
+name: mem_current_project returns expected result
+server:
+    command: engram
+    args: [mcp]
+assert:
+    tool: mem_current_project
+    args: {}
+    expect:
+        not_error: true
+timeout: 30s

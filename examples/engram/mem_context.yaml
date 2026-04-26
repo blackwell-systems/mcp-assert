@@ -1,0 +1,10 @@
+name: mem_context returns expected result
+server:
+    command: engram
+    args: [mcp]
+assert:
+    tool: mem_context
+    args: {}
+    expect:
+        not_error: true
+timeout: 30s

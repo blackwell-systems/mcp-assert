@@ -1,0 +1,11 @@
+name: mem_search returns expected result
+server:
+    command: engram
+    args: [mcp]
+assert:
+    tool: mem_search
+    args:
+        query: TODO_QUERY
+    expect:
+        not_error: true
+timeout: 30s

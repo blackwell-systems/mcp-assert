@@ -1,0 +1,10 @@
+name: mem_stats returns expected result
+server:
+    command: engram
+    args: [mcp]
+assert:
+    tool: mem_stats
+    args: {}
+    expect:
+        not_error: true
+timeout: 30s
