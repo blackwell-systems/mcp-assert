@@ -6,15 +6,15 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 28 |
-| Server suites | 35 (including HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
+| Servers scanned | 30 |
+| Server suites | 37 (including HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
 | Languages tested | 5 (Go, TypeScript, Python, Rust, JavaScript) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 380 (297 server + 63 agent-lsp + 20 trajectory) |
+| Total assertions | 386 (303 server + 63 agent-lsp + 20 trajectory) |
 | Upstream bugs found | 14 (5 servers affected) |
 | Upstream issues filed | 5 (1 unfiled: repo archived) |
 | Upstream fix PRs submitted | 5 (4 ours, 1 community) |
-| Clean scans (no bugs) | 21 |
+| Clean scans (no bugs) | 23 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -96,6 +96,18 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
 | `blazickjp/arxiv-mcp-server` | Python | stdio | 5 | 50% (5/10 tools) | 1 | [blazickjp/arxiv-mcp-server#92](https://github.com/blazickjp/arxiv-mcp-server/issues/92). `get_abstract` returns error content in body but `isError` flag not set for invalid paper IDs. |
+
+### AWS
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `awslabs/aws-documentation-mcp-server` | Python | stdio | 4 | 100% (4/4 tools) | 0 | Clean. Search, recommend, no-results handling. Works without AWS credentials. |
+
+### Search API
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `exa-labs/exa-mcp-server` | JavaScript | stdio | 2 | 100% (2/2 tools) | 0 | Clean. Proper 401 with `isError: true` and API key guidance when credentials missing. |
 
 ### Observability (Go)
 

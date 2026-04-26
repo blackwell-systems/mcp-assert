@@ -1,0 +1,12 @@
+name: search_documentation finds Lambda docs
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [awslabs.aws-documentation-mcp-server]
+assert:
+  tool: search_documentation
+  args:
+    search_phrase: "Lambda function handler"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

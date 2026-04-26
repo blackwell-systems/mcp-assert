@@ -1,0 +1,12 @@
+name: web_fetch_exa requires API key
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, exa-mcp-server]
+assert:
+  tool: web_fetch_exa
+  args:
+    urls: ["https://example.com"]
+  expect:
+    is_error: true
+    contains: ["API key", "EXA_API_KEY"]
+timeout: 15s

@@ -1,0 +1,12 @@
+name: recommend returns suggestions for AWS docs page
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [awslabs.aws-documentation-mcp-server]
+assert:
+  tool: recommend
+  args:
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

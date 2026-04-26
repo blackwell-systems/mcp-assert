@@ -1,0 +1,11 @@
+name: search_documentation handles no results gracefully
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [awslabs.aws-documentation-mcp-server]
+assert:
+  tool: search_documentation
+  args:
+    search_phrase: "xyznonexistent99999zzz"
+  expect:
+    not_error: true
+timeout: 30s
