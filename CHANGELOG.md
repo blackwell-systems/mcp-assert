@@ -5,6 +5,19 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- **Per-assertion Docker isolation**: new `docker:` field in server YAML config. Each assertion runs in a fresh `docker run --rm -i` container, destroyed after completion. Enables safe testing of destructive/write tools without state leaking between assertions. Fixtures mounted via `-v`, env vars via `-e`. Per-assertion field takes precedence over CLI `--docker` flag.
+- **Perplexity MCP server suite**: 4 assertions, clean. All tools return `isError:true` with 401 and API key guidance. Sixth AI company on the scorecard.
+- **engram memory server suite**: expanded from 6 to 16 assertions (100% tool coverage). All 16 tools tested including writes (save, delete, update, merge, session lifecycle).
+- **CodeGraphContext suite**: 16 assertions, clean. Code graph indexer with 21 tools.
+- **u14app/deep-research suite**: 5 assertions via HTTP transport, clean.
+- **steipete/Peekaboo suite**: 6 assertions, 1 bug found. First Swift MCP server. `image` returns internal error instead of `isError:true` for missing Screen Recording permission. Issue filed ([#108](https://github.com/steipete/Peekaboo/issues/108)).
+
+### Fixed
+
+- **arxiv isError assertion**: re-skipped after maintainer's fix (#95) didn't resolve the issue in published v0.5.0.
+
 ## [0.5.0] - 2026-04-25
 
 ### Added
