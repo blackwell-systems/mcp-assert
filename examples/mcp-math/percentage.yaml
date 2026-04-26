@@ -1,0 +1,13 @@
+name: percentage calculates distribution
+server:
+  command: uvx
+  args: [mcp-server-math]
+assert:
+  tool: percentage
+  args:
+    numbers: [50, 200]
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["percentage"]
+timeout: 10s

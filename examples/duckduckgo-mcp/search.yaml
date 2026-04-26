@@ -1,0 +1,12 @@
+name: search returns results for known query
+server:
+  command: uvx
+  args: [duckduckgo-mcp-server]
+assert:
+  tool: search
+  args:
+    query: "MCP protocol"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

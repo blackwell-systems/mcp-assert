@@ -1,0 +1,12 @@
+name: divide returns isError for division by zero
+server:
+  command: uvx
+  args: [mcp-server-math]
+assert:
+  tool: divide
+  args:
+    a: 10
+    b: 0
+  expect:
+    is_error: true
+timeout: 10s

@@ -1,0 +1,12 @@
+name: sum adds numbers correctly
+server:
+  command: uvx
+  args: [mcp-server-math]
+assert:
+  tool: sum
+  args:
+    numbers: [1, 2, 3, 4, 5]
+  expect:
+    not_error: true
+    contains: ["15"]
+timeout: 10s

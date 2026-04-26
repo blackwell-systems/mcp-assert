@@ -1,0 +1,11 @@
+name: average returns isError for empty list
+server:
+  command: uvx
+  args: [mcp-server-math]
+assert:
+  tool: average
+  args:
+    numbers: []
+  expect:
+    is_error: true
+timeout: 10s

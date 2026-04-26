@@ -1,0 +1,13 @@
+name: kubectl_describe returns isError for nonexistent resource
+server:
+  command: uvx
+  args: [mcp-server-kubernetes]
+assert:
+  tool: kubectl_describe
+  args:
+    kind: "pod"
+    name: "nonexistent-pod"
+    namespace: "default"
+  expect:
+    is_error: true
+timeout: 15s

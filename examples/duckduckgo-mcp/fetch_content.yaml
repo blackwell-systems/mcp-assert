@@ -1,0 +1,13 @@
+name: fetch_content retrieves web page
+server:
+  command: uvx
+  args: [duckduckgo-mcp-server]
+assert:
+  tool: fetch_content
+  args:
+    url: "https://example.com"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Example Domain"]
+timeout: 15s
