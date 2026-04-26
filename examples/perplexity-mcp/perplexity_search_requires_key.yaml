@@ -1,0 +1,14 @@
+name: perplexity_search returns 401 with invalid API key
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@perplexity-ai/mcp-server"]
+  env:
+    PERPLEXITY_API_KEY: dummy
+assert:
+  tool: perplexity_search
+  args:
+    query: "test"
+  expect:
+    is_error: true
+    contains: ["401", "Invalid API key"]
+timeout: 15s
