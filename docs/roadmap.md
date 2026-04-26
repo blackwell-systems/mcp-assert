@@ -136,12 +136,12 @@ Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-
 
 | Item | Version | Description |
 |------|---------|-------------|
-| **getsentry/XcodeBuildMCP suite** | Unreleased | 10 assertions, 27 tools discovered, 100% clean. First macOS-specific server. Server #39. |
-| **`mcp-assert audit` command** | Unreleased | Zero-config quality audit. Connects, discovers tools, calls each with schema-generated inputs, reports quality score. Generates starter YAML for CI. Discovery on-ramp to the YAML workflow. |
-| **`skip_unless_env` field** | Unreleased | Conditional assertion skipping based on env vars. Live-backend and no-auth assertions coexist in same suite. |
-| **Per-assertion Docker isolation** | Unreleased | `docker:` field in server YAML. Fresh container per assertion for safe write testing. |
-| **Coverage expansion** | Unreleased | SQLite 100%, Memory 100%, engram 100%. Anthropic git 92%, Playwright 67%. |
-| **Perplexity, Peekaboo, CodeGraphContext, deep-research suites** | Unreleased | 39 servers, 472 assertions, 6 languages, 15 bugs. |
+| **getsentry/XcodeBuildMCP suite** | 0.6.0 | 10 assertions, 27 tools discovered, 100% clean. First macOS-specific server. Server #39. |
+| **`mcp-assert audit` command** | 0.6.0 | Zero-config quality audit. Connects, discovers tools, calls each with schema-generated inputs, reports quality score. Generates starter YAML for CI. Discovery on-ramp to the YAML workflow. |
+| **`skip_unless_env` field** | 0.6.0 | Conditional assertion skipping based on env vars. Live-backend and no-auth assertions coexist in same suite. |
+| **Per-assertion Docker isolation** | 0.6.0 | `docker:` field in server YAML. Fresh container per assertion for safe write testing. |
+| **Coverage expansion** | 0.6.0 | SQLite 100%, Memory 100%, engram 100%. Anthropic git 92%, Playwright 67%. |
+| **Perplexity, Peekaboo, CodeGraphContext, deep-research suites** | 0.6.0 | 39 servers, 472 assertions, 6 languages, 15 bugs. |
 | **pytest plugin** | 0.5.0 | `pip install pytest-mcp-assert`. Published to PyPI via release pipeline. |
 | **Badge snippet on pass** | 0.5.0 | CLI and GitHub Action output ready-to-paste badge markdown. |
 | **SSE transport fix** | 0.4.0 | `Start()` missing for SSE/HTTP clients. Found by dogfooding. |
