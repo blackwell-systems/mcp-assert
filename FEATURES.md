@@ -248,6 +248,11 @@ Behavior:
 | `examples/aws-docs-mcp/` | awslabs/aws-documentation-mcp-server | Python | stdio | 4 | Search, recommend, no-results handling (100% tool coverage) |
 | `examples/exa-mcp/` | exa-labs/exa-mcp-server | JavaScript | stdio | 2 | Proper 401 with isError and API key guidance (100% tool coverage) |
 | `examples/git-mcp-idosal/` | onmyway133/git-mcp | TypeScript | stdio | 14 | Status, log, branches, diff, show, reflog, stash, tag, blame, grep, cherry-pick, remote, invalid repo rejection (39% tool coverage, 14/36 tools) |
+| `examples/perplexity-mcp/` | perplexityai/mcp-server | TypeScript | stdio | 4 | 100% tool coverage (4/4 tools). All tools return `isError:true` with 401 and API key guidance. |
+| `examples/engram/` | Gentleman-Programming/engram | Go | stdio | 16 | 100% tool coverage (16/16 tools). Full coverage including writes (save, delete, update, merge, session lifecycle). |
+| `examples/codegraph-context/` | nicobailey/codegraph-context-mcp | TypeScript | stdio | 16 | Code graph indexer with 21 tools. |
+| `examples/deep-research/` | u14app/deep-research | JavaScript | HTTP | 5 | All tools return `isError:true` with "Unsupported Provider" when no LLM credentials configured. |
+| `examples/peekaboo/` | steipete/Peekaboo | Swift | stdio | 6 | First Swift MCP server. 1 bug: `image` returns internal error instead of `isError:true`. |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 | All 20 agent-lsp skill protocols: required tool call sequences, safety gates, absence checks, order constraints |
 
 ---
@@ -282,7 +287,7 @@ See the [Badge guide](https://blackwell-systems.github.io/mcp-assert/badge/) for
 
 | Job | What | Depends on |
 |-----|------|------------|
-| `build-and-test` | Build, vet, 218 unit tests with `-race`, 20 trajectory assertions | - |
+| `build-and-test` | Build, vet, 261 unit tests with `-race`, 20 trajectory assertions | - |
 | `e2e-filesystem` | 14 assertions against filesystem server | build-and-test |
 | `e2e-memory` | 9 assertions against memory server | build-and-test |
 | `e2e-sqlite` | 9 assertions against SQLite server (Python/uv) | build-and-test |
@@ -296,10 +301,10 @@ All e2e jobs upload JUnit XML artifacts.
 
 | Package | Tests | What |
 |---------|-------|------|
-| `internal/assertion` | 53 | All 18 assertion types (including min_progress, contains_any, file_not_contains, file_not_exists), loader (YAML parsing, subdirs, errors), snapshot comparison, CheckProgress, completion JSON, logging checker, trajectory checker |
-| `internal/report` | 42 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare, diff formatting |
-| `internal/runner` | 123 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, transport selection (stdio/SSE/HTTP), URL validation, generate schema parsing, stub generation, filename sanitization, CLI error paths, client capabilities (handler unit tests, fixture substitution, capability path selection, bad-server error paths), prompt assertions (list/get/validation/fixture), progress capture, fix mode, fixture isolation, intercept, logging, sampling, completion |
-| Total | 218 | Race-detector clean |
+| `internal/assertion` | 57 | All 18 assertion types (including min_progress, contains_any, file_not_contains, file_not_exists), loader (YAML parsing, subdirs, errors), snapshot comparison, CheckProgress, completion JSON, logging checker, trajectory checker |
+| `internal/report` | 42 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare, diff formatting, audit report formatting |
+| `internal/runner` | 162 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, transport selection (stdio/SSE/HTTP), URL validation, generate schema parsing, stub generation, filename sanitization, CLI error paths, client capabilities (handler unit tests, fixture substitution, capability path selection, bad-server error paths), prompt assertions (list/get/validation/fixture), progress capture, fix mode, fixture isolation, intercept, logging, sampling, completion, audit command |
+| Total | 261 | Race-detector clean |
 
 ---
 

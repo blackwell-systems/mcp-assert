@@ -143,7 +143,7 @@ This package defines the data model and all validation logic. It has no I/O beyo
 |------|----------------|
 | `types.go` | All core types: `Suite`, `Assertion`, `ServerConfig`, `AssertBlock`, `Expect`, `Result`, `Status`, and the block types for resources, prompts, completion, sampling, logging, and trajectory. |
 | `loader.go` | `LoadSuite()` reads a directory (or single file) of YAML, parses each into an `Assertion`, and returns a `Suite`. Recurses one level into subdirectories. Defaults the `name` field to the filename if omitted. |
-| `checker.go` | `Check()` evaluates all 15 expectation types against a response string. `CheckWithSnapshots()` adds `file_unchanged` comparison. `CheckProgress()` checks progress notification counts. Also contains `jsonPathLookup()` for simple `$.dot.path[N]` queries. |
+| `checker.go` | `Check()` evaluates all 18 expectation types against a response string. `CheckWithSnapshots()` adds `file_unchanged` comparison. `CheckProgress()` checks progress notification counts. Also contains `jsonPathLookup()` for simple `$.dot.path[N]` queries. |
 | `trajectory.go` | `CheckTrajectory()` evaluates the 4 trajectory assertion types (order, presence, absence, args_contain) against a trace of tool calls. `LoadAuditLog()` parses JSONL files into trace entries. |
 | `sampling_types.go` | `SamplingAssertBlock` type for assertions that test tools which trigger server-side LLM sampling. |
 | `logging_types.go` | `LoggingAssertBlock`, `LoggingExpect`, and `LogMessage` types for assertions that test log level setting and message capture. |
@@ -258,21 +258,24 @@ The `Expect` struct holds all possible expectations. You set only the fields you
 
 ```go
 type Expect struct {
-    Contains      []string          // response must contain these substrings
-    NotContains   []string          // response must not contain these
-    Equals        *string           // exact match (whitespace-trimmed)
-    JSONPath      map[string]any    // $.field.path must equal expected value
-    MinResults    *int              // array must have at least N items
-    MaxResults    *int              // array must have at most N items
-    NotEmpty      *bool             // response must not be empty/null/[]/{}
-    NotError      *bool             // isError flag must be false
-    IsError       *bool             // isError flag must be true
-    MatchesRegex  []string          // response must match all patterns
-    FileContains  map[string]string // file on disk must contain text
-    FileUnchanged []string          // file on disk must not have changed
-    NetDelta      *int              // net_delta field must equal N
-    InOrder       []string          // substrings must appear in this order
-    MinProgress   *int              // at least N progress notifications
+    Contains        []string          // response must contain these substrings
+    ContainsAny     []string          // response must contain at least one of these
+    NotContains     []string          // response must not contain these
+    Equals          *string           // exact match (whitespace-trimmed)
+    JSONPath        map[string]any    // $.field.path must equal expected value
+    MinResults      *int              // array must have at least N items
+    MaxResults      *int              // array must have at most N items
+    NotEmpty        *bool             // response must not be empty/null/[]/{}
+    NotError        *bool             // isError flag must be false
+    IsError         *bool             // isError flag must be true
+    MatchesRegex    []string          // response must match all patterns
+    FileContains    map[string]string // file on disk must contain text
+    FileNotContains map[string]string // file on disk must NOT contain text
+    FileNotExists   []string          // file must NOT exist on disk
+    FileUnchanged   []string          // file on disk must not have changed
+    NetDelta        *int              // net_delta field must equal N
+    InOrder         []string          // substrings must appear in this order
+    MinProgress     *int              // at least N progress notifications
 }
 ```
 
@@ -281,13 +284,14 @@ The checker evaluates expectations in this fixed order:
 1. `not_error` / `is_error` (check the isError flag)
 2. `not_empty` (reject empty, null, `[]`, `{}`)
 3. `equals` (exact match, whitespace-trimmed)
-4. `contains` / `not_contains` (substring checks)
+4. `contains` / `contains_any` / `not_contains` (substring checks)
 5. `matches_regex` (compiled regex matching)
 6. `json_path` (dot-notation lookup on parsed JSON)
 7. `min_results` / `max_results` (array length bounds)
 8. `net_delta` (numeric field comparison)
-9. `file_contains` (read file from disk, check content)
-10. `in_order` (ordered substring search)
+9. `file_contains` / `file_not_contains` (read file from disk, check content)
+10. `file_not_exists` (verify file does not exist on disk)
+11. `in_order` (ordered substring search)
 
 `file_unchanged` is handled separately by `CheckWithSnapshots()`. `min_progress` is handled by `CheckProgress()` after the main check.
 

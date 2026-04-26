@@ -44,6 +44,11 @@ mcp-assert ships with 44 suites for 38 MCP servers in 6 languages (Go, TypeScrip
 | `examples/aws-docs-mcp/` | awslabs/aws-documentation-mcp-server | Python | stdio | 4 |
 | `examples/exa-mcp/` | exa-labs/exa-mcp-server | JavaScript | stdio | 2 |
 | `examples/git-mcp-idosal/` | onmyway133/git-mcp | TypeScript | stdio | 14 |
+| `examples/perplexity-mcp/` | perplexityai/mcp-server | TypeScript | stdio | 4 |
+| `examples/engram/` | Gentleman-Programming/engram | Go | stdio | 16 |
+| `examples/codegraph-context/` | nicobailey/codegraph-context-mcp | TypeScript | stdio | 16 |
+| `examples/deep-research/` | u14app/deep-research | JavaScript | HTTP | 5 |
+| `examples/peekaboo/` | steipete/Peekaboo | Swift | stdio | 6 |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 |
 
 ---
@@ -455,6 +460,56 @@ Tests `onmyway133/git-mcp`. 14 assertions: status, log, branches, diff, show, re
 
 ```bash
 mcp-assert run --suite examples/git-mcp-idosal
+```
+
+## Perplexity MCP server. TypeScript
+
+**Directory:** `examples/perplexity-mcp/`
+
+Tests `perplexityai/mcp-server`. 4 assertions, 100% tool coverage (4/4 tools). All tools return `isError:true` with 401 and API key guidance when credentials are invalid. Clean scan.
+
+```bash
+mcp-assert run --suite examples/perplexity-mcp
+```
+
+## engram memory server. Go
+
+**Directory:** `examples/engram/`
+
+Tests `Gentleman-Programming/engram`. 16 assertions, 100% tool coverage (16/16 tools). Full coverage including writes (save, delete, update, merge, session lifecycle). SQLite state is self-contained. Clean scan.
+
+```bash
+mcp-assert run --suite examples/engram
+```
+
+## CodeGraphContext MCP server. TypeScript
+
+**Directory:** `examples/codegraph-context/`
+
+Tests `nicobailey/codegraph-context-mcp`. 16 assertions. Code graph indexer with 21 tools. Clean scan.
+
+```bash
+mcp-assert run --suite examples/codegraph-context
+```
+
+## u14app deep-research. JavaScript (HTTP)
+
+**Directory:** `examples/deep-research/`
+
+Tests `u14app/deep-research` via HTTP transport. 5 assertions. All tools return `isError:true` with "Unsupported Provider" when no LLM credentials configured. Clean scan.
+
+```bash
+mcp-assert run --suite examples/deep-research
+```
+
+## Peekaboo. Swift
+
+**Directory:** `examples/peekaboo/`
+
+Tests `steipete/Peekaboo`. 6 assertions. First Swift MCP server in the suite collection. 1 bug found: `image` returns internal error (-32603) instead of `isError:true` when Screen Recording permission is not granted. Filed [steipete/Peekaboo#108](https://github.com/steipete/Peekaboo/issues/108).
+
+```bash
+mcp-assert run --suite examples/peekaboo
 ```
 
 ## Trajectory assertions (no server)

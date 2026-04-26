@@ -25,21 +25,29 @@ internal/assertion/
   sampling*.go      Sampling assertion block type
 
 internal/runner/
+  audit.go          Zero-config quality audit command
   commands.go       Run, CI, Matrix (CLI entry points)
+  runner.go         Package doc comment
   client.go         MCP client creation (stdio, SSE, HTTP, capabilities)
   execute.go        Assertion execution and routing
   substitute.go     Template substitution ({{fixture}}, ${VAR}, captured variables)
   fixture.go        Per-assertion fixture isolation
+  init.go           Scaffold assertion template; init --server one-step generation
   generate.go       Auto-generate stubs from tools/list
   snapshot.go       Snapshot capture/compare
   coverage.go       Coverage command
   watch.go          Watch mode
   intercept.go      Intercept command (stdio proxy, trajectory validation)
+  sampling.go       Sampling-triggered tool call assertions
+  logging.go        Logging/setLevel + notifications/message assertions
   fix.go            --fix mode (position scanning, YAML patch generation)
   util.go           Shared utilities
 
 internal/report/
+  audit.go          Audit report formatting (header, results, summary, next-steps)
   report.go         Terminal output (color-aware)
+  color.go          ANSI color, TTY detection, progress
+  diff.go           Unified diff for watch mode status flips
   junit.go          JUnit XML generation
   markdown.go       GitHub Step Summary
   badge.go          shields.io endpoint JSON
@@ -47,7 +55,6 @@ internal/report/
   baseline.go       Baseline write/load, regression detection
   coverage.go       Coverage JSON serialization
   snapshot.go       Snapshot file read/write/compare
-  diff.go           Unified diff for watch mode
 ```
 
 ## Adding a New Assertion Type

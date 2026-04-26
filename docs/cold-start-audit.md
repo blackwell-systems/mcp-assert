@@ -121,7 +121,7 @@ The documentation is comprehensive, well-structured, and technically accurate. A
 
 ### Strengths
 
-1. **Command table is accurate**: All 9 commands (init, run, ci, matrix, coverage, generate, snapshot, watch, intercept, version) are listed. I verified these against `main.go` (lines 18-66) and all exist.
+1. **Command table is accurate**: All 10 commands (audit, init, run, ci, matrix, coverage, generate, snapshot, watch, intercept) are listed, plus `version`. I verified these against `main.go` and all exist.
 
 2. **Flag tables are complete**: Checked `run` flags against `commands.go` and all documented flags exist. The `--fix` flag is documented in both `run` and `ci` (lines 61, 78), which is correct.
 
@@ -193,7 +193,7 @@ The documentation is comprehensive, well-structured, and technically accurate. A
 
 2. **agent-lsp example requires fixtures but doesn't show where to get them**: Line 88 shows `--fixture /path/to/go/fixtures` but doesn't say where these fixtures are or how to create them. Are they in the agent-lsp repo? Should the user create them? The answer (from code review): the agent-lsp repo includes test fixtures in `test/fixtures/go`. This should be stated: "Use the fixtures from the agent-lsp repo: `--fixture /path/to/agent-lsp/test/fixtures/go`."
 
-3. **No example showing how to adapt an example to your own server**: A new user might think they need to copy the entire `examples/filesystem/` directory and modify every YAML. They don't—they can just run `generate` or `init --server`. But the examples doc never says this. Add a "Adapting Examples" section at the end: "To test your own server, use `mcp-assert generate --server "your-server" --output evals/` instead of copying these examples."
+3. **No example showing how to adapt an example to your own server**: A new user might think they need to copy the entire `examples/filesystem/` directory and modify every YAML. They don't; they can just run `generate` or `init --server`. But the examples doc never says this. Add a "Adapting Examples" section at the end: "To test your own server, use `mcp-assert generate --server "your-server" --output evals/` instead of copying these examples."
 
 4. **Summary table doesn't show which examples use advanced features**: The table (lines 7-26) shows server, language, transport, and assertion count, but not which examples demonstrate setup steps, capture, client_capabilities, trajectory, etc. A new user looking for "an example with setup steps" would need to read every description. Add columns for "Key Features" showing: setup, capture, client_capabilities, negative tests, stateful, trajectory.
 

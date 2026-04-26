@@ -204,7 +204,7 @@ Full documentation is available at [blackwell-systems.github.io/mcp-assert](http
 - [Badge](https://blackwell-systems.github.io/mcp-assert/badge/): add the "Works with mcp-assert" badge to your server README
 - [Architecture](https://blackwell-systems.github.io/mcp-assert/architecture/): internals and design decisions
 - [Roadmap](https://blackwell-systems.github.io/mcp-assert/roadmap/): what's shipped and what's next
-- [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): 15 bugs found across 6 servers, 6 upstream issues filed, 4 fix PRs submitted
+- [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): 15 bugs found across 7 servers, 6 upstream issues filed, 4 fix PRs submitted
 - [Dogfooding](https://blackwell-systems.github.io/mcp-assert/dogfooding/): findings from testing our own servers
 
 <p align="center">

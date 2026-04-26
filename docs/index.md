@@ -35,10 +35,11 @@ brew install blackwell-systems/tap/mcp-assert                               # Ho
 scoop install mcp-assert                                                    # Scoop (Windows)
 curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/install.sh | sh
 
-# Scaffold your first assertion
-mcp-assert init evals                   # Or: init evals --server "my-server"
+# Audit a server in one command (zero-config, no YAML)
+mcp-assert audit --server "npx my-mcp-server"
 
-# Run it
+# Or scaffold assertions and run them
+mcp-assert init evals                   # Or: init evals --server "my-server"
 mcp-assert run --suite evals/ --fixture evals/fixtures
 ```
 
