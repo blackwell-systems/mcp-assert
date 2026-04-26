@@ -137,6 +137,25 @@ mcp-assert ci --suite evals/ --threshold 95 --junit results.xml
 
 See the [CI Integration guide](https://blackwell-systems.github.io/mcp-assert/ci-integration/) for JUnit XML, markdown summaries, badges, and regression detection.
 
+## pytest Integration
+
+Run mcp-assert assertions as pytest test items:
+
+```bash
+pip install pytest-mcp-assert
+pytest --mcp-suite evals/
+```
+
+Each YAML file becomes a pytest Item with pass/fail/skip semantics. Configure via `pyproject.toml`:
+
+```toml
+[tool.pytest.ini_options]
+mcp_suite = "evals/"
+mcp_fixture = "fixtures/"
+```
+
+Then just run `pytest`. See `pytest-plugin/README.md` for all options.
+
 ## Documentation
 
 Full documentation is available at [blackwell-systems.github.io/mcp-assert](https://blackwell-systems.github.io/mcp-assert):

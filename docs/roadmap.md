@@ -85,7 +85,7 @@ Tracking coverage of every method defined in the MCP 2025-11-25 specification.
 
 | Item | Priority | Description |
 |------|----------|-------------|
-| **pytest plugin** | High | Thin Python wrapper that calls the Go binary and reports results as pytest test cases. `pip install pytest-mcp-assert`, then `pytest --mcp-suite evals/`. Each YAML assertion becomes a pytest item with pass/fail/skip semantics, fixtures, markers, and `-k` filtering. The Go binary remains the single source of truth for assertion logic. |
+| **pytest plugin** | **Shipped** | `pip install pytest-mcp-assert`, then `pytest --mcp-suite evals/`. Each YAML assertion becomes a pytest item with pass/fail/skip semantics. 170 lines of Python; the Go binary handles all MCP logic. See `pytest-plugin/` directory. |
 
 ## Assertion Engine
 
