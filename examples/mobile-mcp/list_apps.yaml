@@ -1,0 +1,10 @@
+name: mobile_list_apps returns isError without device
+server:
+  command: npx
+  args: [-y, "@mobilenext/mobile-mcp@latest"]
+assert:
+  tool: mobile_list_apps
+  args: {}
+  expect:
+    is_error: true
+timeout: 15s

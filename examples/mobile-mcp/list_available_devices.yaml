@@ -1,0 +1,11 @@
+name: mobile_list_available_devices returns device list
+server:
+  command: npx
+  args: [-y, "@mobilenext/mobile-mcp@latest"]
+assert:
+  tool: mobile_list_available_devices
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

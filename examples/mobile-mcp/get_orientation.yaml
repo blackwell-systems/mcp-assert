@@ -1,0 +1,10 @@
+name: mobile_get_orientation returns isError without device
+server:
+  command: npx
+  args: [-y, "@mobilenext/mobile-mcp@latest"]
+assert:
+  tool: mobile_get_orientation
+  args: {}
+  expect:
+    is_error: true
+timeout: 15s
