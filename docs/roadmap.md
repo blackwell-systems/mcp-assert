@@ -141,7 +141,7 @@ Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-
 | **`skip_unless_env` field** | 0.6.0 | Conditional assertion skipping based on env vars. Live-backend and no-auth assertions coexist in same suite. |
 | **Per-assertion Docker isolation** | 0.6.0 | `docker:` field in server YAML. Fresh container per assertion for safe write testing. |
 | **Coverage expansion** | 0.6.0 | SQLite 100%, Memory 100%, engram 100%. Anthropic git 92%, Playwright 67%. |
-| **Perplexity, Peekaboo, CodeGraphContext, deep-research suites** | 0.6.0 | 39 servers, 472 assertions, 6 languages, 15 bugs. |
+| **11 new server suites** | 0.6.0 | 48 servers, 504 assertions, 6 languages, 20 bugs. XcodeBuildMCP, Puppeteer, Context7, Chrome DevTools, Firefox DevTools, Excalidraw, SEC EDGAR, mcp-devtools, mcp-math, DuckDuckGo, Kubernetes, plus Perplexity, Peekaboo, CodeGraphContext, deep-research from pre-release. |
 | **pytest plugin** | 0.5.0 | `pip install pytest-mcp-assert`. Published to PyPI via release pipeline. |
 | **Badge snippet on pass** | 0.5.0 | CLI and GitHub Action output ready-to-paste badge markdown. |
 | **SSE transport fix** | 0.4.0 | `Start()` missing for SSE/HTTP clients. Found by dogfooding. |

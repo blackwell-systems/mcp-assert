@@ -22,7 +22,7 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **Memory suite expanded**: 5 to 9 assertions, 100% tool coverage (9/9 tools). Added open_nodes, delete_entities, delete_observations, delete_relations.
 - **Anthropic git suite expanded**: 7 to 11 assertions, 92% tool coverage (11/12 tools). Added commit, add, reset, tag.
 - **git-mcp (onmyway133) suite expanded**: 7 to 14 assertions, 39% coverage (14/36 tools). Added stash, tag, blame, grep, cherry-pick, remote, and more.
-- **462 total assertions** across 38 servers, 44 suites, 6 languages, 3 transports. 15 bugs found, 6 issues filed, 4 fix PRs.
+- **504 total assertions** across 48 servers, 51 suites, 6 languages, 3 transports. 20 bugs found across 9 servers, 6 fix PRs submitted.
 
 ### Fixed
 

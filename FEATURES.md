@@ -206,7 +206,7 @@ Behavior:
 
 ---
 
-## Example Suites (44 suites, 6 languages, 462 assertions)
+## Example Suites (51 suites, 6 languages, 504 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|

@@ -203,7 +203,7 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `awslabs/aws-documentation-mcp-server` | Python | 4 | 100% (4/4 tools) | Clean. Search, recommend, no-results handling. |
 | `exa-labs/exa-mcp-server` | JavaScript | 2 | 100% (2/2 tools) | Clean. Proper 401 with API key guidance. |
 | `onmyway133/git-mcp` | TypeScript | 14 | 39% (14/36 tools) | Clean. Status, log, branches, diff, show, reflog. |
-| **Total** | **6 languages** | **462** | | **44 suites** |
+| **Total** | **6 languages** | **504** | | **51 suites** |
 
 ## Target servers (next)
 
