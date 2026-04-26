@@ -1,0 +1,11 @@
+name: clipboard reads current content
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@steipete/peekaboo", mcp]
+assert:
+  tool: clipboard
+  args:
+    action: get
+  expect:
+    not_error: true
+timeout: 15s

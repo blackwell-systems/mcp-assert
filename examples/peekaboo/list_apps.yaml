@@ -1,0 +1,13 @@
+name: list returns running applications
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@steipete/peekaboo", mcp]
+assert:
+  tool: list
+  args:
+    type: apps
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Finder"]
+timeout: 15s

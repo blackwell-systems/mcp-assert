@@ -1,0 +1,12 @@
+name: list returns windows
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@steipete/peekaboo", mcp]
+assert:
+  tool: list
+  args:
+    type: windows
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

@@ -1,0 +1,16 @@
+# BUG: image returns internal error (-32603) instead of isError:true
+# when Screen Recording permission is not granted. Should return a
+# structured error that agents can act on.
+name: image returns internal error without Screen Recording permission (BUG)
+skip: true
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@steipete/peekaboo", mcp]
+assert:
+  tool: image
+  args:
+    mode: screen
+  expect:
+    is_error: true
+    contains: ["Screen Recording"]
+timeout: 15s

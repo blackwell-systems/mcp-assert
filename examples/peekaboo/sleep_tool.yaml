@@ -1,0 +1,11 @@
+name: sleep pauses execution
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@steipete/peekaboo", mcp]
+assert:
+  tool: sleep
+  args:
+    duration: 0.1
+  expect:
+    not_error: true
+timeout: 15s

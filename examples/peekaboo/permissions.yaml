@@ -1,0 +1,13 @@
+# permissions returns status even without grants; isError is set when
+# required permissions are missing, which is correct behavior.
+name: permissions reports status
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@steipete/peekaboo", mcp]
+assert:
+  tool: permissions
+  args: {}
+  expect:
+    not_empty: true
+    contains: ["Screen Recording"]
+timeout: 15s
