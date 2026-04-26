@@ -1,0 +1,11 @@
+name: get_diagram_info returns isError for nonexistent file
+server:
+  command: uvx
+  args: [excalidraw-architect-mcp]
+assert:
+  tool: get_diagram_info
+  args:
+    file_path: "/tmp/nonexistent-diagram.excalidraw"
+  expect:
+    is_error: true
+timeout: 15s

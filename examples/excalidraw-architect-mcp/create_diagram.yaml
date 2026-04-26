@@ -1,0 +1,23 @@
+name: create_diagram generates architecture diagram
+server:
+  command: uvx
+  args: [excalidraw-architect-mcp]
+assert:
+  tool: create_diagram
+  args:
+    nodes:
+      - id: "frontend"
+        label: "Frontend"
+        type: "component"
+      - id: "api"
+        label: "API Server"
+        type: "component"
+    connections:
+      - from_id: "frontend"
+        to_id: "api"
+        label: "REST"
+    output_path: "/tmp/mcp-assert-test-diagram.excalidraw"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

@@ -1,0 +1,18 @@
+name: create_diagram returns isError for invalid connection fields
+server:
+  command: uvx
+  args: [excalidraw-architect-mcp]
+assert:
+  tool: create_diagram
+  args:
+    nodes:
+      - id: "a"
+        label: "A"
+        type: "component"
+    connections:
+      - from: "a"
+        to: "nonexistent"
+    output_path: "/tmp/test.excalidraw"
+  expect:
+    is_error: true
+timeout: 15s

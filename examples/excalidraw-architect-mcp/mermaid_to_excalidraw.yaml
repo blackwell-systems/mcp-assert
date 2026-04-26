@@ -1,0 +1,13 @@
+name: mermaid_to_excalidraw converts mermaid syntax
+server:
+  command: uvx
+  args: [excalidraw-architect-mcp]
+assert:
+  tool: mermaid_to_excalidraw
+  args:
+    mermaid_syntax: "graph TD\n  A[Frontend] --> B[API]\n  B --> C[Database]"
+    output_path: "/tmp/mcp-assert-test-mermaid.excalidraw"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s
