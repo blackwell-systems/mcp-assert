@@ -1,0 +1,18 @@
+name: create_folder creates and search finds it
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+  env:
+    GRAFANA_URL: "${GRAFANA_URL}"
+    GRAFANA_SERVICE_ACCOUNT_TOKEN: "${GRAFANA_SERVICE_ACCOUNT_TOKEN}"
+setup:
+  - tool: create_folder
+    args:
+      title: "mcp-assert-test-folder"
+assert:
+  tool: search_folders
+  args: {}
+  expect:
+    not_error: true
+    contains: ["mcp-assert-test-folder"]
+timeout: 15s

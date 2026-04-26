@@ -24,6 +24,15 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 		}
 	}
 
+	if a.SkipUnlessEnv != "" && os.Getenv(a.SkipUnlessEnv) == "" {
+		return assertion.Result{
+			Name:     a.Name,
+			Status:   assertion.StatusSkip,
+			Detail:   fmt.Sprintf("skipped: env var %s not set", a.SkipUnlessEnv),
+			Duration: time.Since(start),
+		}
+	}
+
 	// Trajectory assertions check a tool call sequence without calling the server.
 	if len(a.Trajectory) > 0 {
 		return runTrajectoryAssertion(a, fixture, start)
