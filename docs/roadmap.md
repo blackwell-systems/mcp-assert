@@ -30,13 +30,21 @@ mcp-assert ui --server "npx my-server" --port 7890
 └─────────────────────────────────┘
 ```
 
-### Three modes
+### Four modes (two phases)
 
-**Explorer**: Connect to any MCP server. See all tools, prompts, resources in a tree. Click a tool to see its JSON Schema. Click "Call" to invoke with editable args. Response displayed with syntax highlighting. Interactive version of the audit command.
+**Phase 1 (launch)**: Explorer + Debugger. Self-contained, no LLM key needed, demonstrates core value.
 
-**Tracer**: Proxies between agent and server (builds on `intercept`). Every tool call appears in a live timeline via WebSocket. Click to expand: request args, response body, duration, isError. Filter by tool name, status, duration. Export session as trajectory YAML for regression testing.
+**Explorer**: Connect to any MCP server. See all tools, prompts, resources in a tree. Click a tool to see its JSON Schema. Click "Call" to invoke with editable args. Response displayed with syntax highlighting. "Save as assertion" button turns any call into a YAML test case. Interactive version of the audit command.
 
-**Debugger**: Run a suite from the UI. Failures appear in a list. Click a failure: see request, actual response, expected values, specific expectation that failed. Side-by-side diff view. "Fix" button suggests YAML edits (visual version of `--fix` mode).
+**Debugger**: Run a suite from the UI. Failures appear in a list. Click a failure: see request, actual response, expected values, specific expectation that failed. Side-by-side diff view. "Fix" button suggests YAML edits (visual version of `--fix` mode). "Export suite" generates YAML + GitHub Actions workflow.
+
+**Phase 2 (after launch)**: Agent + Tracer. Require LLM config and WebSocket proxy infrastructure.
+
+**Agent**: Connect an LLM (OpenAI, Anthropic, etc.), let it drive the server's tools via ReAct loop. Watch the tool call chain in real time. Tool confirmation mode (approve/deny before execution). Record the full session as a trajectory YAML for CI regression testing. This is ProtoMCP's agent mode plus assertions.
+
+**Tracer**: Proxy between an external agent (Claude Code, Cursor, etc.) and an MCP server. Every tool call appears in a live timeline via WebSocket. Click to expand: request args, response body, duration, isError. Filter by tool name, status, duration. Export session as trajectory YAML. Builds on the existing `intercept` command.
+
+**The funnel**: Explorer ("does my server work?") leads to Debugger ("why did this fail?") leads to Agent ("how does an LLM use my tools?") leads to Tracer ("what is my production agent doing?"). Each mode feeds the next.
 
 ### Frontend stack
 
