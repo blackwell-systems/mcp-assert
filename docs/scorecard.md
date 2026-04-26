@@ -6,15 +6,15 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 32 |
-| Server suites | 41 total (39 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
+| Servers scanned | 35 |
+| Server suites | 44 total (42 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
 | Languages tested | 6 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 397 (314 server + 63 agent-lsp + 20 trajectory) |
+| Total assertions | 413 (330 server + 63 agent-lsp + 20 trajectory) |
 | Upstream bugs found | 15 (6 servers affected) |
 | Upstream issues filed | 6 (1 unfiled: repo archived) |
-| Upstream fix PRs submitted | 5 (4 ours, 1 community) |
-| Clean scans (no bugs) | 24 |
+| Upstream fix PRs submitted | 4 (3 ours pending, 1 closed after maintainer fix) |
+| Clean scans (no bugs) | 27 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -142,6 +142,13 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
 | `u14app/deep-research` | JavaScript | HTTP | 5 | 100% (5/5 tools) | 0 | Clean. All tools return `isError:true` with "Unsupported Provider" when no LLM credentials configured. |
+| `perplexityai/mcp-server` | TypeScript | stdio | 4 | 100% (4/4 tools) | 0 | Clean. All tools return `isError:true` with 401 and API key guidance when credentials invalid. |
+
+### Memory (Go)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `Gentleman-Programming/engram` | Go | stdio | 6 | 38% (6/16 tools) | 0 | Clean. Persistent memory system with SQLite. Context, search, stats, error handling for missing observations. |
 
 ### Internal (agent-lsp)
 
