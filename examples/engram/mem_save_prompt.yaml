@@ -1,0 +1,11 @@
+name: mem_save_prompt returns expected result
+server:
+    command: engram
+    args: [mcp]
+assert:
+    tool: mem_save_prompt
+    args:
+        content: TODO
+    expect:
+        not_error: true
+timeout: 30s

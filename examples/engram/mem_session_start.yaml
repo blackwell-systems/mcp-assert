@@ -1,0 +1,11 @@
+name: mem_session_start returns expected result
+server:
+    command: engram
+    args: [mcp]
+assert:
+    tool: mem_session_start
+    args:
+        id: TODO
+    expect:
+        not_error: true
+timeout: 30s

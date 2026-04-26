@@ -1,0 +1,12 @@
+name: mem_update requires at least one field
+server:
+  command: engram
+  args: [mcp]
+assert:
+  tool: mem_update
+  args:
+    id: 1
+  expect:
+    is_error: true
+    contains: ["at least one field"]
+timeout: 15s

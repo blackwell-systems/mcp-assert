@@ -1,0 +1,11 @@
+name: mem_timeline returns expected result
+server:
+    command: engram
+    args: [mcp]
+assert:
+    tool: mem_timeline
+    args:
+        observation_id: 1
+    expect:
+        not_error: true
+timeout: 30s

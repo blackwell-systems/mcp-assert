@@ -1,0 +1,12 @@
+name: mem_save returns expected result
+server:
+    command: engram
+    args: [mcp]
+assert:
+    tool: mem_save
+    args:
+        content: TODO
+        title: TODO
+    expect:
+        not_error: true
+timeout: 30s

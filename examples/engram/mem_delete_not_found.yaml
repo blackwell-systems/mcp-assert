@@ -1,0 +1,12 @@
+name: mem_delete returns error for missing observation
+server:
+  command: engram
+  args: [mcp]
+assert:
+  tool: mem_delete
+  args:
+    id: 99999
+  expect:
+    is_error: true
+    contains: ["not found"]
+timeout: 15s

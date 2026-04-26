@@ -1,0 +1,11 @@
+name: mem_capture_passive returns expected result
+server:
+    command: engram
+    args: [mcp]
+assert:
+    tool: mem_capture_passive
+    args:
+        content: TODO
+    expect:
+        not_error: true
+timeout: 30s

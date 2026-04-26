@@ -1,0 +1,12 @@
+name: mem_merge_projects returns expected result
+server:
+    command: engram
+    args: [mcp]
+assert:
+    tool: mem_merge_projects
+    args:
+        from: TODO
+        to: TODO
+    expect:
+        not_error: true
+timeout: 30s
