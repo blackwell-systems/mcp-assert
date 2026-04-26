@@ -1,0 +1,10 @@
+name: find_most_complex_functions returns expected result
+server:
+    command: /Users/dayna.blackwell/.local/bin/uvx
+    args: [codegraphcontext, mcp, start]
+assert:
+    tool: find_most_complex_functions
+    args: {}
+    expect:
+        not_error: true
+timeout: 30s

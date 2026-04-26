@@ -1,0 +1,11 @@
+name: calculate_cyclomatic_complexity returns expected result
+server:
+    command: /Users/dayna.blackwell/.local/bin/uvx
+    args: [codegraphcontext, mcp, start]
+assert:
+    tool: calculate_cyclomatic_complexity
+    args:
+        function_name: TODO_NAME
+    expect:
+        not_error: true
+timeout: 30s

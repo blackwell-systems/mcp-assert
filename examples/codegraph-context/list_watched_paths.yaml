@@ -1,0 +1,10 @@
+name: list_watched_paths returns expected result
+server:
+    command: /Users/dayna.blackwell/.local/bin/uvx
+    args: [codegraphcontext, mcp, start]
+assert:
+    tool: list_watched_paths
+    args: {}
+    expect:
+        not_error: true
+timeout: 30s

@@ -1,0 +1,11 @@
+name: visualize_graph_query returns expected result
+server:
+    command: /Users/dayna.blackwell/.local/bin/uvx
+    args: [codegraphcontext, mcp, start]
+assert:
+    tool: visualize_graph_query
+    args:
+        cypher_query: TODO_QUERY
+    expect:
+        not_error: true
+timeout: 30s

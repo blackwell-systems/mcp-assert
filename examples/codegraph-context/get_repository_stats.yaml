@@ -1,0 +1,10 @@
+name: get_repository_stats returns expected result
+server:
+    command: /Users/dayna.blackwell/.local/bin/uvx
+    args: [codegraphcontext, mcp, start]
+assert:
+    tool: get_repository_stats
+    args: {}
+    expect:
+        not_error: true
+timeout: 30s

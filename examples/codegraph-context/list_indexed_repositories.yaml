@@ -1,0 +1,10 @@
+name: list_indexed_repositories returns expected result
+server:
+    command: /Users/dayna.blackwell/.local/bin/uvx
+    args: [codegraphcontext, mcp, start]
+assert:
+    tool: list_indexed_repositories
+    args: {}
+    expect:
+        not_error: true
+timeout: 30s
