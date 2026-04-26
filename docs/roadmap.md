@@ -38,9 +38,31 @@ mcp-assert ui --server "npx my-server" --port 7890
 
 **Debugger**: Run a suite from the UI. Failures appear in a list. Click a failure: see request, actual response, expected values, specific expectation that failed. Side-by-side diff view. "Fix" button suggests YAML edits (visual version of `--fix` mode).
 
-### Frontend approach
+### Frontend stack
 
-Lightweight: Preact or vanilla JS with a CSS framework. No React/webpack/npm build step. Single `index.html` + JS bundle embedded in the Go binary. Zero external dependencies at runtime.
+**Preact + Tailwind CSS**, compiled via esbuild to a single `bundle.js`, embedded in the Go binary via `//go:embed`. Same API as React (JSX, useState, useEffect), 3KB instead of 45KB. esbuild compiles in ~50ms.
+
+**Dev workflow**: edit JSX, run `esbuild` (one command, 50ms), built JS committed to repo. Users never run a build step; the frontend is already inside the Go binary they download.
+
+**Why Preact over alternatives**:
+- vs React: same API, 1/15th the size. Matters for an embedded binary.
+- vs Vanilla JS: component reuse (ToolCard, SchemaForm, TraceEntry), reactive state for WebSocket streams, list rendering. Vanilla JS becomes unmanageable at 10+ interactive components.
+- vs HTMX: wrong fit for real-time WebSocket data streams and complex client-side state (trace timeline, form editing).
+
+**Inspiration from ProtoMCP** (SahanUday/ProtoMCP): three-column layout (server list | main content | JSON-RPC log panel), auto-generated forms from JSON Schema, real-time trace timeline with color-coded events, tool confirmation mode for destructive calls. Our differentiation: "Save as assertion" button, expected vs actual diff, CI export, all three transports (stdio/SSE/HTTP), and the testing/assertion layer ProtoMCP completely lacks.
+
+### Scaling path
+
+The single binary with embedded UI scales for the local tool (one user, localhost, 1-10 servers). Grafana uses the same pattern at millions of lines of frontend TypeScript.
+
+For the hosted platform (multi-user, persistent storage, queued jobs, billing), the same Go engine (`internal/runner`, `internal/assertion`, `internal/report`) gets wrapped in a production web service with a database, auth, and CDN-served frontend. No rewrite; the local UI is both a standalone product and a prototype for the hosted version.
+
+```
+Phase 1: mcp-assert ui       → single binary, localhost, embedded frontend
+Phase 2: mcp-assert-cloud    → deployed service, same Go engine, production frontend
+```
+
+Build local first. Adoption proves demand. Demand justifies hosted.
 
 ## Platform Direction
 
