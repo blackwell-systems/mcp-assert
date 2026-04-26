@@ -1,6 +1,6 @@
 name: fetch retrieves content from a URL
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [mcp-server-fetch]
 assert:
   tool: fetch

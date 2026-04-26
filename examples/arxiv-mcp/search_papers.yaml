@@ -1,6 +1,6 @@
 name: search_papers finds transformer papers
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [arxiv-mcp-server]
 assert:
   tool: search_papers

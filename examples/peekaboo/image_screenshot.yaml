@@ -4,7 +4,7 @@
 name: image returns internal error without Screen Recording permission (BUG)
 skip: true
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, "@steipete/peekaboo", mcp]
 assert:
   tool: image

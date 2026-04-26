@@ -1,6 +1,6 @@
 name: delete_entities removes entities
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, "@modelcontextprotocol/server-memory"]
 setup:
   - tool: create_entities

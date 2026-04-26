@@ -1,6 +1,6 @@
 name: list_buckets requires project ID
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, "@google-cloud/storage-mcp"]
 assert:
   tool: list_buckets

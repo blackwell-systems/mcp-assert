@@ -1,6 +1,6 @@
 name: git_create_branch creates new branch
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [mcp-server-git]
 assert:
   tool: git_create_branch

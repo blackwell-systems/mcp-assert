@@ -1,6 +1,6 @@
 name: append_insight adds a business insight
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [mcp-server-sqlite, --db-path, "{{fixture}}/test.db"]
 assert:
   tool: append_insight

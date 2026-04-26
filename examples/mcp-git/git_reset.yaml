@@ -1,6 +1,6 @@
 name: git_reset resets to HEAD
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [mcp-server-git]
 assert:
   tool: git_reset

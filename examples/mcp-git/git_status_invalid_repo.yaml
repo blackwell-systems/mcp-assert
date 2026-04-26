@@ -1,6 +1,6 @@
 name: git_status rejects invalid repo path
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [mcp-server-git]
 assert:
   tool: git_status

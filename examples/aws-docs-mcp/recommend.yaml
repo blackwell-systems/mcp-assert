@@ -1,6 +1,6 @@
 name: recommend returns suggestions for AWS docs page
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [awslabs.aws-documentation-mcp-server]
 assert:
   tool: recommend

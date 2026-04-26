@@ -1,6 +1,6 @@
 name: get_repository_stats returns expected result
 server:
-    command: /Users/dayna.blackwell/.local/bin/uvx
+    command: uvx
     args: [codegraphcontext, mcp, start]
 assert:
     tool: get_repository_stats

@@ -1,6 +1,6 @@
 name: check_job_status returns expected result
 server:
-    command: /Users/dayna.blackwell/.local/bin/uvx
+    command: uvx
     args: [codegraphcontext, mcp, start]
 assert:
     tool: check_job_status

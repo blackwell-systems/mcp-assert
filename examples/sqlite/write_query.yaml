@@ -1,6 +1,6 @@
 name: write_query executes INSERT statement
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [mcp-server-sqlite, --db-path, "{{fixture}}/test.db"]
 assert:
   tool: write_query

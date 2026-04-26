@@ -1,6 +1,6 @@
 name: git_file_history shows file commit history
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, git-mcp]
 assert:
   tool: git_file_history

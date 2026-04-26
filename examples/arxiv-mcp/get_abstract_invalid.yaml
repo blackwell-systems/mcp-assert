@@ -4,7 +4,7 @@
 name: get_abstract returns error content but isError=false for invalid paper (BUG)
 skip: true
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [arxiv-mcp-server]
 assert:
   tool: get_abstract

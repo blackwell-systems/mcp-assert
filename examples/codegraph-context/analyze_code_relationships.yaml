@@ -1,6 +1,6 @@
 name: analyze_code_relationships returns expected result
 server:
-    command: /Users/dayna.blackwell/.local/bin/uvx
+    command: uvx
     args: [codegraphcontext, mcp, start]
 assert:
     tool: analyze_code_relationships

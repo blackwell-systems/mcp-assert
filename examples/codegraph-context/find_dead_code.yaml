@@ -1,6 +1,6 @@
 name: find_dead_code returns expected result
 server:
-    command: /Users/dayna.blackwell/.local/bin/uvx
+    command: uvx
     args: [codegraphcontext, mcp, start]
 assert:
     tool: find_dead_code

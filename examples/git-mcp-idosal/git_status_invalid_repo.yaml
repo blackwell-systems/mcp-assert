@@ -1,6 +1,6 @@
 name: git_status rejects invalid repo path
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, git-mcp]
 assert:
   tool: git_status

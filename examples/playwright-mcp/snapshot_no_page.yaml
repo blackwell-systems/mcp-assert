@@ -1,7 +1,7 @@
 # Snapshot with no page navigated: should either return empty or error gracefully.
 name: browser_snapshot handles no page loaded
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, "@playwright/mcp", --headless]
 assert:
   tool: browser_snapshot

@@ -1,6 +1,6 @@
 name: git_create_branch creates new branch
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, git-mcp]
 assert:
   tool: git_create_branch

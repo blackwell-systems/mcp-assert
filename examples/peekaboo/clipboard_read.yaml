@@ -1,6 +1,6 @@
 name: clipboard reads current content
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, "@steipete/peekaboo", mcp]
 assert:
   tool: clipboard

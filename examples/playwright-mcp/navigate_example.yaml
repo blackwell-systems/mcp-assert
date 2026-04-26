@@ -1,6 +1,6 @@
 name: browser_navigate loads example.com
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, "@playwright/mcp", --headless]
 assert:
   tool: browser_navigate

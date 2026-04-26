@@ -1,6 +1,6 @@
 name: git_blame shows file annotations
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, git-mcp]
 assert:
   tool: git_blame

@@ -1,6 +1,6 @@
 name: watch_directory returns expected result
 server:
-    command: /Users/dayna.blackwell/.local/bin/uvx
+    command: uvx
     args: [codegraphcontext, mcp, start]
 assert:
     tool: watch_directory

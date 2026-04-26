@@ -2,7 +2,7 @@
 # required permissions are missing, which is correct behavior.
 name: permissions reports status
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, "@steipete/peekaboo", mcp]
 assert:
   tool: permissions

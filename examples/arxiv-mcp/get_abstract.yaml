@@ -1,6 +1,6 @@
 name: get_abstract retrieves paper abstract
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [arxiv-mcp-server]
 assert:
   tool: get_abstract

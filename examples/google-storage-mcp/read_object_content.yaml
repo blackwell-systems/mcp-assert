@@ -1,6 +1,6 @@
 name: read_object_content handles missing object gracefully
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, "@google-cloud/storage-mcp"]
 assert:
   tool: read_object_content

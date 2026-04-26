@@ -1,6 +1,6 @@
 name: create_table creates a new table
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [mcp-server-sqlite, --db-path, "{{fixture}}/test.db"]
 assert:
   tool: create_table

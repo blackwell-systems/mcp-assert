@@ -1,6 +1,6 @@
 name: add_code_to_graph returns expected result
 server:
-    command: /Users/dayna.blackwell/.local/bin/uvx
+    command: uvx
     args: [codegraphcontext, mcp, start]
 assert:
     tool: add_code_to_graph

@@ -1,6 +1,6 @@
 name: web_search_exa requires API key
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, exa-mcp-server]
 assert:
   tool: web_search_exa

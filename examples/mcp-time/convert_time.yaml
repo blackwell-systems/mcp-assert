@@ -1,6 +1,6 @@
 name: convert_time converts UTC to Tokyo
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [mcp-server-time]
 assert:
   tool: convert_time

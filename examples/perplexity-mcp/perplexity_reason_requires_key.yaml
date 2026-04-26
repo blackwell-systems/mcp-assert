@@ -1,6 +1,6 @@
 name: perplexity_reason returns 401 with invalid API key
 server:
-  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  command: npx
   args: [-y, "@perplexity-ai/mcp-server"]
   env:
     PERPLEXITY_API_KEY: dummy

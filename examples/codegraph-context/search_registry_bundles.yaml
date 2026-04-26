@@ -1,6 +1,6 @@
 name: search_registry_bundles returns expected result
 server:
-    command: /Users/dayna.blackwell/.local/bin/uvx
+    command: uvx
     args: [codegraphcontext, mcp, start]
 assert:
     tool: search_registry_bundles

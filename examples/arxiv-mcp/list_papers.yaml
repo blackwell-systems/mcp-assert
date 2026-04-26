@@ -1,6 +1,6 @@
 name: list_papers returns without error
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [arxiv-mcp-server]
 assert:
   tool: list_papers

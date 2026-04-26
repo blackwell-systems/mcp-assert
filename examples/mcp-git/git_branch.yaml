@@ -1,6 +1,6 @@
 name: git_branch lists branches
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [mcp-server-git]
 assert:
   tool: git_branch

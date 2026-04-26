@@ -1,6 +1,6 @@
 name: discover_codegraph_contexts returns expected result
 server:
-    command: /Users/dayna.blackwell/.local/bin/uvx
+    command: uvx
     args: [codegraphcontext, mcp, start]
 assert:
     tool: discover_codegraph_contexts

@@ -1,6 +1,6 @@
 name: get_current_time returns time for UTC
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [mcp-server-time]
 assert:
   tool: get_current_time

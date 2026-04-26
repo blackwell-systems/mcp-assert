@@ -1,6 +1,6 @@
 name: search_documentation finds S3 docs
 server:
-  command: /Users/dayna.blackwell/.local/bin/uvx
+  command: uvx
   args: [awslabs.aws-documentation-mcp-server]
 assert:
   tool: search_documentation
