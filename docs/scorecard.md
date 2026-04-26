@@ -6,15 +6,15 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 38 |
-| Server suites | 44 total (42 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
+| Servers scanned | 40 |
+| Server suites | 46 total (44 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
 | Languages tested | 6 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 462 (379 server + 63 agent-lsp + 20 trajectory) |
-| Upstream bugs found | 15 (7 servers affected) |
+| Total assertions | 479 (396 server + 63 agent-lsp + 20 trajectory) |
+| Upstream bugs found | 16 (8 servers affected) |
 | Upstream issues filed | 6 (1 unfiled: repo archived) |
-| Upstream fix PRs submitted | 4 (3 ours pending, 1 closed after maintainer fix) |
-| Clean scans (no bugs) | 31 |
+| Upstream fix PRs submitted | 5 (4 ours pending, 1 closed after maintainer fix) |
+| Clean scans (no bugs) | 32 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -30,6 +30,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | `mcp-server-git` | Python | stdio | 11 | 92% (11/12 tools) | 0 | Clean. Status, log, branch, diff, show, invalid repo/ref rejection. |
 | `mcp-server-sqlite` | Python | stdio | 9 | 100% (6/6 tools) | 0 | Clean |
 | `@modelcontextprotocol/server-everything` | TypeScript | stdio | 13 | 92% (12/13 tools) | 0 | Clean. Official Anthropic reference server. |
+| `@modelcontextprotocol/server-puppeteer` | TypeScript | stdio | 7 | 100% (7/7 tools) | 1 | [modelcontextprotocol/servers#4051](https://github.com/modelcontextprotocol/servers/pull/4051). `puppeteer_navigate` crashes with internal error (-32603) on invalid URLs instead of returning `isError:true`. Fix PR submitted. |
 
 ### Community Framework SDKs
 
@@ -137,6 +138,12 @@ Servers tested by mcp-assert, bugs found, issues filed.
 |--------|----------|-----------|------------|----------|------|-------|
 | `steipete/Peekaboo` | Swift | stdio | 6 | 27% (6/22 tools) | 1 | [steipete/Peekaboo#108](https://github.com/steipete/Peekaboo/issues/108). `image` returns internal error (-32603) instead of `isError:true` when Screen Recording permission is not granted. |
 
+### macOS (TypeScript)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `getsentry/XcodeBuildMCP` | TypeScript | stdio | 10 | 37% (10/27 tools) | 0 | Clean. 27 tools discovered across build, simulator, coverage, session management. All tested tools return `isError:true` properly when preconditions not met. Sentry-backed. |
+
 ### Research/AI (JavaScript)
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
@@ -220,6 +227,15 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **Impact:** MCP clients treat -32603 as a server crash. Agents can't self-correct from internal errors.
 - **Issue:** [steipete/Peekaboo#108](https://github.com/steipete/Peekaboo/issues/108)
 - **Status:** Open
+
+### Bug #8: Anthropic Puppeteer: puppeteer_navigate crashes on invalid URL
+
+- **Severity:** Internal error instead of isError
+- **Tool:** `puppeteer_navigate`
+- **What:** Calling `puppeteer_navigate` with an invalid or empty URL throws an unhandled CDP `Protocol error (Page.navigate)` that propagates as a JSON-RPC -32603 internal error. The `page.goto()` call has no try/catch. Other tools in the same server (e.g., `puppeteer_screenshot`) correctly catch errors and return `isError: true`.
+- **Impact:** Agents sending malformed URLs get an unrecoverable internal error instead of a structured error they can act on.
+- **Fix PR:** [modelcontextprotocol/servers#4051](https://github.com/modelcontextprotocol/servers/pull/4051)
+- **Status:** Open (server archived to `archive-servers` branch, but npm package still published)
 
 ## Observations
 
