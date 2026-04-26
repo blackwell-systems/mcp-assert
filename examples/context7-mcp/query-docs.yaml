@@ -1,0 +1,13 @@
+name: query-docs returns results for valid library
+server:
+  command: npx
+  args: [-y, "@upstash/context7-mcp"]
+assert:
+  tool: query-docs
+  args:
+    libraryId: "/vercel/next.js"
+    query: "routing"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

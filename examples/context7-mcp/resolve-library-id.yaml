@@ -1,0 +1,13 @@
+name: resolve-library-id finds a known library
+server:
+  command: npx
+  args: [-y, "@upstash/context7-mcp"]
+assert:
+  tool: resolve-library-id
+  args:
+    libraryName: "react"
+    query: "hooks"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s
