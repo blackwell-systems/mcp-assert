@@ -1,0 +1,13 @@
+name: specs-workflow returns isError for nonexistent path
+server:
+  command: npx
+  args: [-y, spec-workflow-mcp]
+assert:
+  tool: specs-workflow
+  args:
+    path: "/tmp/nonexistent-project"
+    action:
+      type: "status"
+  expect:
+    is_error: true
+timeout: 15s
