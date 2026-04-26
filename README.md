@@ -79,6 +79,42 @@ curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/i
 
 ## Quick Start
 
+### Audit a server in one command
+
+Point `mcp-assert audit` at any MCP server. No YAML, no setup:
+
+```bash
+mcp-assert audit --server "npx my-mcp-server"
+```
+
+```
+  Server: my-server
+  Transport: stdio
+  Score: 83%
+
+  ✓ read_query      1ms  responds, returns content
+  ✗ create_table    0ms  internal error: panic: nil pointer...
+  ✓ list_tables     1ms  responds, returns content
+
+  3 tools tested, 2 healthy, 1 crashed
+```
+
+The audit connects, discovers every tool via `tools/list`, calls each one with schema-generated inputs, and reports which tools crash vs. handle errors properly. This is discovery: it tests crash resistance and error handling, not business logic.
+
+To go deeper, generate assertion YAML files and customize them:
+
+```bash
+# Audit + generate starter YAML for CI
+mcp-assert audit --server "npx my-mcp-server" --output evals/
+
+# Edit the generated YAMLs: add expected content, setup steps, multi-step flows
+
+# Run in CI with regression detection
+mcp-assert ci --suite evals/ --threshold 95
+```
+
+### Write assertions from scratch
+
 ```bash
 # Scaffold your first assertion
 mcp-assert init evals                   # Or: init evals --server "my-server" for auto-generation

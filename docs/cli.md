@@ -3,6 +3,7 @@
 ## Commands
 
 ```
+mcp-assert audit    --server <cmd> [--output <dir>] [--docker <image>] [--include-writes]
 mcp-assert init     [dir] [--server <cmd>] [--fixture <dir>] [--timeout <duration>]
 mcp-assert run      --suite <path> [--fix] [flags]
 mcp-assert ci       --suite <path> [--fix] [flags]
@@ -14,6 +15,36 @@ mcp-assert watch    --suite <dir> [flags]
 mcp-assert intercept --server <cmd> [--trajectory <path>] [--timeout <duration>]
 mcp-assert version
 ```
+
+### `mcp-assert audit`
+
+Zero-config quality audit. Connects to a server, discovers all tools, calls each one with schema-generated inputs, and reports which tools are healthy vs. which crash. No YAML required.
+
+```bash
+mcp-assert audit --server "npx my-mcp-server" [--output evals/]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--server <cmd>` | Server command (stdio) or URL (http/sse) (required) |
+| `--transport <type>` | Transport type: `stdio` (default), `http`, `sse` |
+| `--headers <pairs>` | Custom headers as `key=value` pairs, comma-separated |
+| `--docker <image>` | Run destructive tools in fresh Docker containers (stdio only) |
+| `--timeout <duration>` | Per-tool call timeout (default: `15s`) |
+| `--output <dir>` | Generate starter assertion YAML files in this directory |
+| `--include-writes` | Also call destructive/write tools without Docker isolation (skipped by default) |
+| `--json` | Output results as JSON |
+
+**What it tests:** Crash resistance and error handling. The audit calls every tool with valid-shaped inputs generated from JSON Schema. Tools that respond (whether with data or a proper `isError: true`) are scored as healthy. Tools that crash with internal errors (`-32603`), stack traces, or panics are scored as crashed.
+
+**What it doesn't test:** Business logic, expected output content, multi-step workflows, or state verification. For those, use the YAML assertion workflow (see `run`, `ci`).
+
+**Destructive tool handling:** By default, tools annotated as destructive are skipped. Two ways to test them:
+
+- `--docker <image>`: Spins up a fresh Docker container per destructive tool. Each tool gets an isolated environment; the container is destroyed afterward. Safe for write/delete tools.
+- `--include-writes`: Calls destructive tools directly on the host, without isolation. Use only when you understand the side effects.
+
+**Generating YAML for CI:** Pass `--output <dir>` to generate one assertion YAML per tool. These stubs use `not_error: true` as the default expectation. Edit them to add expected content checks, setup steps, and multi-step flows, then run them in CI with `mcp-assert ci --suite <dir>`.
 
 ### `mcp-assert init`
 

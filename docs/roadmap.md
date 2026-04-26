@@ -4,7 +4,6 @@
 
 | Item | Priority | Description |
 |------|----------|-------------|
-| **`mcp-assert audit` command** | High | Zero-config quality audit. `mcp-assert audit --server "npx my-server"` connects, lists tools, auto-generates inputs from JSON schemas, calls every tool, and reports: which crash, which return isError properly, which return internal errors. No YAML writing needed. Produces a quality score. This is the "point and shoot" version of what we do manually today with generate + run. The YAML workflow stays for CI regression testing; audit is for discovery. |
 | **Blog post** | Ready | "We tested 38 MCP servers from Anthropic, Google, OpenAI, Microsoft, and AWS. Here's what we found." The scorecard data is the content; needs prose around it. Publish on docs site (mkdocs already deployed). |
 | **MCP server leaderboard** | High | Static page on docs site ranking servers by coverage score and pass rate. Data exists for 38 servers. Becomes valuable once there's external traffic (blog post drives traffic). |
 | **antvis CI integration PR** | Blocked on #292 merge | antvis maintainer asked us to add mcp-assert to their CI. Submit follow-up PR with `evals/` directory (25 assertions) + GitHub Actions workflow using `mcp-assert-action@v1`. This is the first external adoption. |
@@ -68,6 +67,7 @@ No concrete plan yet. Depends on adoption signal from antvis CI integration and 
 
 | Item | Version | Description |
 |------|---------|-------------|
+| **`mcp-assert audit` command** | Unreleased | Zero-config quality audit. Connects, discovers tools, calls each with schema-generated inputs, reports quality score. Generates starter YAML for CI. Discovery on-ramp to the YAML workflow. |
 | **`skip_unless_env` field** | Unreleased | Conditional assertion skipping based on env vars. Live-backend and no-auth assertions coexist in same suite. |
 | **Per-assertion Docker isolation** | Unreleased | `docker:` field in server YAML. Fresh container per assertion for safe write testing. |
 | **Coverage expansion** | Unreleased | SQLite 100%, Memory 100%, engram 100%. Anthropic git 92%, Playwright 67%. |

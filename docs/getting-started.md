@@ -1,6 +1,7 @@
 # Getting Started
 
 > **Which path should I use?**
+> - Just want to see what happens? Use `audit --server "my-server"` (zero-config, no YAML, instant results)
 > - Have a running MCP server? Use `init evals --server "my-server"` (generates stubs + captures baselines)
 > - Want to start from a template? Use `init evals` (creates one commented YAML to customize)
 > - Know your server config already? Jump to [Write an assertion by hand](#write-an-assertion-by-hand) below

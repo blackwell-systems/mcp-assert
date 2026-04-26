@@ -56,6 +56,11 @@ func main() {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
+	case "audit":
+		if err := runner.Audit(os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
 	case "intercept":
 		if err := runner.Intercept(os.Args[2:]); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -76,17 +81,19 @@ func printUsage() {
 	fmt.Print(`mcp-assert - Deterministic correctness testing for MCP servers
 
 Usage:
-  mcp-assert init   [dir] [--server <cmd>] [--fixture <dir>]
-  mcp-assert run    --suite <dir> [--server <cmd>] [--fixture <dir>] [--trials N] [--fix]
-  mcp-assert matrix --suite <dir> --languages <lang:server,...>
-  mcp-assert ci     --suite <dir> [--server <cmd>] [--threshold N] [--fail-on-regression] [--fix]
-  mcp-assert coverage  --suite <dir> --server <cmd> [--coverage-json <path>]
-  mcp-assert generate  --server <cmd> --output <dir> [--fixture <dir>]
-  mcp-assert snapshot  --suite <dir> [--update] [--server <cmd>] [--fixture <dir>]
-  mcp-assert watch     --suite <dir> [--server <cmd>] [--interval <duration>]
+  mcp-assert audit    --server <cmd> [--output <dir>] [--docker <image>] [--include-writes]
+  mcp-assert init     [dir] [--server <cmd>] [--fixture <dir>]
+  mcp-assert run      --suite <dir> [--server <cmd>] [--fixture <dir>] [--trials N] [--fix]
+  mcp-assert matrix   --suite <dir> --languages <lang:server,...>
+  mcp-assert ci       --suite <dir> [--server <cmd>] [--threshold N] [--fail-on-regression] [--fix]
+  mcp-assert coverage --suite <dir> --server <cmd> [--coverage-json <path>]
+  mcp-assert generate --server <cmd> --output <dir> [--fixture <dir>]
+  mcp-assert snapshot --suite <dir> [--update] [--server <cmd>] [--fixture <dir>]
+  mcp-assert watch    --suite <dir> [--server <cmd>] [--interval <duration>]
   mcp-assert intercept --server <cmd> --trajectory <yaml>
 
 Commands:
+  audit     Zero-config quality audit: connect, discover tools, test each one
   init      Scaffold a template, or generate a complete suite with --server
   run       Run assertions against an MCP server
   matrix    Run assertions across multiple language servers

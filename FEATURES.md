@@ -4,10 +4,11 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 
 ---
 
-## CLI Commands (9)
+## CLI Commands (10)
 
 | Command | Description | Key flags |
 |---------|-------------|-----------|
+| `audit` | Zero-config quality audit: connect, discover tools, call each with schema-generated inputs, report crash resistance. Generates starter YAML for the CI workflow. | `--server`, `--output`, `--include-writes`, `--json`, `--transport`, `--timeout` |
 | `init` | Scaffold template or one-step suite generation from a live server | `[dir]`, `--server`, `--fixture`, `--timeout` |
 | `run` | Execute assertions against an MCP server | `--suite` (dir or file), `--server`, `--fixture`, `--trials`, `--docker`, `--json`, `--junit`, `--markdown`, `--badge`, `--baseline`, `--save-baseline`, `--fix` |
 | `ci` | Run with CI-specific exit codes and reporting | All `run` flags + `--threshold`, `--fail-on-regression`, `--fix` |
@@ -441,6 +442,7 @@ internal/assertion/
   logging_types.go          LoggingAssertBlock, LoggingExpect, LogMessage types
   logging_checker.go        Logging assertion checker
 internal/runner/
+  audit.go                  Zero-config audit: discover tools, call each, report quality score, generate YAML
   runner.go                 Run, Matrix, CI commands, MCP client lifecycle
   client.go                 MCP client creation, transport selection, client capabilities
   commands.go               CLI command dispatch
@@ -458,6 +460,7 @@ internal/runner/
   util.go                   Shared utilities
   watch.go                  File-watching rerun loop with unified diff on status flips
 internal/report/
+  audit.go                  Audit report formatting (header, results, summary, next-steps guidance)
   report.go                 Terminal output (color-aware)
   color.go                  ANSI color, TTY detection, progress
   diff.go                   FormatDiff, FormatStatusChange: unified diff for watch mode status flips

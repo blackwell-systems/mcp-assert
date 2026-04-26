@@ -7,6 +7,7 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ### Added
 
+- **`mcp-assert audit` command**: zero-config server quality audit. Point it at any MCP server: `mcp-assert audit --server "npx my-server"`. Connects, discovers all tools via `tools/list`, calls each one with schema-generated inputs, and reports a quality score. Classifies tools as healthy (proper error handling), crashed (internal error, panic, stack trace), or timed out. Pass `--output <dir>` to generate starter assertion YAML files for the CI workflow. Supports `--json` for structured output, `--docker <image>` for safe destructive tool testing in fresh containers, `--include-writes` for destructive tools without isolation, and all three transports (stdio, SSE, HTTP).
 - **Per-assertion Docker isolation**: new `docker:` field in server YAML config. Each assertion runs in a fresh `docker run --rm -i` container, destroyed after completion. Enables safe testing of destructive/write tools without state leaking between assertions. Fixtures mounted via `-v`, env vars via `-e`. Per-assertion field takes precedence over CLI `--docker` flag.
 - **Perplexity MCP server suite**: 4 assertions, clean. All tools return `isError:true` with 401 and API key guidance. Sixth AI company on the scorecard.
 - **engram memory server suite**: expanded from 6 to 16 assertions (100% tool coverage). All 16 tools tested including writes (save, delete, update, merge, session lifecycle).

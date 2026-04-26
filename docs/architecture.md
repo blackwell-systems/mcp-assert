@@ -133,7 +133,7 @@ The codebase is organized into three packages under `internal/`, plus the entry 
 
 ### `cmd/mcp-assert/main.go`
 
-The binary entry point. It reads the first CLI argument and dispatches to the appropriate function in the `runner` package (`Run`, `Matrix`, `CI`, `Init`, `Coverage`, `Generate`, `Snapshot`, `Watch`, `Intercept`). There is no framework; it is a simple `switch` statement on `os.Args[1]`. This file also defines `printUsage()` for help text and exposes a `Version` variable set at build time.
+The binary entry point. It reads the first CLI argument and dispatches to the appropriate function in the `runner` package (`Audit`, `Run`, `Matrix`, `CI`, `Init`, `Coverage`, `Generate`, `Snapshot`, `Watch`, `Intercept`). There is no framework; it is a simple `switch` statement on `os.Args[1]`. This file also defines `printUsage()` for help text and exposes a `Version` variable set at build time.
 
 ### `internal/assertion/` (types, loading, checking)
 
@@ -155,6 +155,7 @@ This package contains all the execution logic: CLI flag parsing, server lifecycl
 
 | File | Responsibility |
 |------|----------------|
+| `audit.go` | `Audit()`: zero-config quality audit. Connects to a server, discovers tools via `tools/list`, calls each with schema-generated inputs, classifies results (healthy/crash/timeout), reports a quality score, optionally generates starter YAML files. |
 | `commands.go` | `Run()`, `Matrix()`, `CI()`: CLI entry points that parse flags, load suites, iterate assertions, collect results, and trigger reporting. |
 | `runner.go` | Package doc comment only (the actual runner logic is in `execute.go` and `commands.go`). |
 | `execute.go` | `runAssertion()`: the core execution function. Routes to the correct handler based on which block is present. Contains inline logic for the default `assert:` (tool call) path, plus `runResourceAssertion`, `runPromptAssertion`, `runCompletionAssertion`, and `runTrajectoryAssertion`. |
@@ -178,6 +179,7 @@ This package consumes `[]assertion.Result` and produces output in various format
 
 | File | Responsibility |
 |------|----------------|
+| `audit.go` | `PrintAuditHeader()`, `PrintAuditResults()`, `PrintAuditSummary()`, `PrintAuditNextSteps()`: audit-specific report formatting with quality score and CI guidance. |
 | `report.go` | `PrintResults()`: terminal table with color (TTY) or plain text (pipe/CI). `PrintMatrix()`: cross-language comparison table. |
 | `color.go` | ANSI color codes, TTY detection (`os.ModeCharDevice`), `NO_COLOR` env var support, progress indicator on stderr. |
 | `diff.go` | `FormatDiff()`, `FormatStatusChange()`: unified diff output for the `watch` command when an assertion's status changes. |
