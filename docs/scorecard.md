@@ -6,15 +6,15 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 30 |
-| Server suites | 39 total (37 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
-| Languages tested | 5 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java) |
+| Servers scanned | 32 |
+| Server suites | 41 total (39 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
+| Languages tested | 6 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 386 (303 server + 63 agent-lsp + 20 trajectory) |
-| Upstream bugs found | 14 (5 servers affected) |
-| Upstream issues filed | 5 (1 unfiled: repo archived) |
+| Total assertions | 397 (314 server + 63 agent-lsp + 20 trajectory) |
+| Upstream bugs found | 15 (6 servers affected) |
+| Upstream issues filed | 6 (1 unfiled: repo archived) |
 | Upstream fix PRs submitted | 5 (4 ours, 1 community) |
-| Clean scans (no bugs) | 23 |
+| Clean scans (no bugs) | 24 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -131,6 +131,18 @@ Servers tested by mcp-assert, bugs found, issues filed.
 |--------|----------|-----------|------------|----------|------|-------|
 | `grafana/mcp-grafana` | Go | stdio | 10 | 20% (10/50 tools, no Grafana backend) | 1 | [grafana/mcp-grafana#792](https://github.com/grafana/mcp-grafana/issues/792). `get_assertions` returns internal error (-32603) instead of `isError:true` on invalid timestamp. |
 
+### macOS (Swift)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `steipete/Peekaboo` | Swift | stdio | 6 | 27% (6/22 tools) | 1 | [steipete/Peekaboo#108](https://github.com/steipete/Peekaboo/issues/108). `image` returns internal error (-32603) instead of `isError:true` when Screen Recording permission is not granted. |
+
+### Research/AI (JavaScript)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `u14app/deep-research` | JavaScript | HTTP | 5 | 100% (5/5 tools) | 0 | Clean. All tools return `isError:true` with "Unsupported Provider" when no LLM credentials configured. |
+
 ### Internal (agent-lsp)
 
 | Server | Language | Transport | Assertions | Coverage | Bugs fixed |
@@ -193,9 +205,18 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **Issue:** [blazickjp/arxiv-mcp-server#92](https://github.com/blazickjp/arxiv-mcp-server/issues/92)
 - **Status:** Fix submitted ([#93](https://github.com/blazickjp/arxiv-mcp-server/pull/93)), pending merge
 
+### Bug #7: steipete/Peekaboo: image returns internal error without Screen Recording permission
+
+- **Severity:** Internal error instead of isError
+- **Tool:** `image`
+- **What:** Calling `image` with `mode: screen` when Screen Recording permission is not granted returns MCP internal error (-32603) instead of `isError: true`. Other tools in Peekaboo (like `permissions`) correctly handle missing permissions.
+- **Impact:** MCP clients treat -32603 as a server crash. Agents can't self-correct from internal errors.
+- **Issue:** [steipete/Peekaboo#108](https://github.com/steipete/Peekaboo/issues/108)
+- **Status:** Open
+
 ## Observations
 
-**Bug rate:** 14 bugs across 5 of 30 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server, one input validation gap in Grafana's MCP server, one missing isError flag in the arxiv server.
+**Bug rate:** 15 bugs across 6 of 32 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server, one input validation gap in Grafana's MCP server, one missing isError flag in the arxiv server, one internal error for missing macOS permissions in Peekaboo.
 
 **Clean scans are valuable too.** fastmcp's clean result (25K-star framework, zero bugs) validates the Python MCP ecosystem's foundations. We document clean scans as positive signals, not wasted effort.
 
