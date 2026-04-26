@@ -435,6 +435,30 @@ Skipped assertions are reported as `SKIP` and do not affect pass/fail counts. Us
 
 The `generate` command sets `skip: true` automatically on tools detected as destructive. Remove the field (or set it to `false`) when the assertion is ready to run.
 
+## Conditional skipping (`skip_unless_env`)
+
+Use `skip_unless_env` to skip an assertion unless a specific environment variable is set. This is useful for assertions that require credentials or a live backend:
+
+```yaml
+name: search_dashboards works with live Grafana
+skip_unless_env: GRAFANA_SERVICE_ACCOUNT_TOKEN
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+  env:
+    GRAFANA_SERVICE_ACCOUNT_TOKEN: "${GRAFANA_SERVICE_ACCOUNT_TOKEN}"
+assert:
+  tool: search_dashboards
+  args:
+    query: ""
+  expect:
+    not_error: true
+```
+
+When `GRAFANA_SERVICE_ACCOUNT_TOKEN` is not set in the environment, the assertion is reported as `SKIP`. When the variable is set, the assertion runs normally.
+
+This lets you keep live-backend and no-credentials assertions in the same suite. CI runs without credentials skip cleanly; local runs with credentials exercise the full suite.
+
 ## HTTP/SSE Transport
 
 By default, mcp-assert connects to servers over stdio (launching a subprocess). For servers that run over HTTP, set the `transport` and `url` fields:

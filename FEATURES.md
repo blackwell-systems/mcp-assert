@@ -205,16 +205,16 @@ Behavior:
 
 ---
 
-## Example Suites (44 suites, 6 languages, ~413 assertions)
+## Example Suites (44 suites, 6 languages, 462 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|
 | `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | Read, list, search, info, write, edit, create dir, move, directory tree, path traversal rejection (92% tool coverage) |
-| `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 | Stateful setup (create, query), relations, observations |
+| `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 9 | Stateful setup (create, query), relations, observations, 100% tool coverage (9/9 tools) |
 | `examples/mcp-time/` | `mcp-server-time` | Python | stdio | 5 | UTC, named timezone, conversion, invalid timezone rejection (100% tool coverage) |
 | `examples/mcp-fetch/` | `mcp-server-fetch` | Python | stdio | 3 | URL fetch, invalid URL rejection, unreachable host handling (100% tool coverage) |
-| `examples/mcp-git/` | `mcp-server-git` | Python | stdio | 7 | Status, log, branch, diff, show, invalid repo/ref rejection |
-| `examples/sqlite/` | `mcp-server-sqlite` | Python | stdio | 6 | SQL queries, joins, counts, schema introspection, error handling |
+| `examples/mcp-git/` | `mcp-server-git` | Python | stdio | 11 | Status, log, branch, diff, show, commit, add, reset, tag, invalid repo/ref rejection (92% tool coverage) |
+| `examples/sqlite/` | `mcp-server-sqlite` | Python | stdio | 9 | SQL queries, joins, counts, schema introspection, CREATE TABLE, INSERT, write query, error handling (100% tool coverage, 6/6 tools) |
 | `examples/mcp-everything-ts/` | `@modelcontextprotocol/server-everything` | TypeScript | stdio | 13 | Echo, sum, image, resource links, structured content, annotations, env, gzip, long-running operation (92% tool coverage) |
 | `examples/agent-lsp-go/` | agent-lsp + gopls | Go | stdio | 63 | All 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, build (100% tool coverage) |
 | `examples/mcp-go-everything/` | mark3labs/mcp-go everything | Go | stdio | 9 | echo, add, image, resource link, notification, long-running operation (100% tool coverage) |
@@ -239,14 +239,14 @@ Behavior:
 | `examples/terraform-mcp/` | hashicorp/terraform-mcp-server | Go | stdio | 5 | Provider, module, policy search (56% tool coverage) |
 | `examples/mongodb-mcp/` | mongodb/mongodb-mcp-server | TypeScript | stdio | 4 | Knowledge search, error handling. Clean scan. |
 | `examples/spring-mcp/` | jamesward/hello-spring-mcp-server | Kotlin | HTTP | 3 | First JVM server. 100% tool coverage (2/2 tools). |
-| `examples/playwright-mcp/` | microsoft/playwright-mcp | TypeScript | stdio | 10 | Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, invalid URL rejection |
+| `examples/playwright-mcp/` | microsoft/playwright-mcp | TypeScript | stdio | 14 | Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, tabs, navigate back, press key, wait for element, invalid URL rejection (67% tool coverage) |
 | `examples/openai-deep-research/` | openai/sample-deep-research-mcp | Python | stdio | 4 | 100% tool coverage (2/2 tools). Search and fetch against static JSON. |
 | `examples/google-storage-mcp/` | @google-cloud/storage-mcp | TypeScript | stdio | 6 | Bucket metadata, object listing, IAM policy, input validation. |
-| `examples/grafana-mcp/` | grafana/mcp-grafana | Go | stdio | 10 | 1 bug: get_assertions returns internal error on invalid timestamp. |
+| `examples/grafana-mcp/` | grafana/mcp-grafana | Go | stdio | 17 | 1 bug. 3 live-backend assertions via `skip_unless_env`. |
 | `examples/arxiv-mcp/` | blazickjp/arxiv-mcp-server | Python | stdio | 5 | 1 bug: isError flag not set on error content. |
 | `examples/aws-docs-mcp/` | awslabs/aws-documentation-mcp-server | Python | stdio | 4 | Search, recommend, no-results handling (100% tool coverage) |
 | `examples/exa-mcp/` | exa-labs/exa-mcp-server | JavaScript | stdio | 2 | Proper 401 with isError and API key guidance (100% tool coverage) |
-| `examples/git-mcp-idosal/` | onmyway133/git-mcp | TypeScript | stdio | 7 | Status, log, branches, diff, show, reflog, invalid repo rejection |
+| `examples/git-mcp-idosal/` | onmyway133/git-mcp | TypeScript | stdio | 14 | Status, log, branches, diff, show, reflog, stash, tag, blame, grep, cherry-pick, remote, invalid repo rejection (39% tool coverage, 14/36 tools) |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 | All 20 agent-lsp skill protocols: required tool call sequences, safety gates, absence checks, order constraints |
 
 ---
@@ -283,8 +283,8 @@ See the [Badge guide](https://blackwell-systems.github.io/mcp-assert/badge/) for
 |-----|------|------------|
 | `build-and-test` | Build, vet, 218 unit tests with `-race`, 20 trajectory assertions | - |
 | `e2e-filesystem` | 14 assertions against filesystem server | build-and-test |
-| `e2e-memory` | 5 assertions against memory server | build-and-test |
-| `e2e-sqlite` | 6 assertions against SQLite server (Python/uv) | build-and-test |
+| `e2e-memory` | 9 assertions against memory server | build-and-test |
+| `e2e-sqlite` | 9 assertions against SQLite server (Python/uv) | build-and-test |
 | `e2e-agent-lsp` | 63 assertions against agent-lsp + gopls | build-and-test |
 
 All e2e jobs upload JUnit XML artifacts.

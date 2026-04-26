@@ -167,11 +167,11 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `agent-lsp` + gopls | Go | 63 | 100% (50/50 tools) | Internal dogfooding server |
 | `agent-lsp` skill protocols | N/A | 20 | 20/20 skills | Trajectory assertions |
 | `@modelcontextprotocol/server-filesystem` | TypeScript | 14 | 92% | Read, list, search, info, write, edit, create dir, move, directory tree, path traversal rejection |
-| `@modelcontextprotocol/server-memory` | TypeScript | 5 | -- | Clean scan |
+| `@modelcontextprotocol/server-memory` | TypeScript | 9 | 100% (9/9 tools) | Clean scan |
 | `mcp-server-time` | Python | 5 | 100% (2/2 tools) | Clean. UTC, named timezone, conversion, invalid timezone rejection. |
 | `mcp-server-fetch` | Python | 3 | 100% (1/1 tool) | Clean. URL fetch, invalid URL, unreachable host. |
-| `mcp-server-git` | Python | 7 | 58% (7/12 tools) | Clean. Status, log, branch, diff, show, invalid repo/ref rejection. |
-| `mcp-server-sqlite` | Python | 6 | -- | Clean scan |
+| `mcp-server-git` | Python | 11 | 92% (11/12 tools) | Clean. Status, log, branch, diff, show, invalid repo/ref rejection. |
+| `mcp-server-sqlite` | Python | 9 | 100% (6/6 tools) | Clean scan |
 | `mark3labs/mcp-go` everything | Go | 9 | 100% | stdio |
 | `mark3labs/mcp-go` everything | Go | 5 | 100% | HTTP transport conformance |
 | `mark3labs/mcp-go` everything (prompts) | Go | 4 | 100% | prompts/list, prompts/get |
@@ -195,15 +195,15 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `makenotion/notion-mcp-server` | TypeScript | 22 | 100% (22/22 tools) | Clean. Official Notion server. |
 | `jamesward/hello-spring-mcp-server` | Kotlin | 3 | 100% (2/2 tools) | Clean. First JVM server. Spring AI MCP, HTTP transport. |
 | `mongodb/mongodb-mcp-server` | TypeScript | 4 | -- | Clean. Knowledge search, error handling. |
-| `microsoft/playwright-mcp` | TypeScript | 10 | 48% (10/21 tools) | Clean. Navigate, snapshot, screenshot, JS evaluate, console, network. |
+| `microsoft/playwright-mcp` | TypeScript | 14 | 67% (14/21 tools) | Clean. Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, tabs, navigate back, press key, wait for element. |
 | `openai/sample-deep-research-mcp` | Python | 4 | 100% (2/2 tools) | Clean. Search and fetch against static JSON. |
 | `@google-cloud/storage-mcp` | TypeScript | 6 | 35% (6/17 tools) | Clean. Bucket metadata, object listing, IAM policy. |
-| `grafana/mcp-grafana` | Go | 10 | 20% (10/50 tools) | 1 bug: get_assertions returns -32603 on invalid timestamp. |
+| `grafana/mcp-grafana` | Go | 17 | 34% (17/50 tools) | 1 bug. 3 live-backend assertions use `skip_unless_env`. |
 | `blazickjp/arxiv-mcp-server` | Python | 5 | 50% (5/10 tools) | 1 bug: isError flag not set on error content. |
 | `awslabs/aws-documentation-mcp-server` | Python | 4 | 100% (4/4 tools) | Clean. Search, recommend, no-results handling. |
 | `exa-labs/exa-mcp-server` | JavaScript | 2 | 100% (2/2 tools) | Clean. Proper 401 with API key guidance. |
-| `onmyway133/git-mcp` | TypeScript | 7 | 100% | Clean. Status, log, branches, diff, show, reflog. |
-| **Total** | **6 languages** | **~413** | | **44 suites** |
+| `onmyway133/git-mcp` | TypeScript | 14 | 39% (14/36 tools) | Clean. Status, log, branches, diff, show, reflog. |
+| **Total** | **6 languages** | **462** | | **44 suites** |
 
 ## Target servers (next)
 

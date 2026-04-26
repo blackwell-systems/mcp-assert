@@ -6,15 +6,15 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 35 |
+| Servers scanned | 38 |
 | Server suites | 44 total (42 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
 | Languages tested | 6 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 427 (344 server + 63 agent-lsp + 20 trajectory) |
-| Upstream bugs found | 15 (6 servers affected) |
+| Total assertions | 462 (379 server + 63 agent-lsp + 20 trajectory) |
+| Upstream bugs found | 15 (7 servers affected) |
 | Upstream issues filed | 6 (1 unfiled: repo archived) |
 | Upstream fix PRs submitted | 4 (3 ours pending, 1 closed after maintainer fix) |
-| Clean scans (no bugs) | 27 |
+| Clean scans (no bugs) | 31 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -24,11 +24,11 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
 | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | 92% (13/14) | 1 | [modelcontextprotocol/servers#4029](https://github.com/modelcontextprotocol/servers/issues/4029). `read_media_file` returns `type: "blob"`, violating MCP 3035-11-25 spec |
-| `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 | - | 0 | Clean |
+| `@modelcontextprotocol/server-memory` | TypeScript | stdio | 9 | 100% (9/9 tools) | 0 | Clean |
 | `mcp-server-time` | Python | stdio | 5 | 100% (2/2 tools) | 0 | Clean. UTC, named timezone, conversion, invalid timezone rejection. |
 | `mcp-server-fetch` | Python | stdio | 3 | 100% (1/1 tool) | 0 | Clean. URL fetch, invalid URL rejection, unreachable host handling. |
-| `mcp-server-git` | Python | stdio | 7 | 58% (7/12 tools) | 0 | Clean. Status, log, branch, diff, show, invalid repo/ref rejection. |
-| `mcp-server-sqlite` | Python | stdio | 6 | - | 0 | Clean |
+| `mcp-server-git` | Python | stdio | 11 | 92% (11/12 tools) | 0 | Clean. Status, log, branch, diff, show, invalid repo/ref rejection. |
+| `mcp-server-sqlite` | Python | stdio | 9 | 100% (6/6 tools) | 0 | Clean |
 | `@modelcontextprotocol/server-everything` | TypeScript | stdio | 13 | 92% (12/13 tools) | 0 | Clean. Official Anthropic reference server. |
 
 ### Community Framework SDKs
@@ -75,7 +75,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 |--------|----------|-----------|------------|----------|------|-------|
 | `makenotion/notion-mcp-server` | TypeScript | stdio | 22 | 100% (22/22 tools) | 0 | Clean. Official Notion server (4.2K stars). |
 | `mongodb/mongodb-mcp-server` | TypeScript | stdio | 4 | -- | 0 | Clean. Knowledge search, error handling. Exemplary error messages with LLM-aware guidance. |
-| `onmyway133/git-mcp` | TypeScript | stdio | 7 | 100% | 0 | Clean. Status, log, branches, diff, show, reflog, invalid repo rejection. |
+| `onmyway133/git-mcp` | TypeScript | stdio | 14 | 39% (14/36 tools) | 0 | Clean. Status, log, branches, diff, show, reflog, invalid repo rejection. |
 
 ### Go (additional)
 
@@ -105,7 +105,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `@playwright/mcp` | TypeScript | stdio | 14 | 67% (14/21 tools) | 0 | Clean. Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, tabs, navigate back, press key, wait for element, invalid URL rejection, empty page handling. |
+| `microsoft/playwright-mcp` | TypeScript | stdio | 14 | 67% (14/21 tools) | 0 | Clean. Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, tabs, navigate back, press key, wait for element, invalid URL rejection, empty page handling. |
 
 ### Research (Python)
 
@@ -129,7 +129,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `grafana/mcp-grafana` | Go | stdio | 10 | 20% (10/50 tools, no Grafana backend) | 1 | [grafana/mcp-grafana#792](https://github.com/grafana/mcp-grafana/issues/792). `get_assertions` returns internal error (-32603) instead of `isError:true` on invalid timestamp. |
+| `grafana/mcp-grafana` | Go | stdio | 17 | 34% (17/50 tools) | 1 | [grafana/mcp-grafana#792](https://github.com/grafana/mcp-grafana/issues/792). `get_assertions` returns internal error (-32603) instead of `isError:true` on invalid timestamp. 3 live-backend assertions use `skip_unless_env`. |
 
 ### macOS (Swift)
 
@@ -223,7 +223,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 ## Observations
 
-**Bug rate:** 15 bugs across 6 of 35 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server, one input validation gap in Grafana's MCP server, one missing isError flag in the arxiv server, one internal error for missing macOS permissions in Peekaboo.
+**Bug rate:** 15 bugs across 7 of 38 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server, one input validation gap in Grafana's MCP server, one missing isError flag in the arxiv server, one internal error for missing macOS permissions in Peekaboo.
 
 **Clean scans are valuable too.** fastmcp's clean result (25K-star framework, zero bugs) validates the Python MCP ecosystem's foundations. We document clean scans as positive signals, not wasted effort.
 

@@ -1,17 +1,17 @@
 # Examples
 
-mcp-assert ships with 44 suites for 35 MCP servers in 6 languages (Go, TypeScript, Python, Rust, Kotlin/Java, Swift), plus a trajectory suite that runs without a server. 3 transports: stdio, SSE, HTTP. ~413 total assertions.
+mcp-assert ships with 44 suites for 38 MCP servers in 6 languages (Go, TypeScript, Python, Rust, Kotlin/Java, Swift), plus a trajectory suite that runs without a server. 3 transports: stdio, SSE, HTTP. 462 total assertions.
 
 ## Summary
 
 | Suite | Server | Language | Transport | Assertions |
 |-------|--------|----------|-----------|------------|
 | `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 |
-| `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 |
+| `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 9 |
 | `examples/mcp-time/` | `mcp-server-time` | Python | stdio | 5 |
 | `examples/mcp-fetch/` | `mcp-server-fetch` | Python | stdio | 3 |
-| `examples/mcp-git/` | `mcp-server-git` | Python | stdio | 7 |
-| `examples/sqlite/` | `mcp-server-sqlite` | Python | stdio | 6 |
+| `examples/mcp-git/` | `mcp-server-git` | Python | stdio | 11 |
+| `examples/sqlite/` | `mcp-server-sqlite` | Python | stdio | 9 |
 | `examples/mcp-everything-ts/` | `@modelcontextprotocol/server-everything` | TypeScript | stdio | 13 |
 | `examples/fastmcp-testing-demo/` | PrefectHQ/fastmcp testing_demo | Python | stdio | 16 |
 | `examples/fastmcp-testing-demo-sse/` | PrefectHQ/fastmcp testing_demo | Python | SSE | 11 |
@@ -36,14 +36,14 @@ mcp-assert ships with 44 suites for 35 MCP servers in 6 languages (Go, TypeScrip
 | `examples/terraform-mcp/` | hashicorp/terraform-mcp-server | Go | stdio | 5 |
 | `examples/mongodb-mcp/` | mongodb/mongodb-mcp-server | TypeScript | stdio | 4 |
 | `examples/spring-mcp/` | jamesward/hello-spring-mcp-server | Kotlin | HTTP | 3 |
-| `examples/playwright-mcp/` | microsoft/playwright-mcp | TypeScript | stdio | 10 |
+| `examples/playwright-mcp/` | microsoft/playwright-mcp | TypeScript | stdio | 14 |
 | `examples/openai-deep-research/` | openai/sample-deep-research-mcp | Python | stdio | 4 |
 | `examples/google-storage-mcp/` | @google-cloud/storage-mcp | TypeScript | stdio | 6 |
-| `examples/grafana-mcp/` | grafana/mcp-grafana | Go | stdio | 10 |
+| `examples/grafana-mcp/` | grafana/mcp-grafana | Go | stdio | 17 |
 | `examples/arxiv-mcp/` | blazickjp/arxiv-mcp-server | Python | stdio | 5 |
 | `examples/aws-docs-mcp/` | awslabs/aws-documentation-mcp-server | Python | stdio | 4 |
 | `examples/exa-mcp/` | exa-labs/exa-mcp-server | JavaScript | stdio | 2 |
-| `examples/git-mcp-idosal/` | onmyway133/git-mcp | TypeScript | stdio | 7 |
+| `examples/git-mcp-idosal/` | onmyway133/git-mcp | TypeScript | stdio | 14 |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 |
 
 ---
@@ -63,7 +63,7 @@ mcp-assert run --suite examples/filesystem --fixture examples/filesystem/fixture
 
 **Directory:** `examples/memory/`
 
-Tests the official `@modelcontextprotocol/server-memory`. 5 assertions with **stateful setup**: create entities, add observations, create relations, search nodes, and verify empty search returns nothing.
+Tests the official `@modelcontextprotocol/server-memory`. 9 assertions with **stateful setup** and 100% tool coverage (9/9 tools): create entities, add observations, create relations, search nodes, open nodes, delete entities, delete observations, delete relations, and verify empty search returns nothing.
 
 ```bash
 npm install -g @modelcontextprotocol/server-memory
@@ -74,7 +74,7 @@ mcp-assert run --suite examples/memory
 
 **Directory:** `examples/sqlite/`
 
-Tests the official `mcp-server-sqlite` (Python). 6 assertions: list tables, SELECT queries, COUNT, JOINs, describe table schema, and error handling for invalid SQL. Fixture is a pre-built `.db` file.
+Tests the official `mcp-server-sqlite` (Python). 9 assertions with 100% tool coverage (6/6 tools): list tables, SELECT queries, COUNT, JOINs, describe table schema, CREATE TABLE, INSERT, write query, and error handling for invalid SQL. Fixture is a pre-built `.db` file.
 
 ```bash
 uvx mcp-server-sqlite  # or: pip install mcp-server-sqlite
@@ -271,7 +271,7 @@ mcp-assert run --suite examples/mcp-fetch
 
 **Directory:** `examples/mcp-git/`
 
-Tests the official `mcp-server-git`. 7 assertions: status, log, branch, diff, show, invalid repo rejection, and invalid ref handling. 58% tool coverage (7/12 tools).
+Tests the official `mcp-server-git`. 11 assertions: status, log, branch, diff, show, commit, add, reset, tag, invalid repo rejection, and invalid ref handling. 92% tool coverage (11/12 tools).
 
 ```bash
 mcp-assert run --suite examples/mcp-git
@@ -381,7 +381,7 @@ mcp-assert run --suite examples/spring-mcp
 
 **Directory:** `examples/playwright-mcp/`
 
-Tests `microsoft/playwright-mcp` (31K stars). 10 assertions: navigate, snapshot, screenshot, JS evaluate, console messages, network requests, resize, close, invalid URL rejection, empty page handling. 48% tool coverage (10/21 tools). Clean scan.
+Tests `microsoft/playwright-mcp` (31K stars). 14 assertions: navigate, snapshot, screenshot, JS evaluate, console messages, network requests, resize, close, tabs, navigate back, press key, wait for element, invalid URL rejection, empty page handling. 67% tool coverage (14/21 tools). Clean scan.
 
 ```bash
 mcp-assert run --suite examples/playwright-mcp
@@ -411,7 +411,7 @@ mcp-assert run --suite examples/google-storage-mcp
 
 **Directory:** `examples/grafana-mcp/`
 
-Tests `grafana/mcp-grafana`. 10 assertions. 1 bug found: `get_assertions` returns internal error (-32603) instead of `isError:true` on invalid timestamps. Filed [grafana/mcp-grafana#792](https://github.com/grafana/mcp-grafana/issues/792).
+Tests `grafana/mcp-grafana`. 17 assertions (14 no-credentials + 3 live-backend via `skip_unless_env`). 1 bug found: `get_assertions` returns internal error (-32603) instead of `isError:true` on invalid timestamps. Filed [grafana/mcp-grafana#792](https://github.com/grafana/mcp-grafana/issues/792).
 
 ```bash
 mcp-assert run --suite examples/grafana-mcp
@@ -451,7 +451,7 @@ mcp-assert run --suite examples/exa-mcp
 
 **Directory:** `examples/git-mcp-idosal/`
 
-Tests `onmyway133/git-mcp`. 7 assertions: status, log, branches, diff, show, reflog, invalid repo rejection. 100% clean.
+Tests `onmyway133/git-mcp`. 14 assertions: status, log, branches, diff, show, reflog, stash, tag, blame, grep, cherry-pick, remote, invalid repo rejection. 39% tool coverage (14/36 tools). Clean.
 
 ```bash
 mcp-assert run --suite examples/git-mcp-idosal
