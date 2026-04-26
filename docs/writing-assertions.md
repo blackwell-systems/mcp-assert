@@ -756,6 +756,7 @@ Each assertion can combine multiple `expect` checks. All must pass for the asser
 | Assertion | What it checks | Example |
 |---|---|---|
 | `contains` | Response includes all listed strings | `contains: ["Alice", "admin"]` |
+| `contains_any` | Response includes at least one of the listed strings | `contains_any: ["Alice", "Bob"]` |
 | `not_contains` | Response excludes all listed strings | `not_contains: ["password", "secret"]` |
 | `equals` | Response exactly matches (whitespace-trimmed) | `equals: "42"` |
 | `matches_regex` | Response matches all regex patterns | `matches_regex: ["\\d+ rows"]` |
@@ -782,6 +783,8 @@ Each assertion can combine multiple `expect` checks. All must pass for the asser
 | Assertion | What it checks | Example |
 |---|---|---|
 | `file_contains` | File on disk has expected text after tool runs | `file_contains: {"{{fixture}}/out.txt": "done"}` |
+| `file_not_contains` | File on disk does NOT contain specified text after tool runs | `file_not_contains: {"{{fixture}}/out.txt": "secret"}` |
+| `file_not_exists` | File does NOT exist on disk after tool runs | `file_not_exists: ["{{fixture}}/deleted.txt"]` |
 | `file_unchanged` | File was not modified by the tool | `file_unchanged: ["{{fixture}}/readonly.txt"]` |
 
 ### Advanced assertions

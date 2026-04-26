@@ -3,7 +3,7 @@
 // The package is organized into focused files:
 //   - types.go       — Suite, Assertion, Expect, Result, and all block types
 //   - loader.go      — YAML file loading with subdirectory recursion
-//   - checker.go     — 15 assertion type implementations (contains, json_path, etc.)
+//   - checker.go     — 18 assertion type implementations (contains, json_path, etc.)
 //   - trajectory.go  — 4 trajectory assertion types (order, presence, absence, args_contain)
 //   - logging*.go    — Logging assertion block and checker
 //   - sampling*.go   — Sampling assertion block type

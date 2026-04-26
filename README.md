@@ -161,14 +161,14 @@ Then just run `pytest`. See `pytest-plugin/README.md` for all options.
 Full documentation is available at [blackwell-systems.github.io/mcp-assert](https://blackwell-systems.github.io/mcp-assert):
 
 - [Getting Started](https://blackwell-systems.github.io/mcp-assert/getting-started/): install, scaffold, first run
-- [Writing Assertions](https://blackwell-systems.github.io/mcp-assert/writing-assertions/): YAML format, all 15 assertion types + 4 trajectory types, 7 block types (assert, assert_prompts, assert_resources, assert_completion, assert_sampling, assert_logging, trajectory), setup steps, capture, fixtures
+- [Writing Assertions](https://blackwell-systems.github.io/mcp-assert/writing-assertions/): YAML format, all 18 assertion types + 4 trajectory types, 7 block types (assert, assert_prompts, assert_resources, assert_completion, assert_sampling, assert_logging, trajectory), setup steps, capture, fixtures
 - [CLI Reference](https://blackwell-systems.github.io/mcp-assert/cli/): full command reference with flags and examples
-- [Examples](https://blackwell-systems.github.io/mcp-assert/examples/): 19 example suites across 4 languages (303 assertions)
+- [Examples](https://blackwell-systems.github.io/mcp-assert/examples/): 39 example suites across 5 languages (386 assertions)
 - [CI Integration](https://blackwell-systems.github.io/mcp-assert/ci-integration/): GitHub Action, JUnit XML, regression detection
 - [Badge](https://blackwell-systems.github.io/mcp-assert/badge/): add the "Works with mcp-assert" badge to your server README
 - [Architecture](https://blackwell-systems.github.io/mcp-assert/architecture/): internals and design decisions
 - [Roadmap](https://blackwell-systems.github.io/mcp-assert/roadmap/): what's shipped and what's next
-- [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): real bugs found across 10 servers, 2 upstream issues filed
+- [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): 14 bugs found across 5 servers, 5 upstream issues filed, 5 fix PRs submitted
 - [Dogfooding](https://blackwell-systems.github.io/mcp-assert/dogfooding/): findings from testing our own servers
 
 <p align="center">

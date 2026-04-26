@@ -191,13 +191,17 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 
 ---
 
-## Example Suites (27 suites, 5 languages, 303 assertions)
+## Example Suites (39 suites, 5 languages, 386 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|
 | `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 | Read, list, search, info, write, edit, create dir, move, directory tree, path traversal rejection (92% tool coverage) |
-| `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 | Stateful setup (create → query), relations, observations |
+| `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 | Stateful setup (create, query), relations, observations |
+| `examples/mcp-time/` | `mcp-server-time` | Python | stdio | 5 | UTC, named timezone, conversion, invalid timezone rejection (100% tool coverage) |
+| `examples/mcp-fetch/` | `mcp-server-fetch` | Python | stdio | 3 | URL fetch, invalid URL rejection, unreachable host handling (100% tool coverage) |
+| `examples/mcp-git/` | `mcp-server-git` | Python | stdio | 7 | Status, log, branch, diff, show, invalid repo/ref rejection |
 | `examples/sqlite/` | `mcp-server-sqlite` | Python | stdio | 6 | SQL queries, joins, counts, schema introspection, error handling |
+| `examples/mcp-everything-ts/` | `@modelcontextprotocol/server-everything` | TypeScript | stdio | 13 | Echo, sum, image, resource links, structured content, annotations, env, gzip, long-running operation (92% tool coverage) |
 | `examples/agent-lsp-go/` | agent-lsp + gopls | Go | stdio | 63 | All 50 tools: navigation, refactoring, analysis, session lifecycle, workspace, build (100% tool coverage) |
 | `examples/mcp-go-everything/` | mark3labs/mcp-go everything | Go | stdio | 9 | echo, add, image, resource link, notification, long-running operation (100% tool coverage) |
 | `examples/mcp-go-typed-tools/` | mark3labs/mcp-go typed_tools | Go | stdio | 3 | Typed greeting with required/optional params, error case |
@@ -211,8 +215,25 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 | `examples/mcp-go-everything-completion/` | mark3labs/mcp-go everything | Go | stdio | 3 | `completion/complete` for prompt argument, resource URI, and empty prefix |
 | `examples/mcp-go-everything-logging/` | mark3labs/mcp-go everything | Go | stdio | 2 | `logging/setLevel` with level setting and log message capture |
 | `examples/fastmcp-testing-demo/` | PrefectHQ/fastmcp testing_demo | Python | stdio | 16 | add, greet, async_multiply: edge cases, defaults, negative tests, missing-arg error (100% tool coverage); resources (list, read static, read parameterized), prompts (list, get with arguments), all three MCP feature categories |
+| `examples/fastmcp-testing-demo-sse/` | PrefectHQ/fastmcp testing_demo | Python | SSE | 11 | Same server as stdio suite, verified over SSE transport. First SSE coverage. |
 | `examples/github-mcp/` | github/github-mcp-server | Go | stdio | 20 | 17 read-only tools across 7 toolsets: context, repos, git, issues, pull requests, users, gists |
-| `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 | All 20 agent-lsp skill protocols: required tool call sequences, safety gates (e.g. get_references before apply_edit), absence checks (e.g. no apply_edit in simulate), order constraints |
+| `examples/rmcp-counter/` | 4t145/rmcp counter | Rust | stdio | 14 | 100% tool coverage (6/6 tools + resources + prompts). Bug: get_value mutates state. |
+| `examples/rust-filesystem/` | rust-mcp-stack/rust-mcp-filesystem | Rust | stdio | 23 | Read, list, search, write, edit, zip/unzip, path traversal rejection (92% tool coverage) |
+| `examples/excel-mcp/` | haris-musa/excel-mcp-server | Python | stdio | 15 | Workbook, sheets, data round-trip, formulas, charts, pivots, formatting, merge, validation |
+| `examples/antvis-chart/` | antvis/mcp-server-chart | TypeScript | stdio | 25 | 25 chart types tested. 9 bugs: unhandled exceptions on default input. |
+| `examples/notion-mcp/` | makenotion/notion-mcp-server | TypeScript | stdio | 22 | 100% tool coverage (22/22 tools). Clean scan. |
+| `examples/terraform-mcp/` | hashicorp/terraform-mcp-server | Go | stdio | 5 | Provider, module, policy search (56% tool coverage) |
+| `examples/mongodb-mcp/` | mongodb/mongodb-mcp-server | TypeScript | stdio | 4 | Knowledge search, error handling. Clean scan. |
+| `examples/spring-mcp/` | jamesward/hello-spring-mcp-server | Kotlin | HTTP | 3 | First JVM server. 100% tool coverage (2/2 tools). |
+| `examples/playwright-mcp/` | microsoft/playwright-mcp | TypeScript | stdio | 10 | Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, invalid URL rejection |
+| `examples/openai-deep-research/` | openai/sample-deep-research-mcp | Python | stdio | 4 | 100% tool coverage (2/2 tools). Search and fetch against static JSON. |
+| `examples/google-storage-mcp/` | @google-cloud/storage-mcp | TypeScript | stdio | 6 | Bucket metadata, object listing, IAM policy, input validation. |
+| `examples/grafana-mcp/` | grafana/mcp-grafana | Go | stdio | 10 | 1 bug: get_assertions returns internal error on invalid timestamp. |
+| `examples/arxiv-mcp/` | blazickjp/arxiv-mcp-server | Python | stdio | 5 | 1 bug: isError flag not set on error content. |
+| `examples/aws-docs-mcp/` | awslabs/aws-documentation-mcp-server | Python | stdio | 4 | Search, recommend, no-results handling (100% tool coverage) |
+| `examples/exa-mcp/` | exa-labs/exa-mcp-server | JavaScript | stdio | 2 | Proper 401 with isError and API key guidance (100% tool coverage) |
+| `examples/git-mcp-idosal/` | onmyway133/git-mcp | TypeScript | stdio | 7 | Status, log, branches, diff, show, reflog, invalid repo rejection |
+| `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 | All 20 agent-lsp skill protocols: required tool call sequences, safety gates, absence checks, order constraints |
 
 ---
 
@@ -260,7 +281,7 @@ All e2e jobs upload JUnit XML artifacts.
 
 | Package | Tests | What |
 |---------|-------|------|
-| `internal/assertion` | 53 | All 15 assertion types (including min_progress), loader (YAML parsing, subdirs, errors), snapshot comparison, CheckProgress, completion JSON, logging checker, trajectory checker |
+| `internal/assertion` | 53 | All 18 assertion types (including min_progress, contains_any, file_not_contains, file_not_exists), loader (YAML parsing, subdirs, errors), snapshot comparison, CheckProgress, completion JSON, logging checker, trajectory checker |
 | `internal/report` | 42 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare, diff formatting |
 | `internal/runner` | 123 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, transport selection (stdio/SSE/HTTP), URL validation, generate schema parsing, stub generation, filename sanitization, CLI error paths, client capabilities (handler unit tests, fixture substitution, capability path selection, bad-server error paths), prompt assertions (list/get/validation/fixture), progress capture, fix mode, fixture isolation, intercept, logging, sampling, completion |
 | Total | 218 | Race-detector clean |
@@ -399,7 +420,7 @@ cmd/mcp-assert/main.go     CLI entry, command dispatch
 internal/assertion/
   types.go                  Suite, Assertion, Expect, Result types + all block types
   loader.go                 YAML file loading, subdirectory recursion
-  checker.go                15 assertion type implementations
+  checker.go                18 assertion type implementations
   trajectory.go             4 trajectory assertion types (order, presence, absence, args_contain)
   sampling_types.go         SamplingAssertBlock type
   logging_types.go          LoggingAssertBlock, LoggingExpect, LogMessage types

@@ -70,7 +70,7 @@ pytest --mcp-suite evals/
 ```
 Each YAML assertion becomes a pytest test item with pass/fail/skip semantics. Configurable via `pyproject.toml` (`mcp_suite`, `mcp_fixture`, `mcp_timeout`). The Go binary handles all MCP logic; the plugin is a 170-line bridge.
 
-Source: `pytest-plugin/` directory in this repo. Not yet published to PyPI (manual `twine upload` required).
+Source: `pytest-plugin/` directory in this repo. Published to PyPI automatically by the `pytest-plugin-publish` job in `release.yml` on each `v*` tag.
 
 ### "Works with mcp-assert" Badge
 Static and dynamic (CI-verified) badge for MCP server READMEs. Every badge is a backlink. See the [Badge guide](badge.md).
@@ -106,6 +106,7 @@ A single `git tag` triggers the entire pipeline. Every channel is automated.
    | `release` (GoReleaser) | Builds binaries for 6 platforms, creates GitHub Release, pushes Homebrew formula to [homebrew-tap](https://github.com/blackwell-systems/homebrew-tap), pushes Scoop manifest to [scoop-bucket](https://github.com/blackwell-systems/scoop-bucket) | GitHub Releases, Homebrew, Scoop |
    | `npm-publish` | Runs `scripts/npm-publish.sh`, downloads binaries from the Release, publishes platform packages to npm | npm |
    | `pypi-publish` | Runs `scripts/pypi-publish.sh`, builds platform wheels with Go binary inside, publishes to PyPI with twine | PyPI |
+   | `pytest-plugin-publish` | Builds and publishes the `pytest-mcp-assert` plugin to PyPI with twine | PyPI (pytest plugin) |
 
 4. **Verify** (after CI completes, ~5 minutes):
    ```bash
@@ -167,6 +168,9 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `agent-lsp` skill protocols | N/A | 20 | 20/20 skills | Trajectory assertions |
 | `@modelcontextprotocol/server-filesystem` | TypeScript | 14 | 92% | Read, list, search, info, write, edit, create dir, move, directory tree, path traversal rejection |
 | `@modelcontextprotocol/server-memory` | TypeScript | 5 | -- | Clean scan |
+| `mcp-server-time` | Python | 5 | 100% (2/2 tools) | Clean. UTC, named timezone, conversion, invalid timezone rejection. |
+| `mcp-server-fetch` | Python | 3 | 100% (1/1 tool) | Clean. URL fetch, invalid URL, unreachable host. |
+| `mcp-server-git` | Python | 7 | 58% (7/12 tools) | Clean. Status, log, branch, diff, show, invalid repo/ref rejection. |
 | `mcp-server-sqlite` | Python | 6 | -- | Clean scan |
 | `mark3labs/mcp-go` everything | Go | 9 | 100% | stdio |
 | `mark3labs/mcp-go` everything | Go | 5 | 100% | HTTP transport conformance |
@@ -180,22 +184,31 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `mark3labs/mcp-go` sampling_server | Go | 3 | 100% | Bidirectional sampling |
 | `mark3labs/mcp-go` elicitation | Go | 4 | 100% | Accept, decline, cancel, validation |
 | `PrefectHQ/fastmcp` testing_demo | Python | 16 | 100% | All 3 MCP feature categories |
+| `PrefectHQ/fastmcp` testing_demo (SSE) | Python | 11 | 100% | SSE transport verification |
 | `github/github-mcp-server` | Go | 20 | -- | 17 read-only tools across 7 toolsets: context, repos, git, issues, pull requests, users, gists |
 | `4t145/rmcp` counter | Rust | 14 | 100% (6/6 tools + resources + prompts) | First Rust server. Bug found: get_value mutates state. |
 | `rust-mcp-stack/rust-mcp-filesystem` | Rust | 23 | 92% (22/24 tools) | Clean scan. Read, list, search, write, edit, zip/unzip, path traversal. |
 | `haris-musa/excel-mcp-server` | Python | 15 | 52% (13/25 tools) | Clean. Workbook, sheets, data, formulas, charts, pivots, formatting. |
-| `antvis/mcp-server-chart` | TypeScript | 16 | 59% (16/27 tools) | 9 bugs found ([#291](https://github.com/antvis/mcp-server-chart/issues/291)). Unhandled exceptions on default input. |
+| `antvis/mcp-server-chart` | TypeScript | 25 | 93% (25/27 tools) | 9 bugs found ([#291](https://github.com/antvis/mcp-server-chart/issues/291)). Unhandled exceptions on default input. |
 | `@modelcontextprotocol/server-everything` | TypeScript | 13 | 92% (12/13 tools) | Clean. Official Anthropic reference server. |
 | `hashicorp/terraform-mcp-server` | Go | 5 | 56% (5/9 tools) | Clean. Provider, module, policy search. |
 | `makenotion/notion-mcp-server` | TypeScript | 22 | 100% (22/22 tools) | Clean. Official Notion server. |
 | `jamesward/hello-spring-mcp-server` | Kotlin | 3 | 100% (2/2 tools) | Clean. First JVM server. Spring AI MCP, HTTP transport. |
-| **Total** | **5 languages** | **303** | | **26 suites** |
+| `mongodb/mongodb-mcp-server` | TypeScript | 4 | -- | Clean. Knowledge search, error handling. |
+| `microsoft/playwright-mcp` | TypeScript | 10 | 48% (10/21 tools) | Clean. Navigate, snapshot, screenshot, JS evaluate, console, network. |
+| `openai/sample-deep-research-mcp` | Python | 4 | 100% (2/2 tools) | Clean. Search and fetch against static JSON. |
+| `@google-cloud/storage-mcp` | TypeScript | 6 | 35% (6/17 tools) | Clean. Bucket metadata, object listing, IAM policy. |
+| `grafana/mcp-grafana` | Go | 10 | 20% (10/50 tools) | 1 bug: get_assertions returns -32603 on invalid timestamp. |
+| `blazickjp/arxiv-mcp-server` | Python | 5 | 50% (5/10 tools) | 1 bug: isError flag not set on error content. |
+| `awslabs/aws-documentation-mcp-server` | Python | 4 | 100% (4/4 tools) | Clean. Search, recommend, no-results handling. |
+| `exa-labs/exa-mcp-server` | JavaScript | 2 | 100% (2/2 tools) | Clean. Proper 401 with API key guidance. |
+| `onmyway133/git-mcp` | TypeScript | 7 | 100% | Clean. Status, log, branches, diff, show, reflog. |
+| **Total** | **5 languages** | **386** | | **39 suites** |
 
 ## Target servers (next)
 
 | Server | Language | Stars | Why target |
 |--------|----------|-------|------------|
-| `github/github-mcp-server` | Go | 28K+ | Most popular MCP server. Expand beyond initial 6 assertions. Responsive team. |
 | Rust MCP servers (`rmcp` SDK) | Rust | -- | Underserved community, no existing testing tools |
 | Java MCP servers (Spring, Quarkus) | Java | -- | Enterprise community, high signal |
 | C# MCP servers (csharp-sdk) | C# | -- | .NET community, underserved |

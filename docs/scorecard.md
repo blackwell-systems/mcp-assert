@@ -7,8 +7,8 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Metric | Count |
 |--------|-------|
 | Servers scanned | 30 |
-| Server suites | 37 (including HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
-| Languages tested | 5 (Go, TypeScript, Python, Rust, JavaScript) |
+| Server suites | 39 total (37 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
+| Languages tested | 5 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
 | Total assertions | 386 (303 server + 63 agent-lsp + 20 trajectory) |
 | Upstream bugs found | 14 (5 servers affected) |
@@ -29,6 +29,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | `mcp-server-fetch` | Python | stdio | 3 | 100% (1/1 tool) | 0 | Clean. URL fetch, invalid URL rejection, unreachable host handling. |
 | `mcp-server-git` | Python | stdio | 7 | 58% (7/12 tools) | 0 | Clean. Status, log, branch, diff, show, invalid repo/ref rejection. |
 | `mcp-server-sqlite` | Python | stdio | 6 | - | 0 | Clean |
+| `@modelcontextprotocol/server-everything` | TypeScript | stdio | 13 | 92% (12/13 tools) | 0 | Clean. Official Anthropic reference server. |
 
 ### Community Framework SDKs
 
@@ -46,6 +47,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | `mark3labs/mcp-go` everything (completion) | Go | stdio | 3 | 100% | 0 | Clean. `completion/complete` for prompt argument, resource URI, and empty prefix. |
 | `mark3labs/mcp-go` everything (logging) | Go | stdio | 2 | 100% | 0 | Clean. `logging/setLevel` with info level, log message capture after tool call. |
 | `PrefectHQ/fastmcp` testing_demo | Python | stdio | 16 | 100% tools + resources + prompts | 0 | Clean. All three MCP feature categories: 11 tool assertions (100% coverage), 3 resource assertions (list, read static, read parameterized), 2 prompt assertions (list, get with argument). |
+| `PrefectHQ/fastmcp` testing_demo (SSE) | Python | SSE | 11 | 100% tools | 0 | Same server verified over SSE transport. First SSE coverage. |
 | `github/github-mcp-server` | Go | stdio | 20 | -- (read-only subset, 17 tools across 7 toolsets) | 0 | Clean. Context, repos, git, issues, pull requests, users, gists toolsets. |
 
 ### Rust SDK
@@ -65,7 +67,21 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `antvis/mcp-server-chart` | TypeScript | stdio | 16 | 59% (16/27 tools) | 9 | [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291). 9 tools crash with unhandled exceptions on default/minimal input. Stack traces leak to agents. |
+| `antvis/mcp-server-chart` | TypeScript | stdio | 25 | 93% (25/27 tools) | 9 | [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291). 9 tools crash with unhandled exceptions on default/minimal input. Stack traces leak to agents. |
+
+### TypeScript (additional)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `makenotion/notion-mcp-server` | TypeScript | stdio | 22 | 100% (22/22 tools) | 0 | Clean. Official Notion server (4.2K stars). |
+| `mongodb/mongodb-mcp-server` | TypeScript | stdio | 4 | -- | 0 | Clean. Knowledge search, error handling. Exemplary error messages with LLM-aware guidance. |
+| `onmyway133/git-mcp` | TypeScript | stdio | 7 | 100% | 0 | Clean. Status, log, branches, diff, show, reflog, invalid repo rejection. |
+
+### Go (additional)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `hashicorp/terraform-mcp-server` | Go | stdio | 5 | 56% (5/9 tools) | 0 | Clean. Provider, module, policy search. |
 
 ### JVM (Kotlin/Java)
 
@@ -179,7 +195,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 ## Observations
 
-**Bug rate:** 14 bugs across 5 of 27 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server, one input validation gap in Grafana's MCP server, one missing isError flag in the arxiv server.
+**Bug rate:** 14 bugs across 5 of 30 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server, one input validation gap in Grafana's MCP server, one missing isError flag in the arxiv server.
 
 **Clean scans are valuable too.** fastmcp's clean result (25K-star framework, zero bugs) validates the Python MCP ecosystem's foundations. We document clean scans as positive signals, not wasted effort.
 

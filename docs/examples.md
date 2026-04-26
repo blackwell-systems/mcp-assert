@@ -1,6 +1,6 @@
 # Examples
 
-mcp-assert ships with 27 suites (17 server suites + 1 trajectory suite) for 12 MCP servers in three languages (Go, TypeScript, Python), plus a trajectory suite that runs without a server. All built-in server suites use stdio transport except the HTTP conformance suite. 303 total assertions.
+mcp-assert ships with 39 suites for 30 MCP servers in 5 languages (Go, TypeScript, Python, Rust, Kotlin/Java), plus a trajectory suite that runs without a server. 3 transports: stdio, SSE, HTTP. 386 total assertions.
 
 ## Summary
 
@@ -8,8 +8,13 @@ mcp-assert ships with 27 suites (17 server suites + 1 trajectory suite) for 12 M
 |-------|--------|----------|-----------|------------|
 | `examples/filesystem/` | `@modelcontextprotocol/server-filesystem` | TypeScript | stdio | 14 |
 | `examples/memory/` | `@modelcontextprotocol/server-memory` | TypeScript | stdio | 5 |
+| `examples/mcp-time/` | `mcp-server-time` | Python | stdio | 5 |
+| `examples/mcp-fetch/` | `mcp-server-fetch` | Python | stdio | 3 |
+| `examples/mcp-git/` | `mcp-server-git` | Python | stdio | 7 |
 | `examples/sqlite/` | `mcp-server-sqlite` | Python | stdio | 6 |
+| `examples/mcp-everything-ts/` | `@modelcontextprotocol/server-everything` | TypeScript | stdio | 13 |
 | `examples/fastmcp-testing-demo/` | PrefectHQ/fastmcp testing_demo | Python | stdio | 16 |
+| `examples/fastmcp-testing-demo-sse/` | PrefectHQ/fastmcp testing_demo | Python | SSE | 11 |
 | `examples/agent-lsp-go/` | agent-lsp + gopls | Go | stdio | 63 |
 | `examples/mcp-go-everything/` | mark3labs/mcp-go everything | Go | stdio | 9 |
 | `examples/mcp-go-everything-http/` | mark3labs/mcp-go everything | Go | HTTP | 5 |
@@ -23,6 +28,22 @@ mcp-assert ships with 27 suites (17 server suites + 1 trajectory suite) for 12 M
 | `examples/mcp-go-everything-completion/` | mark3labs/mcp-go everything | Go | stdio | 3 |
 | `examples/mcp-go-everything-logging/` | mark3labs/mcp-go everything | Go | stdio | 2 |
 | `examples/github-mcp/` | github/github-mcp-server | Go | stdio | 20 |
+| `examples/rmcp-counter/` | 4t145/rmcp counter | Rust | stdio | 14 |
+| `examples/rust-filesystem/` | rust-mcp-stack/rust-mcp-filesystem | Rust | stdio | 23 |
+| `examples/excel-mcp/` | haris-musa/excel-mcp-server | Python | stdio | 15 |
+| `examples/antvis-chart/` | antvis/mcp-server-chart | TypeScript | stdio | 25 |
+| `examples/notion-mcp/` | makenotion/notion-mcp-server | TypeScript | stdio | 22 |
+| `examples/terraform-mcp/` | hashicorp/terraform-mcp-server | Go | stdio | 5 |
+| `examples/mongodb-mcp/` | mongodb/mongodb-mcp-server | TypeScript | stdio | 4 |
+| `examples/spring-mcp/` | jamesward/hello-spring-mcp-server | Kotlin | HTTP | 3 |
+| `examples/playwright-mcp/` | microsoft/playwright-mcp | TypeScript | stdio | 10 |
+| `examples/openai-deep-research/` | openai/sample-deep-research-mcp | Python | stdio | 4 |
+| `examples/google-storage-mcp/` | @google-cloud/storage-mcp | TypeScript | stdio | 6 |
+| `examples/grafana-mcp/` | grafana/mcp-grafana | Go | stdio | 10 |
+| `examples/arxiv-mcp/` | blazickjp/arxiv-mcp-server | Python | stdio | 5 |
+| `examples/aws-docs-mcp/` | awslabs/aws-documentation-mcp-server | Python | stdio | 4 |
+| `examples/exa-mcp/` | exa-labs/exa-mcp-server | JavaScript | stdio | 2 |
+| `examples/git-mcp-idosal/` | onmyway133/git-mcp | TypeScript | stdio | 7 |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 |
 
 ---
@@ -224,6 +245,216 @@ Or if `github-mcp-server` is already in your PATH:
 ```bash
 # Create a token at https://github.com/settings/tokens with repo + read:user scopes
 GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_TOKEN mcp-assert run --suite examples/github-mcp
+```
+
+## Anthropic time server. Python
+
+**Directory:** `examples/mcp-time/`
+
+Tests the official `mcp-server-time`. 5 assertions: UTC time, named timezone, time conversion, invalid timezone rejection, and named timezone validation. 100% tool coverage (2/2 tools).
+
+```bash
+mcp-assert run --suite examples/mcp-time
+```
+
+## Anthropic fetch server. Python
+
+**Directory:** `examples/mcp-fetch/`
+
+Tests the official `mcp-server-fetch`. 3 assertions: URL fetch, invalid URL rejection, and unreachable host handling. 100% tool coverage (1/1 tool).
+
+```bash
+mcp-assert run --suite examples/mcp-fetch
+```
+
+## Anthropic git server. Python
+
+**Directory:** `examples/mcp-git/`
+
+Tests the official `mcp-server-git`. 7 assertions: status, log, branch, diff, show, invalid repo rejection, and invalid ref handling. 58% tool coverage (7/12 tools).
+
+```bash
+mcp-assert run --suite examples/mcp-git
+```
+
+## Anthropic everything server. TypeScript
+
+**Directory:** `examples/mcp-everything-ts/`
+
+Tests the official `@modelcontextprotocol/server-everything` (Anthropic reference server). 13 assertions: echo, sum, image, resource links, structured content, annotations, env, gzip, long-running operation. 92% tool coverage (12/13 tools, 1 skipped).
+
+```bash
+mcp-assert run --suite examples/mcp-everything-ts
+```
+
+## fastmcp testing_demo over SSE. Python
+
+**Directory:** `examples/fastmcp-testing-demo-sse/`
+
+Same server as the stdio fastmcp suite, tested over SSE transport. 11 assertions. First SSE transport coverage in the suite collection.
+
+```bash
+mcp-assert run --suite examples/fastmcp-testing-demo-sse
+```
+
+## rmcp counter. Rust
+
+**Directory:** `examples/rmcp-counter/`
+
+Tests the `4t145/rmcp` SDK's counter example server. 14 assertions: increment, decrement, get_value, sum, echo, say_hello, plus resources and prompts. 100% tool coverage (6/6 tools + resources + prompts). Bug found: `get_value` decrements counter instead of reading it (repo archived).
+
+```bash
+mcp-assert run --suite examples/rmcp-counter
+```
+
+## rust-mcp-filesystem. Rust
+
+**Directory:** `examples/rust-filesystem/`
+
+Tests `rust-mcp-stack/rust-mcp-filesystem` (145 stars). 23 assertions: read, list, search, write, edit, zip/unzip, head, tail, line ranges, path traversal rejection, duplicate file detection, empty directory detection. 92% tool coverage (22/24 tools). Clean scan.
+
+```bash
+mcp-assert run --suite examples/rust-filesystem
+```
+
+## excel-mcp-server. Python
+
+**Directory:** `examples/excel-mcp/`
+
+Tests `haris-musa/excel-mcp-server` (3,750 stars). 15 assertions: workbook creation, data round-trip, formulas, charts, pivot tables, formatting, merge cells, validation. 52% tool coverage (13/25 tools). Clean scan.
+
+```bash
+mcp-assert run --suite examples/excel-mcp
+```
+
+## antvis chart server. TypeScript
+
+**Directory:** `examples/antvis-chart/`
+
+Tests `antvis/mcp-server-chart` (4K stars). 25 assertions covering 25 chart types. 9 bugs found: unhandled JavaScript exceptions on default/minimal input. Filed [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291).
+
+```bash
+mcp-assert run --suite examples/antvis-chart
+```
+
+## Notion MCP server. TypeScript
+
+**Directory:** `examples/notion-mcp/`
+
+Tests the official `makenotion/notion-mcp-server` (4.2K stars). 22 assertions, 100% tool coverage (22/22 tools). Clean scan.
+
+```bash
+mcp-assert run --suite examples/notion-mcp
+```
+
+## Terraform MCP server. Go
+
+**Directory:** `examples/terraform-mcp/`
+
+Tests `hashicorp/terraform-mcp-server` (1.3K stars). 5 assertions: provider lookup, module search, policy search. 56% tool coverage (5/9 tools). Clean scan.
+
+```bash
+mcp-assert run --suite examples/terraform-mcp
+```
+
+## MongoDB MCP server. TypeScript
+
+**Directory:** `examples/mongodb-mcp/`
+
+Tests the official `mongodb/mongodb-mcp-server` (1K stars). 4 assertions: knowledge search, error handling. Clean scan.
+
+```bash
+mcp-assert run --suite examples/mongodb-mcp
+```
+
+## Spring AI MCP server. Kotlin
+
+**Directory:** `examples/spring-mcp/`
+
+Tests `jamesward/hello-spring-mcp-server`. 3 assertions, 100% tool coverage (2/2 tools). First JVM language in the suite collection. Uses HTTP transport. Clean scan.
+
+```bash
+mcp-assert run --suite examples/spring-mcp
+```
+
+## Playwright MCP server. TypeScript
+
+**Directory:** `examples/playwright-mcp/`
+
+Tests `microsoft/playwright-mcp` (31K stars). 10 assertions: navigate, snapshot, screenshot, JS evaluate, console messages, network requests, resize, close, invalid URL rejection, empty page handling. 48% tool coverage (10/21 tools). Clean scan.
+
+```bash
+mcp-assert run --suite examples/playwright-mcp
+```
+
+## OpenAI deep research MCP. Python
+
+**Directory:** `examples/openai-deep-research/`
+
+Tests `openai/sample-deep-research-mcp`. 4 assertions: search and fetch against static JSON dataset. 100% tool coverage (2/2 tools). Clean scan.
+
+```bash
+mcp-assert run --suite examples/openai-deep-research
+```
+
+## Google Cloud Storage MCP. TypeScript
+
+**Directory:** `examples/google-storage-mcp/`
+
+Tests `@google-cloud/storage-mcp`. 6 assertions: bucket metadata, object listing, IAM policy, input validation. 35% tool coverage (6/17 tools, no GCP credentials required). Clean scan.
+
+```bash
+mcp-assert run --suite examples/google-storage-mcp
+```
+
+## Grafana MCP server. Go
+
+**Directory:** `examples/grafana-mcp/`
+
+Tests `grafana/mcp-grafana`. 10 assertions. 1 bug found: `get_assertions` returns internal error (-32603) instead of `isError:true` on invalid timestamps. Filed [grafana/mcp-grafana#792](https://github.com/grafana/mcp-grafana/issues/792).
+
+```bash
+mcp-assert run --suite examples/grafana-mcp
+```
+
+## arxiv MCP server. Python
+
+**Directory:** `examples/arxiv-mcp/`
+
+Tests `blazickjp/arxiv-mcp-server`. 5 assertions. 1 bug found: `get_abstract` returns error content without `isError` flag. Filed [blazickjp/arxiv-mcp-server#92](https://github.com/blazickjp/arxiv-mcp-server/issues/92).
+
+```bash
+mcp-assert run --suite examples/arxiv-mcp
+```
+
+## AWS documentation MCP server. Python
+
+**Directory:** `examples/aws-docs-mcp/`
+
+Tests `awslabs/aws-documentation-mcp-server`. 4 assertions: search, recommend, no-results handling. 100% tool coverage (4/4 tools). Clean scan.
+
+```bash
+mcp-assert run --suite examples/aws-docs-mcp
+```
+
+## Exa search MCP server. JavaScript
+
+**Directory:** `examples/exa-mcp/`
+
+Tests `exa-labs/exa-mcp-server`. 2 assertions: proper 401 with `isError: true` and API key guidance when credentials missing. 100% tool coverage (2/2 tools). Clean scan.
+
+```bash
+mcp-assert run --suite examples/exa-mcp
+```
+
+## git-mcp. TypeScript
+
+**Directory:** `examples/git-mcp-idosal/`
+
+Tests `onmyway133/git-mcp`. 7 assertions: status, log, branches, diff, show, reflog, invalid repo rejection. 100% clean.
+
+```bash
+mcp-assert run --suite examples/git-mcp-idosal
 ```
 
 ## Trajectory assertions (no server)

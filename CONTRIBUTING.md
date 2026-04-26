@@ -19,7 +19,7 @@ cmd/mcp-assert/
 internal/assertion/
   types.go          Core types (Suite, Assertion, Expect, Result, all block types)
   loader.go         YAML file loading with subdirectory recursion
-  checker.go        15 assertion type implementations
+  checker.go        18 assertion type implementations
   trajectory.go     4 trajectory assertion types
   logging*.go       Logging assertion block and checker
   sampling*.go      Sampling assertion block type
