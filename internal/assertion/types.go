@@ -117,6 +117,7 @@ type ServerConfig struct {
 	Transport          string             `yaml:"transport,omitempty"`  // "stdio" (default), "sse", "http"
 	URL                string             `yaml:"url,omitempty"`        // Required for sse/http transport
 	Headers            map[string]string  `yaml:"headers,omitempty"`    // Custom headers for sse/http transport (supports ${VAR} expansion)
+	Docker             string             `yaml:"docker,omitempty"`     // Docker image for container isolation; each assertion runs in a fresh container
 	ClientCapabilities ClientCapabilities `yaml:"client_capabilities,omitempty"`
 }
 

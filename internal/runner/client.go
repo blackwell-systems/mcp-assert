@@ -80,8 +80,13 @@ func createMCPClient(server assertion.ServerConfig, fixture string, dockerImage 
 			envSlice = append(envSlice, k+"="+expandEnvVars(v))
 		}
 
-		// Docker isolation: wrap server command in docker run -i.
-		if dockerImage != "" {
+		// Docker isolation: wrap server command in docker run --rm -i.
+		// Per-assertion docker field takes precedence over the CLI --docker flag.
+		effectiveDocker := server.Docker
+		if effectiveDocker == "" {
+			effectiveDocker = dockerImage
+		}
+		if effectiveDocker != "" {
 			dockerArgs := []string{"run", "--rm", "-i"}
 			if fixture != "" {
 				dockerArgs = append(dockerArgs, "-v", fixture+":"+fixture)
@@ -89,7 +94,7 @@ func createMCPClient(server assertion.ServerConfig, fixture string, dockerImage 
 			for _, e := range envSlice {
 				dockerArgs = append(dockerArgs, "-e", e)
 			}
-			dockerArgs = append(dockerArgs, dockerImage, serverCmd)
+			dockerArgs = append(dockerArgs, effectiveDocker, serverCmd)
 			dockerArgs = append(dockerArgs, serverArgs...)
 			serverCmd = "docker"
 			serverArgs = dockerArgs
