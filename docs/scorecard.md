@@ -10,7 +10,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server suites | 44 total (42 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
 | Languages tested | 6 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 413 (330 server + 63 agent-lsp + 20 trajectory) |
+| Total assertions | 427 (344 server + 63 agent-lsp + 20 trajectory) |
 | Upstream bugs found | 15 (6 servers affected) |
 | Upstream issues filed | 6 (1 unfiled: repo archived) |
 | Upstream fix PRs submitted | 4 (3 ours pending, 1 closed after maintainer fix) |
@@ -105,7 +105,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `@playwright/mcp` | TypeScript | stdio | 10 | 48% (10/21 tools) | 0 | Clean. Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, invalid URL rejection, empty page handling. |
+| `@playwright/mcp` | TypeScript | stdio | 14 | 67% (14/21 tools) | 0 | Clean. Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, tabs, navigate back, press key, wait for element, invalid URL rejection, empty page handling. |
 
 ### Research (Python)
 
@@ -148,7 +148,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `Gentleman-Programming/engram` | Go | stdio | 6 | 38% (6/16 tools) | 0 | Clean. Persistent memory system with SQLite. Context, search, stats, error handling for missing observations. |
+| `Gentleman-Programming/engram` | Go | stdio | 16 | 100% (16/16 tools) | 0 | Clean. Full coverage including writes (save, delete, update, merge, session lifecycle). SQLite state is self-contained. |
 
 ### Internal (agent-lsp)
 
@@ -223,10 +223,26 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 ## Observations
 
-**Bug rate:** 15 bugs across 6 of 32 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server, one input validation gap in Grafana's MCP server, one missing isError flag in the arxiv server, one internal error for missing macOS permissions in Peekaboo.
+**Bug rate:** 15 bugs across 6 of 35 servers scanned. Two transport/protocol-level, one logic bug in example code, nine unhandled exception crashes in a charting server, one input validation gap in Grafana's MCP server, one missing isError flag in the arxiv server, one internal error for missing macOS permissions in Peekaboo.
 
 **Clean scans are valuable too.** fastmcp's clean result (25K-star framework, zero bugs) validates the Python MCP ecosystem's foundations. We document clean scans as positive signals, not wasted effort.
 
-**The flywheel works.** Each issue filed links back to mcp-assert. Maintainers discovering the tool through bug reports is organic adoption: no marketing required.
+**The flywheel works.** Each issue filed links back to mcp-assert. Maintainers discovering the tool through bug reports is organic adoption: no marketing required. antvis maintainer asked to integrate mcp-assert into their CI after our fix PR.
 
-**Transport bugs are invisible to unit tests.** Both bugs were in the transport layer: they'd never show up in the server's own unit tests because those test tool logic, not MCP protocol compliance. This is mcp-assert's core value proposition.
+**Transport bugs are invisible to unit tests.** Both transport-layer bugs (Anthropic blob type, mcp-go stdout corruption) would never show up in the server's own unit tests because those test tool logic, not MCP protocol compliance. This is mcp-assert's core value proposition.
+
+## Coverage Limitations
+
+Not all tools can be tested at full coverage. The main blockers:
+
+| Blocker | Affected servers | Tools skipped |
+|---------|-----------------|---------------|
+| **Requires credentials** | Grafana (50 tools), Google Storage (17), Perplexity (4), Exa (2), Cloudflare, Atlassian | Tools that call external APIs. We test auth error handling, not actual functionality. |
+| **Requires backend service** | Grafana (needs running Grafana), Google Storage (needs GCP), AWS docs (limited without full AWS) | Read-only tools often work; write tools need the real backend. |
+| **Requires snapshot refs** | Playwright click, hover, drag, fill, select (7 tools) | These tools operate on element references from a prior `browser_snapshot` call. Requires multi-step assertion chaining with captured output. |
+| **macOS permissions** | Peekaboo image, see, analyze (3+ tools) | Screen Recording and Accessibility permissions must be granted at the OS level. |
+| **Node 25 incompatibility** | DesktopCommanderMCP, spec-workflow-mcp | Crash on startup with Node 25 due to dependency issues. |
+
+**Per-assertion Docker isolation** (shipped) addresses write safety but not missing credentials or backends. For servers that need a backend (Grafana, databases), the next step is docker-compose with service containers.
+
+**What we can test without credentials:** auth error handling (does the server return `isError: true` with a helpful message?), input validation (does it reject bad params gracefully?), schema conformance (does `tools/list` return valid schemas?), and graceful degradation (does the server start and respond without crashing?).
