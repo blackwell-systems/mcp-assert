@@ -2,3 +2,4 @@
 /mcp-assert
 .saw-state/
 gate-cache.json
+.playwright-mcp/
