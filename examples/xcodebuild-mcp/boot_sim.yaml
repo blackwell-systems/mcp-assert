@@ -1,0 +1,11 @@
+name: boot_sim returns isError for invalid simulator
+server:
+  command: npx
+  args: [-y, xcodebuildmcp@latest, mcp]
+assert:
+  tool: boot_sim
+  args:
+    simulator: "nonexistent-device-id"
+  expect:
+    is_error: true
+timeout: 30s

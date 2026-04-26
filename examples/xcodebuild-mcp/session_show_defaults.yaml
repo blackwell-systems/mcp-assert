@@ -1,0 +1,10 @@
+name: session_show_defaults returns session state
+server:
+  command: npx
+  args: [-y, xcodebuildmcp@latest, mcp]
+assert:
+  tool: session_show_defaults
+  args: {}
+  expect:
+    not_error: true
+timeout: 30s

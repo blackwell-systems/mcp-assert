@@ -1,0 +1,11 @@
+name: list_sims returns simulators or simctl error
+server:
+  command: npx
+  args: [-y, xcodebuildmcp@latest, mcp]
+assert:
+  tool: list_sims
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 30s

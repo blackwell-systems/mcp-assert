@@ -1,0 +1,10 @@
+name: show_build_settings returns isError without project
+server:
+  command: npx
+  args: [-y, xcodebuildmcp@latest, mcp]
+assert:
+  tool: show_build_settings
+  args: {}
+  expect:
+    is_error: true
+timeout: 30s

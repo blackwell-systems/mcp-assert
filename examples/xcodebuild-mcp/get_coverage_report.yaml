@@ -1,0 +1,11 @@
+name: get_coverage_report returns isError without xcresult
+server:
+  command: npx
+  args: [-y, xcodebuildmcp@latest, mcp]
+assert:
+  tool: get_coverage_report
+  args:
+    xcresultPath: /tmp/nonexistent.xcresult
+  expect:
+    is_error: true
+timeout: 30s

@@ -1,0 +1,11 @@
+name: get_sim_app_path returns isError for nonexistent app
+server:
+  command: npx
+  args: [-y, xcodebuildmcp@latest, mcp]
+assert:
+  tool: get_sim_app_path
+  args:
+    bundleId: "com.nonexistent.app"
+  expect:
+    is_error: true
+timeout: 30s

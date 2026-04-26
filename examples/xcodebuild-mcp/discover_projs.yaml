@@ -1,0 +1,11 @@
+name: discover_projs returns isError for nonexistent path
+server:
+  command: npx
+  args: [-y, xcodebuildmcp@latest, mcp]
+assert:
+  tool: discover_projs
+  args:
+    workspaceRoot: /tmp/nonexistent-xcode-project
+  expect:
+    is_error: true
+timeout: 30s

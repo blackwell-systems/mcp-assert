@@ -1,0 +1,10 @@
+name: screenshot returns isError without booted simulator
+server:
+  command: npx
+  args: [-y, xcodebuildmcp@latest, mcp]
+assert:
+  tool: screenshot
+  args: {}
+  expect:
+    is_error: true
+timeout: 30s
