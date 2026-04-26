@@ -50,7 +50,7 @@ You could. The assertion logic is straightforward. What you'd have to build your
 
 - **MCP protocol bootstrapping.** stdio transport, JSON-RPC framing, initialize/initialized handshake, tool call request/response lifecycle. This is ~200 lines of boilerplate per test suite, and easy to get wrong.
 - **Server-agnostic test runner.** Your Go tests are coupled to your Go server. mcp-assert tests any server from any language with the same YAML. Switch `server.command` from `npx my-ts-server` to `python -m my_server` and the assertions don't change.
-- **Eval-framework features.** pass@k/pass^k reliability metrics, baseline regression detection, JUnit XML output, Docker isolation, cross-language matrix mode. These are eval concerns, not unit test concerns.
+- **Eval-framework features.** pass@k/pass^k reliability metrics, baseline regression detection, JUnit XML output, per-assertion Docker isolation (via `docker:` in YAML or `--docker` CLI flag), cross-language matrix mode. These are eval concerns, not unit test concerns.
 
 The value isn't in the assertion logic. It's in not writing MCP client boilerplate, having one tool that works across every MCP server regardless of implementation language, and getting CI-grade reporting for free.
 
@@ -163,12 +163,12 @@ Full documentation is available at [blackwell-systems.github.io/mcp-assert](http
 - [Getting Started](https://blackwell-systems.github.io/mcp-assert/getting-started/): install, scaffold, first run
 - [Writing Assertions](https://blackwell-systems.github.io/mcp-assert/writing-assertions/): YAML format, all 18 assertion types + 4 trajectory types, 7 block types (assert, assert_prompts, assert_resources, assert_completion, assert_sampling, assert_logging, trajectory), setup steps, capture, fixtures
 - [CLI Reference](https://blackwell-systems.github.io/mcp-assert/cli/): full command reference with flags and examples
-- [Examples](https://blackwell-systems.github.io/mcp-assert/examples/): 39 example suites across 5 languages (386 assertions)
+- [Examples](https://blackwell-systems.github.io/mcp-assert/examples/): 44 example suites across 6 languages (~413 assertions)
 - [CI Integration](https://blackwell-systems.github.io/mcp-assert/ci-integration/): GitHub Action, JUnit XML, regression detection
 - [Badge](https://blackwell-systems.github.io/mcp-assert/badge/): add the "Works with mcp-assert" badge to your server README
 - [Architecture](https://blackwell-systems.github.io/mcp-assert/architecture/): internals and design decisions
 - [Roadmap](https://blackwell-systems.github.io/mcp-assert/roadmap/): what's shipped and what's next
-- [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): 14 bugs found across 5 servers, 5 upstream issues filed, 5 fix PRs submitted
+- [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): 15 bugs found across 5 servers, 5 upstream issues filed, 5 fix PRs submitted
 - [Dogfooding](https://blackwell-systems.github.io/mcp-assert/dogfooding/): findings from testing our own servers
 
 <p align="center">

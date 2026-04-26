@@ -118,7 +118,7 @@ Only PASS → non-PASS transitions are flagged. Previously-failing tests that st
 | `sse` | `url`, `headers` | Connect to an SSE-based MCP server (legacy transport). Optional `headers` for authentication. |
 | `http` | `url`, `headers` | Connect to a streamable HTTP MCP server (modern transport). Optional `headers` for authentication. |
 
-Transport is configured per-assertion in YAML via the `transport` and `url` fields. When omitted, defaults to stdio. Case-insensitive. Docker isolation is only supported with stdio.
+Transport is configured per-assertion in YAML via the `transport` and `url` fields. When omitted, defaults to stdio. Case-insensitive. Docker isolation (`docker:` field or `--docker` CLI flag) is only supported with stdio.
 
 The `headers` field accepts a map of header names to values. Values support `${VAR}` expansion from the environment:
 
@@ -160,10 +160,24 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 
 ## Docker Isolation
 
-`--docker <image>` wraps the MCP server command in `docker run --rm -i` (stdio transport only):
-- Fixture directory volume-mounted into the container
+Run assertions in fresh Docker containers (stdio transport only). Two ways to enable:
+
+**Per-assertion** (in YAML): add `docker: <image>` to the `server:` block. Each assertion specifies its own image; takes precedence over the CLI flag.
+
+```yaml
+server:
+  docker: node:20-slim
+  command: npx
+  args: [-y, "@modelcontextprotocol/server-filesystem", "/workspace"]
+```
+
+**Per-suite** (CLI flag): `--docker <image>` applies the same image to all assertions in the run.
+
+Behavior:
+- Each assertion runs inside a fresh `docker run --rm -i` container
+- Container destroyed after each assertion (no cross-test contamination)
+- Fixture directory volume-mounted into the container via `-v`
 - Environment variables forwarded via `-e` flags
-- Each assertion gets a fresh container (no cross-test contamination)
 - stdio piping for MCP transport, no port mapping needed
 
 ---
@@ -191,7 +205,7 @@ Fixture isolation is automatic for stdio transport. Docker mode already isolates
 
 ---
 
-## Example Suites (39 suites, 5 languages, 386 assertions)
+## Example Suites (44 suites, 6 languages, ~413 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|
@@ -297,6 +311,7 @@ server:
   args: ["arg1", "arg2"]
   env:
     KEY: value                         # supports ${VAR} expansion from shell
+  docker: image-name                 # optional: run in a fresh Docker container (stdio only)
   transport: stdio                   # "stdio" (default), "sse", or "http"
   url: "http://localhost:8080/sse"   # required for sse/http transport
   client_capabilities:               # optional: respond to server-initiated requests

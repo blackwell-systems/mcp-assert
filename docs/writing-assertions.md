@@ -15,6 +15,7 @@ server:
   args: ["arg1", "arg2"]             # CLI arguments
   env:                               # Optional environment variables
     KEY: value
+  docker: image-name                 # Optional: run in a fresh Docker container
 
 # Optional: tool calls that run before the assertion, in order.
 # Use for creating state the assertion depends on.
@@ -124,6 +125,37 @@ assert:
 Use fixtures for test data your server needs: sample files, databases, config. Keep them in version control alongside your assertions.
 
 **Fixture isolation:** Each assertion automatically receives its own copy of the fixture directory. The original fixture is never modified, even if the assertion writes files, applies edits, or commits changes. This prevents one assertion's side effects from shifting line numbers or altering state for subsequent assertions. Docker mode already isolates via fresh containers, so the copy is skipped when `--docker` is used.
+
+## Docker Isolation (per-assertion)
+
+For assertions that test destructive or write tools, run each assertion in a fresh Docker container. Add `docker:` to the `server:` block with the image name:
+
+```yaml
+name: filesystem write in isolated container
+server:
+  docker: node:20-slim
+  command: npx
+  args: [-y, "@modelcontextprotocol/server-filesystem", "/workspace"]
+assert:
+  tool: write_file
+  args:
+    path: "/workspace/output.txt"
+    content: "hello"
+  expect:
+    not_error: true
+timeout: 30s
+```
+
+How it works:
+
+- Each assertion runs inside a fresh `docker run --rm -i` container.
+- The container is destroyed after each assertion, so writes and state changes never leak between assertions.
+- The fixture directory is mounted into the container via `-v`.
+- Environment variables from `env:` are forwarded via `-e` flags.
+- The per-assertion `docker:` field takes precedence over the CLI `--docker` flag, so you can mix isolated and non-isolated assertions in the same suite.
+- Docker isolation only works with stdio transport (not SSE or HTTP).
+
+When to use it: any assertion that creates, modifies, or deletes files, databases, or external state. For read-only assertions, Docker adds startup overhead without benefit; use fixture isolation (automatic) instead.
 
 ## Negative tests (expecting errors)
 
@@ -441,7 +473,7 @@ assert:
 
 Transport values are case-insensitive. When `transport` is omitted or set to `stdio`, the `command`/`args`/`env` fields are used to launch a subprocess. When `transport` is `sse` or `http`, the `url` field is required and `command`/`args` are ignored.
 
-Docker isolation (`--docker`) is only supported with stdio transport.
+Docker isolation (`docker:` field or `--docker` CLI flag) is only supported with stdio transport.
 
 ## Custom headers (HTTP/SSE)
 
