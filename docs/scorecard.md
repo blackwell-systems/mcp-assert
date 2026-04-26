@@ -6,15 +6,15 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 45 |
-| Server suites | 51 total (49 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
+| Servers scanned | 49 |
+| Server suites | 55 total (53 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
 | Languages tested | 6 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 504 (421 server + 63 agent-lsp + 20 trajectory) |
+| Total assertions | 521 (438 server + 63 agent-lsp + 20 trajectory) |
 | Upstream bugs found | 20 (9 servers affected) |
 | Upstream issues filed | 6 (1 unfiled: repo archived) |
 | Upstream fix PRs submitted | 6 (5 ours pending, 1 closed after maintainer fix) |
-| Clean scans (no bugs) | 36 |
+| Clean scans (no bugs) | 40 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -176,6 +176,25 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
 | `sec-edgar-mcp` | Python | stdio | 5 | 24% (5/21 tools) | 0 | Clean. SEC EDGAR filings, insider trading, financials. Free public API (requires user-agent string only). Uses `skip_unless_env`. |
+
+### Math/Utility (Python)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `mcp-server-math` | Python | stdio | 4 | 25% (4/16 tools) | 0 | Clean. 16 math tools (sum, divide, average, percentage, etc.). Zero auth. |
+| `duckduckgo-mcp-server` | Python | stdio | 2 | 100% (2/2 tools) | 0 | Clean. Search and fetch_content. Zero auth. |
+
+### Infrastructure (Python)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `mcp-server-kubernetes` | Python | stdio | 2 | 40% (2/5 tools) | 0 | Clean. kubectl get, describe error handling. Works without a running cluster. |
+
+### Mobile Automation (TypeScript)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `mobile-next/mobile-mcp` | TypeScript | stdio | 6 | 29% (6/21 tools) | 0 | Clean. 21 tools for iOS/Android automation. All return `isError:true` properly without connected device. 4.7K stars. |
 
 ### Memory (Go)
 
