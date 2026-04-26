@@ -1,0 +1,10 @@
+name: list_console_messages returns messages
+server:
+  command: npx
+  args: [-y, chrome-devtools-mcp]
+assert:
+  tool: list_console_messages
+  args: {}
+  expect:
+    not_error: true
+timeout: 15s

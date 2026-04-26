@@ -1,0 +1,12 @@
+name: performance_analyze_insight handles invalid insight gracefully
+server:
+  command: npx
+  args: [-y, chrome-devtools-mcp]
+assert:
+  tool: performance_analyze_insight
+  args:
+    insightSetId: "nonexistent"
+    insightName: "nonexistent"
+  expect:
+    not_error: true
+timeout: 15s

@@ -1,0 +1,11 @@
+name: wait_for returns isError for invalid selector
+server:
+  command: npx
+  args: [-y, chrome-devtools-mcp]
+assert:
+  tool: wait_for
+  args:
+    selector: "#nonexistent"
+  expect:
+    is_error: true
+timeout: 15s

@@ -1,0 +1,11 @@
+name: get_console_message returns isError for invalid ID
+server:
+  command: npx
+  args: [-y, chrome-devtools-mcp]
+assert:
+  tool: get_console_message
+  args:
+    id: 999999
+  expect:
+    is_error: true
+timeout: 15s

@@ -1,0 +1,11 @@
+name: list_pages returns page list
+server:
+  command: npx
+  args: [-y, chrome-devtools-mcp]
+assert:
+  tool: list_pages
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

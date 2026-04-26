@@ -1,0 +1,11 @@
+name: select_page returns isError for invalid page ID
+server:
+  command: npx
+  args: [-y, chrome-devtools-mcp]
+assert:
+  tool: select_page
+  args:
+    pageId: 999999
+  expect:
+    is_error: true
+timeout: 15s
