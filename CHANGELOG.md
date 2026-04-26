@@ -14,6 +14,10 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **u14app/deep-research suite**: 5 assertions via HTTP transport, clean.
 - **steipete/Peekaboo suite**: 6 assertions, 1 bug found. First Swift MCP server. `image` returns internal error instead of `isError:true` for missing Screen Recording permission. Issue filed ([#108](https://github.com/steipete/Peekaboo/issues/108)).
 
+- **`skip_unless_env` field**: conditional assertion skipping based on environment variables. Assertions that require credentials skip cleanly when the env var is not set, run normally when it is. Enables live-backend and no-auth assertions in the same suite.
+- **Playwright suite expanded**: 10 to 14 assertions (67% coverage). Added tabs, navigate_back, press_key, wait_for.
+- **Grafana live-backend assertions**: 3 assertions (search_dashboards, search_folders, list_datasources) that run when `GRAFANA_SERVICE_ACCOUNT_TOKEN` is set, skip otherwise.
+
 ### Fixed
 
 - **arxiv isError assertion**: re-skipped after maintainer's fix (#95) didn't resolve the issue in published v0.5.0.
