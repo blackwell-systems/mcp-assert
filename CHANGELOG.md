@@ -5,6 +5,8 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-04-25
+
 ### Added
 
 - **grafana/mcp-grafana suite**: 10 assertions, 1 bug found. `get_assertions` returns internal error (-32603) instead of `isError:true` on invalid timestamps. Issue filed ([#792](https://github.com/grafana/mcp-grafana/issues/792)), fix PR submitted ([#793](https://github.com/grafana/mcp-grafana/pull/793)).
