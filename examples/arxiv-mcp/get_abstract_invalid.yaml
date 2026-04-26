@@ -1,6 +1,6 @@
 # BUG: get_abstract returns isError=false with error content for invalid paper ID.
-# Fix submitted: blazickjp/arxiv-mcp-server#93
-# Until merged, this assertion documents the current (buggy) behavior.
+# Issue filed: blazickjp/arxiv-mcp-server#92 (closed).
+# Fix claimed in #95 (v0.5.0) but isError still not set as of 2026-04-26.
 name: get_abstract returns error content but isError=false for invalid paper (BUG)
 skip: true
 server:

@@ -203,7 +203,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **What:** Calling with an invalid paper ID (e.g., `0000.00000`) returns `{"status": "error", "message": "Paper 0000.00000 not found on arXiv"}` in the content body, but `isError` is not set to `true`.
 - **Impact:** Agents checking the `isError` flag treat this as a successful call. The agent may present "Paper not found" as a valid result instead of retrying or reporting failure.
 - **Issue:** [blazickjp/arxiv-mcp-server#92](https://github.com/blazickjp/arxiv-mcp-server/issues/92)
-- **Status:** Fix submitted ([#93](https://github.com/blazickjp/arxiv-mcp-server/pull/93)), pending merge
+- **Status:** Issue closed. Maintainer merged own fix ([#95](https://github.com/blazickjp/arxiv-mcp-server/pull/95)) in v0.5.0, but isError still not set as of 2026-04-26 testing.
 
 ### Bug #7: steipete/Peekaboo: image returns internal error without Screen Recording permission
 
