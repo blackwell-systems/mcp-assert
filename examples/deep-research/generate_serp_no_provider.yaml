@@ -1,0 +1,12 @@
+name: generate-SERP-query requires configured provider
+server:
+  transport: http
+  url: http://localhost:3999/api/mcp
+assert:
+  tool: generate-SERP-query
+  args:
+    plan: "test plan"
+  expect:
+    is_error: true
+    contains: ["Provider"]
+timeout: 15s

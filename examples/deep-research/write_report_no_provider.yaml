@@ -1,0 +1,17 @@
+name: write-final-report requires configured provider
+server:
+  transport: http
+  url: http://localhost:3999/api/mcp
+assert:
+  tool: write-final-report
+  args:
+    query: "test"
+    plan: "test plan"
+    tasks:
+      - query: "test"
+        researchGoal: "test goal"
+        learning: "test learning"
+  expect:
+    is_error: true
+    contains: ["Provider"]
+timeout: 15s

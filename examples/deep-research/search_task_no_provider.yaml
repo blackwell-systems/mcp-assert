@@ -1,0 +1,14 @@
+name: search-task requires configured provider
+server:
+  transport: http
+  url: http://localhost:3999/api/mcp
+assert:
+  tool: search-task
+  args:
+    tasks:
+      - query: "test query"
+        researchGoal: "test goal"
+  expect:
+    is_error: true
+    contains: ["Provider"]
+timeout: 15s

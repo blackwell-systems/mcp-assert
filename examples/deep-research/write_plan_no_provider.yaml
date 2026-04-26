@@ -1,0 +1,12 @@
+name: write-research-plan requires configured provider
+server:
+  transport: http
+  url: http://localhost:3999/api/mcp
+assert:
+  tool: write-research-plan
+  args:
+    query: "test"
+  expect:
+    is_error: true
+    contains: ["Provider"]
+timeout: 15s

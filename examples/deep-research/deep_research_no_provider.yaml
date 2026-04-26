@@ -1,0 +1,12 @@
+name: deep-research requires configured provider
+server:
+  transport: http
+  url: http://localhost:3999/api/mcp
+assert:
+  tool: deep-research
+  args:
+    query: "test query"
+  expect:
+    is_error: true
+    contains: ["Provider"]
+timeout: 15s
