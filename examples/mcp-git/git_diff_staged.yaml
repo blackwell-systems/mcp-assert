@@ -1,14 +1,11 @@
-name: git_branch lists branches
+name: git_diff_staged on clean repo
 server:
   command: /Users/dayna.blackwell/.local/bin/uvx
   args: [mcp-server-git]
 assert:
-  tool: git_branch
+  tool: git_diff_staged
   args:
     repo_path: "{{fixture}}"
-    branch_type: "local"
   expect:
     not_error: true
-    not_empty: true
-    contains_any: ["main", "master"]
-timeout: 30s
+timeout: 15s

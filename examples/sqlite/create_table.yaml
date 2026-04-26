@@ -1,0 +1,11 @@
+name: create_table creates a new table
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-sqlite, --db-path, "{{fixture}}/test.db"]
+assert:
+  tool: create_table
+  args:
+    query: "CREATE TABLE IF NOT EXISTS mcp_test (id INTEGER PRIMARY KEY, value TEXT)"
+  expect:
+    not_error: true
+timeout: 15s

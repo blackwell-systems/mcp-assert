@@ -1,0 +1,13 @@
+name: git_file_history shows file commit history
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, git-mcp]
+assert:
+  tool: git_file_history
+  args:
+    cwd: "{{fixture}}"
+    file: test.txt
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

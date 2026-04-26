@@ -1,0 +1,18 @@
+name: delete_entities removes entities
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@modelcontextprotocol/server-memory"]
+setup:
+  - tool: create_entities
+    args:
+      entities:
+        - name: "ToDelete"
+          entityType: "concept"
+          observations: ["will be deleted"]
+assert:
+  tool: delete_entities
+  args:
+    entityNames: ["ToDelete"]
+  expect:
+    not_error: true
+timeout: 15s

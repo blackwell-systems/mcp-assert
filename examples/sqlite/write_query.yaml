@@ -1,0 +1,11 @@
+name: write_query executes INSERT statement
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-sqlite, --db-path, "{{fixture}}/test.db"]
+assert:
+  tool: write_query
+  args:
+    query: "INSERT INTO users (name, email) VALUES ('mcp-test', 'test@example.com')"
+  expect:
+    not_error: true
+timeout: 15s

@@ -1,0 +1,30 @@
+name: delete_relations removes relations
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@modelcontextprotocol/server-memory"]
+setup:
+  - tool: create_entities
+    args:
+      entities:
+        - name: "NodeA"
+          entityType: "concept"
+          observations: ["a"]
+        - name: "NodeB"
+          entityType: "concept"
+          observations: ["b"]
+  - tool: create_relations
+    args:
+      relations:
+        - from: "NodeA"
+          to: "NodeB"
+          relationType: "relates_to"
+assert:
+  tool: delete_relations
+  args:
+    relations:
+      - from: "NodeA"
+        to: "NodeB"
+        relationType: "relates_to"
+  expect:
+    not_error: true
+timeout: 15s

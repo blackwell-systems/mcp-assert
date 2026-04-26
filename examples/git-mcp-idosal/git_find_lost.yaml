@@ -1,0 +1,11 @@
+name: git_find_lost searches for dangling commits
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, git-mcp]
+assert:
+  tool: git_find_lost
+  args:
+    cwd: "{{fixture}}"
+  expect:
+    not_error: true
+timeout: 15s

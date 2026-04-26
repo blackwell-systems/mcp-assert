@@ -1,0 +1,20 @@
+name: delete_observations removes observations
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@modelcontextprotocol/server-memory"]
+setup:
+  - tool: create_entities
+    args:
+      entities:
+        - name: "ObsNode"
+          entityType: "concept"
+          observations: ["obs to delete"]
+assert:
+  tool: delete_observations
+  args:
+    deletions:
+      - entityName: "ObsNode"
+        observations: ["obs to delete"]
+  expect:
+    not_error: true
+timeout: 15s

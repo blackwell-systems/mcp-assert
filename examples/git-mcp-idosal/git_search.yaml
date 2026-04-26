@@ -1,0 +1,12 @@
+name: git_search searches commit history
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, git-mcp]
+assert:
+  tool: git_search
+  args:
+    cwd: "{{fixture}}"
+    term: "initial"
+  expect:
+    not_error: true
+timeout: 15s

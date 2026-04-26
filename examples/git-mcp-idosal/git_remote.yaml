@@ -1,0 +1,12 @@
+name: git_remote lists remotes
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, git-mcp]
+assert:
+  tool: git_remote
+  args:
+    cwd: "{{fixture}}"
+    action: list
+  expect:
+    not_error: true
+timeout: 15s

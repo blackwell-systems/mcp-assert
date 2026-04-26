@@ -1,0 +1,12 @@
+name: git_create_branch creates new branch
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, git-mcp]
+assert:
+  tool: git_create_branch
+  args:
+    cwd: "{{fixture}}"
+    name: "mcp-assert-test"
+  expect:
+    not_error: true
+timeout: 15s

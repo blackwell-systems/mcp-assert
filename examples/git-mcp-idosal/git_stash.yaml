@@ -1,0 +1,12 @@
+name: git_stash lists stashes
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, git-mcp]
+assert:
+  tool: git_stash
+  args:
+    cwd: "{{fixture}}"
+    action: list
+  expect:
+    not_error: true
+timeout: 15s

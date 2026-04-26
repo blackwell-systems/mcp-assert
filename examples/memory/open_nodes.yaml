@@ -1,0 +1,20 @@
+name: open_nodes retrieves nodes by name
+server:
+  command: /Users/dayna.blackwell/.brewprune/bin/npx
+  args: [-y, "@modelcontextprotocol/server-memory"]
+setup:
+  - tool: create_entities
+    args:
+      entities:
+        - name: "TestNode"
+          entityType: "concept"
+          observations: ["test observation"]
+assert:
+  tool: open_nodes
+  args:
+    names: ["TestNode"]
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["TestNode"]
+timeout: 15s

@@ -1,0 +1,17 @@
+name: git_checkout switches branch
+server:
+  command: /Users/dayna.blackwell/.local/bin/uvx
+  args: [mcp-server-git]
+setup:
+  - tool: git_create_branch
+    args:
+      repo_path: "{{fixture}}"
+      branch_name: "checkout-test"
+assert:
+  tool: git_checkout
+  args:
+    repo_path: "{{fixture}}"
+    branch_name: "checkout-test"
+  expect:
+    not_error: true
+timeout: 15s
