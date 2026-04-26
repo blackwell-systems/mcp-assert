@@ -1,0 +1,10 @@
+name: screenshot_page returns isError without Firefox running
+server:
+  command: npx
+  args: [-y, firefox-devtools-mcp]
+assert:
+  tool: screenshot_page
+  args: {}
+  expect:
+    is_error: true
+timeout: 15s

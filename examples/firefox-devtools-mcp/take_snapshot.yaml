@@ -1,0 +1,10 @@
+name: take_snapshot returns isError without Firefox running
+server:
+  command: npx
+  args: [-y, firefox-devtools-mcp]
+assert:
+  tool: take_snapshot
+  args: {}
+  expect:
+    is_error: true
+timeout: 15s

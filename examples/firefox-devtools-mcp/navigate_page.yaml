@@ -1,0 +1,11 @@
+name: navigate_page returns isError without Firefox running
+server:
+  command: npx
+  args: [-y, firefox-devtools-mcp]
+assert:
+  tool: navigate_page
+  args:
+    url: "https://example.com"
+  expect:
+    is_error: true
+timeout: 15s

@@ -1,0 +1,10 @@
+name: restart_firefox returns isError without Firefox running
+server:
+  command: npx
+  args: [-y, firefox-devtools-mcp]
+assert:
+  tool: restart_firefox
+  args: {}
+  expect:
+    is_error: true
+timeout: 15s

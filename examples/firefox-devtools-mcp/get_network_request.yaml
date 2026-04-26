@@ -1,0 +1,11 @@
+name: get_network_request returns isError for invalid request ID
+server:
+  command: npx
+  args: [-y, firefox-devtools-mcp]
+assert:
+  tool: get_network_request
+  args:
+    requestId: "nonexistent-request"
+  expect:
+    is_error: true
+timeout: 15s
