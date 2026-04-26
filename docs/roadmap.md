@@ -12,85 +12,70 @@
 | **Reference suite registry** | Medium | Canonical protocol conformance assertions any MCP server can run. Independent of server-specific fixtures. "Does this server speak MCP correctly?" |
 | **Nix flake** | Low | Nix users are quality-focused and vocal. |
 
-## `mcp-assert ui` Design
+## `mcp-assert ui` (deferred, feature-gated)
 
-### Architecture
+Web UI for mcp-assert: explore servers, debug assertion failures, trace agent sessions. **Deferred until demand is proven.** The CLI is the primary interface; MCP server developers live in terminals.
 
-```
-mcp-assert ui --server "npx my-server" --port 7890
+### Status: design complete, build deferred
 
-┌─────────────────────────────────┐
-│  Go binary (mcp-assert)        │
-│  ├─ HTTP server (embed.FS)     │
-│  ├─ WebSocket (live trace)     │
-│  ├─ REST API (/api/tools,      │
-│  │   /api/call, /api/run)      │
-│  └─ MCP client (reuses all     │
-│      existing runner code)      │
-└─────────────────────────────────┘
-```
+The design work is done (four modes, frontend stack decision, ProtoMCP analysis). Build is deferred pending adoption signal. The hosted audit experiment (below) tests demand with minimal investment first.
 
-### Four modes (two phases)
+### Feature gating via Go build tags
 
-**Phase 1 (launch)**: Explorer + Debugger. Self-contained, no LLM key needed, demonstrates core value.
+The UI is optional. Default binary has no frontend overhead:
 
-**Explorer**: Connect to any MCP server. See all tools, prompts, resources in a tree. Click a tool to see its JSON Schema. Click "Call" to invoke with editable args. Response displayed with syntax highlighting. "Save as assertion" button turns any call into a YAML test case. Interactive version of the audit command.
+```go
+//go:build ui
 
-**Debugger**: Run a suite from the UI. Failures appear in a list. Click a failure: see request, actual response, expected values, specific expectation that failed. Side-by-side diff view. "Fix" button suggests YAML edits (visual version of `--fix` mode). "Export suite" generates YAML + GitHub Actions workflow.
+package ui
 
-**Phase 2 (after launch)**: Agent + Tracer. Require LLM config and WebSocket proxy infrastructure.
-
-**Agent**: Connect an LLM (OpenAI, Anthropic, etc.), let it drive the server's tools via ReAct loop. Watch the tool call chain in real time. Tool confirmation mode (approve/deny before execution). Record the full session as a trajectory YAML for CI regression testing. This is ProtoMCP's agent mode plus assertions.
-
-**Tracer**: Proxy between an external agent (Claude Code, Cursor, etc.) and an MCP server. Every tool call appears in a live timeline via WebSocket. Click to expand: request args, response body, duration, isError. Filter by tool name, status, duration. Export session as trajectory YAML. Builds on the existing `intercept` command.
-
-**The funnel**: Explorer ("does my server work?") leads to Debugger ("why did this fail?") leads to Agent ("how does an LLM use my tools?") leads to Tracer ("what is my production agent doing?"). Each mode feeds the next.
-
-### Frontend stack
-
-**Preact + Tailwind CSS**, compiled via esbuild to a single `bundle.js`, embedded in the Go binary via `//go:embed`. Same API as React (JSX, useState, useEffect), 3KB instead of 45KB. esbuild compiles in ~50ms.
-
-**Dev workflow**: edit JSX, run `esbuild` (one command, 50ms), built JS committed to repo. Users never run a build step; the frontend is already inside the Go binary they download.
-
-**Why Preact over alternatives**:
-- vs React: same API, 1/15th the size. Matters for an embedded binary.
-- vs Vanilla JS: component reuse (ToolCard, SchemaForm, TraceEntry), reactive state for WebSocket streams, list rendering. Vanilla JS becomes unmanageable at 10+ interactive components.
-- vs HTMX: wrong fit for real-time WebSocket data streams and complex client-side state (trace timeline, form editing).
-
-**Inspiration from ProtoMCP** (SahanUday/ProtoMCP): three-column layout (server list | main content | JSON-RPC log panel), auto-generated forms from JSON Schema, real-time trace timeline with color-coded events, tool confirmation mode for destructive calls. Our differentiation: "Save as assertion" button, expected vs actual diff, CI export, all three transports (stdio/SSE/HTTP), and the testing/assertion layer ProtoMCP completely lacks.
-
-### Scaling path
-
-The single binary with embedded UI scales for the local tool (one user, localhost, 1-10 servers). Grafana uses the same pattern at millions of lines of frontend TypeScript.
-
-For the hosted platform (multi-user, persistent storage, queued jobs, billing), the same Go engine (`internal/runner`, `internal/assertion`, `internal/report`) gets wrapped in a production web service with a database, auth, and CDN-served frontend. No rewrite; the local UI is both a standalone product and a prototype for the hosted version.
-
-```
-Phase 1: mcp-assert ui       → single binary, localhost, embedded frontend
-Phase 2: mcp-assert-cloud    → deployed service, same Go engine, production frontend
+//go:embed dist/*
+var Files embed.FS
 ```
 
-Build local first. Adoption proves demand. Demand justifies hosted.
+```bash
+# Default: CLI only, small binary
+go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
 
-## Platform Direction
-
-The `ui` command is the local version. The platform is the hosted version of the same UI, with accounts and persistence.
-
-### Monetization sequence
-
+# With UI: includes embedded frontend (~5-15MB larger)
+go install -tags ui github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
 ```
-OSS CLI (free) → UI local (free) → hosted audit (freemium) → registry (paid) → monitoring (SaaS)
-```
+
+Without `-tags ui`, the `mcp-assert ui` command prints "built without UI support" and exits. The distribution pipeline (npm, pip, brew, scoop, Docker) ships the default CLI-only binary. A separate `mcp-assert-ui` binary or install flag provides the UI variant. Same pattern as Prometheus, Caddy, and other Go tools with optional features.
+
+### Four modes (if built)
+
+**Phase 1**: Explorer (browse tools, call interactively, save as assertion) + Debugger (visual assertion failure inspector with diff view).
+
+**Phase 2**: Agent (connect LLM, watch ReAct loop, record trajectory) + Tracer (proxy between external agent and server, live timeline).
+
+### Frontend stack (if built)
+
+Preact + Tailwind CSS + esbuild. Embedded via `embed.FS`. Inspired by ProtoMCP's layout (three-column: server list, main content, JSON-RPC log panel). Our differentiation: "Save as assertion" button, expected vs actual diff, CI export, testing layer ProtoMCP lacks.
+
+## Hosted Audit Experiment
+
+Test demand before building the full UI. Minimal investment, maximum signal.
+
+**What**: a landing page at mcp-assert.dev where users paste a server command and get an audit report. No CLI install needed.
+
+**How**: backend runs `mcp-assert audit --json` in a container, renders results as a static HTML report. Server-side rendering, no SPA, no Preact. A form and a report page.
+
+**Why before the UI**: proves whether anyone wants browser-based MCP testing. If yes, invest in the richer UI. If no, saved weeks of frontend work. The CLI and CI workflow remain the core product regardless.
 
 | Tier | What | Pricing |
 |------|------|---------|
-| **Free (OSS)** | CLI, GitHub Action, all assertion types, local UI | Free forever |
+| **Free (OSS)** | CLI, GitHub Action, all assertion types | Free forever |
 | **Hosted audit** | Paste a server URL, get results in the browser. No CLI install. | Free: 5 audits/month. Paid: unlimited. |
 | **Quality registry** | Public leaderboard. Server authors claim listings, add verified badge, show CI status. | Free listing. Verified badge: paid. |
 | **Continuous monitoring** | Run assertion suite on schedule against live servers. Alert on regression (Slack, email, PagerDuty). | $29/mo per server, $99/mo teams |
 | **Team dashboard** | Shared view of org's MCP servers, coverage, pass rates, trends. Role-based access, audit logs. | Enterprise pricing |
 
-The quality registry (mcp-assert.dev) becomes the "npm audit for MCP": users check before adopting a server, authors add the badge for trust. Revenue comes from verified listings and continuous monitoring.
+### Monetization sequence
+
+```
+OSS CLI (free) → hosted audit (freemium, test demand) → UI (if demand exists) → registry (paid) → monitoring (SaaS)
+```
 
 Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-tool protocol (Anthropic, OpenAI, Google all pushing it), the quality layer is infrastructure.
 
