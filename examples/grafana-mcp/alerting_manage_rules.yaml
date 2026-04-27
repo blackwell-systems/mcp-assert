@@ -1,0 +1,12 @@
+name: alerting_manage_rules returns isError for invalid operation
+skip_unless_env: GRAFANA_SERVICE_ACCOUNT_TOKEN
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: alerting_manage_rules
+  args:
+    operation: invalid
+  expect:
+    is_error: true
+timeout: 15s

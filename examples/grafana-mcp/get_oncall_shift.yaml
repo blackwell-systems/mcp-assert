@@ -1,0 +1,12 @@
+name: get_oncall_shift returns isError without OnCall
+skip_unless_env: GRAFANA_SERVICE_ACCOUNT_TOKEN
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: get_oncall_shift
+  args:
+    shift_id: nonexistent
+  expect:
+    is_error: true
+timeout: 15s

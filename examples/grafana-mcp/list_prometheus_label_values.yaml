@@ -1,0 +1,12 @@
+name: list_prometheus_label_values returns isError without label
+skip_unless_env: GRAFANA_SERVICE_ACCOUNT_TOKEN
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: list_prometheus_label_values
+  args:
+    datasource_uid: prometheus
+  expect:
+    is_error: true
+timeout: 15s

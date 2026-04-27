@@ -1,0 +1,12 @@
+name: get_dashboard_property returns isError for nonexistent dashboard
+skip_unless_env: GRAFANA_SERVICE_ACCOUNT_TOKEN
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: get_dashboard_property
+  args:
+    dashboard_uid: nonexistent
+  expect:
+    is_error: true
+timeout: 15s

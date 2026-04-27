@@ -1,0 +1,12 @@
+name: list_loki_label_names returns isError without datasource
+skip_unless_env: GRAFANA_SERVICE_ACCOUNT_TOKEN
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: list_loki_label_names
+  args:
+    datasource_uid: loki
+  expect:
+    is_error: true
+timeout: 15s
