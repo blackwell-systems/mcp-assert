@@ -1,0 +1,13 @@
+name: get_panel_image returns isError for nonexistent panel
+skip_unless_env: GRAFANA_SERVICE_ACCOUNT_TOKEN
+server:
+  command: mcp-grafana
+  args: [-t, stdio]
+assert:
+  tool: get_panel_image
+  args:
+    dashboard_uid: "nonexistent"
+    panel_id: 1
+  expect:
+    is_error: true
+timeout: 15s

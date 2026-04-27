@@ -7,5 +7,5 @@ assert:
   args:
     uid: "nonexistent-uid-12345"
   expect:
-    not_error: true
+    is_error: true
 timeout: 15s

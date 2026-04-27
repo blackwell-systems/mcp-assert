@@ -1,6 +1,7 @@
 # Fixed in grafana/mcp-grafana#793 (merged 2026-04-27).
-# Previously returned internal error (-32603); now returns isError:true.
+# Still crashes in current published binary; waiting for new release.
 name: get_assertions returns isError on bad timestamp
+skip: true
 server:
   command: mcp-grafana
   args: [-t, stdio]
