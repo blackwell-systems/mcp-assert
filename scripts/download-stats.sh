@@ -10,10 +10,12 @@ NPM_PKG="@blackwell-systems/mcp-assert"
 OUT="${1:-assets/download-stats.svg}"
 
 # ── Fetch stats ──────────────────────────────────────────────────────
-pypi_week=$(curl -sf "https://pypistats.org/api/packages/${PYPI_PKG}/recent" \
+UA="mcp-assert-stats/1.0 (https://github.com/blackwell-systems/mcp-assert)"
+
+pypi_week=$(curl -sf -A "$UA" "https://pypistats.org/api/packages/${PYPI_PKG}/recent" \
   | python3 -c "import json,sys; print(json.load(sys.stdin)['data']['last_week'])" 2>/dev/null || echo "?")
 
-pytest_week=$(curl -sf "https://pypistats.org/api/packages/${PYTEST_PKG}/recent" \
+pytest_week=$(curl -sf -A "$UA" "https://pypistats.org/api/packages/${PYTEST_PKG}/recent" \
   | python3 -c "import json,sys; print(json.load(sys.stdin)['data']['last_week'])" 2>/dev/null || echo "?")
 
 npm_week=$(curl -sf "https://api.npmjs.org/downloads/point/last-week/${NPM_PKG}" \
