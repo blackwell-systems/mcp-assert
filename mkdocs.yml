@@ -6,14 +6,14 @@ theme:
   name: material
   palette:
     - scheme: slate
-      primary: green
-      accent: light green
+      primary: indigo
+      accent: cyan
       toggle:
         icon: material/brightness-7
         name: Switch to light mode
     - scheme: default
-      primary: green
-      accent: green
+      primary: indigo
+      accent: blue
       toggle:
         icon: material/brightness-4
         name: Switch to dark mode
