@@ -1,0 +1,12 @@
+name: get_alerts returns isError for invalid state
+server:
+  command: dotnet
+  args: [run, --project, samples/QuickstartWeatherServer/QuickstartWeatherServer.csproj, -c, Release, --no-build]
+assert:
+  tool: get_alerts
+  args:
+    state: "XX"
+  expect:
+    is_error: true
+timeout: 15s
+skip: true  # Requires dotnet 8 SDK and local clone of modelcontextprotocol/csharp-sdk

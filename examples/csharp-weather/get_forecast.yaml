@@ -1,0 +1,13 @@
+name: get_forecast returns isError for invalid location
+server:
+  command: dotnet
+  args: [run, --project, samples/QuickstartWeatherServer/QuickstartWeatherServer.csproj, -c, Release, --no-build]
+assert:
+  tool: get_forecast
+  args:
+    latitude: 999
+    longitude: 999
+  expect:
+    is_error: true
+timeout: 15s
+skip: true  # Requires dotnet 8 SDK and local clone of modelcontextprotocol/csharp-sdk
