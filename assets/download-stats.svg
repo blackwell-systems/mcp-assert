@@ -16,31 +16,31 @@
 
   <!-- Title -->
   <text x="24" y="36" fill="#e2e8f0" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600">mcp-assert downloads</text>
-  <text x="296" y="36" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">2026-04-26</text>
+  <text x="296" y="36" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">2026-04-27</text>
 
   <!-- Divider -->
   <line x1="24" y1="48" x2="296" y2="48" stroke="#334155" stroke-width="1"/>
 
   <!-- Stats rows -->
   <text x="24" y="74" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">pip (mcp-assert)</text>
-  <text x="296" y="74" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">911/wk</text>
+  <text x="296" y="74" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">?/wk</text>
 
   <text x="24" y="96" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">pip (pytest plugin)</text>
-  <text x="296" y="96" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">194/wk</text>
+  <text x="296" y="96" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">?/wk</text>
 
   <text x="24" y="118" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">npm</text>
-  <text x="296" y="118" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">386/wk</text>
+  <text x="296" y="118" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">649/wk</text>
 
   <text x="24" y="140" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">brew</text>
   <text x="296" y="140" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">--/30d</text>
 
   <text x="24" y="162" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">github releases</text>
-  <text x="296" y="162" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">104 total</text>
+  <text x="296" y="162" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">112 total</text>
 
   <!-- Divider -->
   <line x1="24" y1="178" x2="296" y2="178" stroke="#334155" stroke-width="1"/>
 
   <!-- Total -->
-  <text x="24" y="206" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700">~1491/week</text>
+  <text x="24" y="206" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700">~?/week</text>
   <text x="296" y="206" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">across all channels</text>
 </svg>
