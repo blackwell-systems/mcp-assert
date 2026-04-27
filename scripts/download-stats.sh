@@ -9,16 +9,24 @@ PYTEST_PKG="pytest-mcp-assert"
 NPM_PKG="@blackwell-systems/mcp-assert"
 OUT="${1:-assets/download-stats.svg}"
 
+# ── Extract last known values from existing SVG (fallback for blocked APIs) ──
+extract_last() {
+  local label="$1"
+  grep "$label" "$OUT" 2>/dev/null | grep -o '[0-9][0-9,]*' | tail -1 || echo "?"
+}
+last_pypi=$(extract_last "pip (mcp-assert)")
+last_pytest=$(extract_last "pip (pytest plugin)")
+
 # ── Fetch stats ──────────────────────────────────────────────────────
 UA="mcp-assert-stats/1.0 (https://github.com/blackwell-systems/mcp-assert)"
 
-pypi_week=$(curl -sf -A "$UA" "https://pypistats.org/api/packages/${PYPI_PKG}/recent" \
-  | python3 -c "import json,sys; print(json.load(sys.stdin)['data']['last_week'])" 2>/dev/null || echo "?")
+pypi_week=$(curl -sf -A "$UA" --max-time 10 "https://pypistats.org/api/packages/${PYPI_PKG}/recent" \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['data']['last_week'])" 2>/dev/null || echo "$last_pypi")
 
-pytest_week=$(curl -sf -A "$UA" "https://pypistats.org/api/packages/${PYTEST_PKG}/recent" \
-  | python3 -c "import json,sys; print(json.load(sys.stdin)['data']['last_week'])" 2>/dev/null || echo "?")
+pytest_week=$(curl -sf -A "$UA" --max-time 10 "https://pypistats.org/api/packages/${PYTEST_PKG}/recent" \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['data']['last_week'])" 2>/dev/null || echo "$last_pytest")
 
-npm_week=$(curl -sf "https://api.npmjs.org/downloads/point/last-week/${NPM_PKG}" \
+npm_week=$(curl -sf --max-time 10 "https://api.npmjs.org/downloads/point/last-week/${NPM_PKG}" \
   | python3 -c "import json,sys; print(json.load(sys.stdin)['downloads'])" 2>/dev/null || echo "?")
 
 gh_total=$(gh api "repos/${REPO}/releases" --jq '[.[].assets[].download_count] | add // 0' 2>/dev/null || echo "?")
