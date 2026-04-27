@@ -4,12 +4,13 @@
 
 | Item | Priority | Description |
 |------|----------|-------------|
-| **`mcp-assert ui` command** | High | Web-based GUI served by the Go binary. Three modes: Explorer (connect to a server, browse tools, call them interactively), Tracer (live tool call timeline between agent and server via WebSocket), Debugger (visual assertion failure inspector with request/response diff). Frontend embedded via `embed.FS`, no separate install. Reuses existing `createMCPClient`, `generateArgsFromSchema`, `runAssertion`, `auditSingleTool`. This is the foundation for hosted audit and the quality registry. |
-| **Blog post** | Ready | "We tested 38 MCP servers from Anthropic, Google, OpenAI, Microsoft, and AWS. Here's what we found." The scorecard data is the content; needs prose around it. Publish on docs site (mkdocs already deployed). |
-| **MCP server leaderboard** | High | Static page on docs site ranking servers by coverage score and pass rate. Data exists for 39 servers. Becomes valuable once there's external traffic (blog post drives traffic). |
+| **Blog post** | Ready | "We tested 50 MCP servers from Anthropic, Google, OpenAI, Microsoft, Mozilla, Sentry, and AWS. Here's what we found." The scorecard data is the content; needs prose around it. Publish on docs site (mkdocs already deployed). |
+| **MCP server leaderboard** | High | Static page on docs site ranking servers by coverage score and pass rate. Data exists for 50 servers. Becomes valuable once there's external traffic (blog post drives traffic). |
 | **antvis CI integration PR** | Blocked on #292 merge | antvis maintainer asked us to add mcp-assert to their CI. Submit follow-up PR with `evals/` directory (25 assertions) + GitHub Actions workflow using `mcp-assert-action@v1`. This is the first external adoption. |
+| **Download stats dashboard** | Medium | Script or tool that queries PyPI, npm, GitHub releases, and Homebrew APIs to produce a unified download report. Optionally append to CSV in repo for historical tracking. |
 | **C# server suites** | Medium | `modelcontextprotocol/csharp-sdk` has examples. Last major language gap (7th language). |
 | **Reference suite registry** | Medium | Canonical protocol conformance assertions any MCP server can run. Independent of server-specific fixtures. "Does this server speak MCP correctly?" |
+| **Docker images** | Low | Per-runtime images (node, python, go) for running `mcp-assert audit/ci` without installing the binary. Useful for CI without install (`docker run ghcr.io/blackwell-systems/mcp-assert:node ci --suite evals/`) and as the backend for the hosted audit experiment. Not needed until hosted audit or Docker Hub pull metrics become a priority. |
 | **Nix flake** | Low | Nix users are quality-focused and vocal. |
 
 ## `mcp-assert ui` (deferred, feature-gated)
