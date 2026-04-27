@@ -65,6 +65,19 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
+  winget:
+    name: Publish to winget
+    runs-on: ubuntu-latest
+    needs: release
+    steps:
+      - uses: vedantmgoyal9/winget-releaser@v2
+        with:
+          identifier: BlackwellSystems.mcp-assert
+          installers-regex: 'windows.*\.zip$'
+          max-versions-to-keep: 5
+          fork-user: blackwell-systems
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+
   pytest-plugin-publish:
     needs: release
     runs-on: ubuntu-latest
