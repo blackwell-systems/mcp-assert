@@ -6,15 +6,15 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 49 |
-| Server suites | 55 total (53 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
-| Languages tested | 6 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift) |
+| Servers scanned | 54 |
+| Server suites | 60 total (58 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
+| Languages tested | 7 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift, C#) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 521 (438 server + 63 agent-lsp + 20 trajectory) |
+| Total assertions | 536 (453 server + 63 agent-lsp + 20 trajectory) |
 | Upstream bugs found | 20 (9 servers affected) |
 | Upstream issues filed | 6 (1 unfiled: repo archived) |
 | Upstream fix PRs submitted | 6 (5 ours pending, 1 closed after maintainer fix) |
-| Clean scans (no bugs) | 40 |
+| Clean scans (no bugs) | 45 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -176,6 +176,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
 | `sec-edgar-mcp` | Python | stdio | 5 | 24% (5/21 tools) | 0 | Clean. SEC EDGAR filings, insider trading, financials. Free public API (requires user-agent string only). Uses `skip_unless_env`. |
+| `narumiruna/yfinance-mcp` | Python | stdio | 4 | 22% (4/18 tools) | 0 | Clean. Live stock market data via Yahoo Finance. Ticker info, price history, search, market calendar. Zero auth, all happy-path assertions return real data. |
 
 ### Math/Utility (Python)
 
@@ -195,6 +196,30 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
 | `mobile-next/mobile-mcp` | TypeScript | stdio | 6 | 29% (6/21 tools) | 0 | Clean. 21 tools for iOS/Android automation. All return `isError:true` properly without connected device. 4.7K stars. |
+
+### Cloud Infrastructure (TypeScript)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `lighthouse-mcp-server` | TypeScript | stdio | 2 | 4% (2/57 tools) | 0 | Clean. Tencent Cloud Lighthouse management. 57 tools, all return `isError:true` without credentials. |
+
+### Document Conversion (Python)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `markitdown-mcp` | Python | stdio | 1 | 100% (1/1 tool) | 0 | Clean. Microsoft MarkItDown document-to-markdown converter. |
+
+### Workflow (TypeScript)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `Pimzino/spec-workflow-mcp` | TypeScript | stdio | 1 | 100% (1/1 tool) | 0 | Clean. Spec-driven development workflow. 4.1K stars. |
+
+### C# (.NET)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `modelcontextprotocol/csharp-sdk` QuickstartWeatherServer | C# | stdio | 2 | 100% (2/2 tools) | 0 | Clean. Official C# SDK sample. First C# server tested (7th language). |
 
 ### Memory (Go)
 
