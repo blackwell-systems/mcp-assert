@@ -22,10 +22,26 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **Memory suite expanded**: 5 to 9 assertions, 100% tool coverage (9/9 tools). Added open_nodes, delete_entities, delete_observations, delete_relations.
 - **Anthropic git suite expanded**: 7 to 11 assertions, 92% tool coverage (11/12 tools). Added commit, add, reset, tag.
 - **git-mcp (onmyway133) suite expanded**: 7 to 14 assertions, 39% coverage (14/36 tools). Added stash, tag, blame, grep, cherry-pick, remote, and more.
-- **504 total assertions** across 48 servers, 51 suites, 6 languages, 3 transports. 20 bugs found across 9 servers, 6 fix PRs submitted.
+- **getsentry/XcodeBuildMCP suite**: 10 assertions, 27 tools, clean. Sentry-backed macOS server.
+- **Anthropic Puppeteer suite**: 7 assertions, 1 bug found. `puppeteer_navigate` crashes on invalid URLs. Fix PR submitted ([modelcontextprotocol/servers#4051](https://github.com/modelcontextprotocol/servers/pull/4051)).
+- **sammcj/mcp-devtools suite**: 5 assertions, 4 bugs found. Tool handler returns internal error instead of `isError:true` for all input validation failures. Fix PR submitted ([sammcj/mcp-devtools#258](https://github.com/sammcj/mcp-devtools/pull/258)).
+- **Context7 (Upstash) suite**: 2 assertions, clean. Library resolution and docs search.
+- **Chrome DevTools MCP suite**: 7 assertions, 29 tools, clean.
+- **Mozilla Firefox DevTools suite**: 7 assertions, 29 tools, clean. Mozilla-backed.
+- **Excalidraw Architect suite**: 4 assertions, clean. Diagram generation.
+- **SEC EDGAR suite**: 5 assertions, clean. Free public financial data. Uses `skip_unless_env`.
+- **mcp-math suite**: 4 assertions, 16 tools, clean. Math operations.
+- **DuckDuckGo suite**: 2 assertions, clean. Search and fetch.
+- **Kubernetes suite**: 2 assertions, clean. kubectl error handling.
+- **mobile-next/mobile-mcp suite**: 6 assertions, 21 tools, clean. Mobile automation. 4.7K stars.
+- **spec-workflow-mcp suite**: 1 assertion, clean.
+- **Winget distribution**: mcp-assert now available via `winget install BlackwellSystems.mcp-assert`. Auto-updated on each release.
+- **Download stats SVG**: daily auto-updated card on README showing pip, npm, pytest plugin, brew, and GitHub release downloads.
+- **521 total assertions** across 50 servers, 55 suites, 6 languages, 3 transports. 20 bugs found across 9 servers, 6 fix PRs submitted.
 
 ### Fixed
 
+- **Hardcoded paths in 97 YAML files**: replaced absolute paths (`/Users/.../uvx`, `/Users/.../npx`) with bare commands (`uvx`, `npx`). Fixed CI failures in e2e-sqlite and e2e-memory jobs.
 - **arxiv isError assertion**: re-skipped after maintainer's fix (#95) didn't resolve the issue in published v0.5.0.
 
 ## [0.5.0] - 2026-04-25

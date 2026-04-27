@@ -23,9 +23,6 @@ Add it to any MCP server project in one line:
   <img src="assets/demo.gif" alt="mcp-assert demo" width="720">
 </p>
 
-<p align="center">
-  <img src="assets/download-stats.svg" alt="Download stats" width="320">
-</p>
 
 ## Why
 
@@ -210,6 +207,10 @@ Full documentation is available at [blackwell-systems.github.io/mcp-assert](http
 - [Roadmap](https://blackwell-systems.github.io/mcp-assert/roadmap/): what's shipped and what's next
 - [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): 20 bugs found across 9 servers, 6 fix PRs submitted
 - [Dogfooding](https://blackwell-systems.github.io/mcp-assert/dogfooding/): findings from testing our own servers
+
+<p align="center">
+  <img src="assets/download-stats.svg" alt="Download stats" width="320">
+</p>
 
 <p align="center">
   <a href="https://github.com/blackwell-systems/mcp-assert">
