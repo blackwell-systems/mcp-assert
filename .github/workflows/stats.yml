@@ -1,0 +1,27 @@
+name: Update download stats
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Every day at 8am UTC
+  workflow_dispatch:       # Manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate download stats SVG
+        run: bash scripts/download-stats.sh assets/download-stats.svg
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/download-stats.svg
+          git diff --cached --quiet || git commit -m "chore: update download stats [skip ci]" && git push

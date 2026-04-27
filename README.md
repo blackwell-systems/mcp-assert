@@ -23,6 +23,10 @@ Add it to any MCP server project in one line:
   <img src="assets/demo.gif" alt="mcp-assert demo" width="720">
 </p>
 
+<p align="center">
+  <img src="assets/download-stats.svg" alt="Download stats" width="320">
+</p>
+
 ## Why
 
 Most MCP tools are deterministic: `read_file` returns file contents, `read_query` returns rows, `get_references` returns locations. Given the same input, the correct output is knowable in advance. You don't need an LLM to grade it. You need `assert.Equal`.
