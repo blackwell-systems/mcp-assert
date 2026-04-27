@@ -85,7 +85,7 @@ Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-
 | PR/Issue | Repo | Status | What happens when it merges |
 |----------|------|--------|----------------------------|
 | antvis/mcp-server-chart#292 | Fix: isError on chart failures | Open, maintainer engaged | Submit CI integration PR immediately |
-| grafana/mcp-grafana#793 | Fix: timestamp validation | Open, CLA signed | Update scorecard, unskip assertion |
+| grafana/mcp-grafana#793 | Fix: timestamp validation | **Merged** (2026-04-27) | Scorecard updated, assertion unskipped |
 | mark3labs/mcp-go#828 | Fix: stderr hooks | Open | Update scorecard |
 | modelcontextprotocol/servers#4044 | Fix: blob content type (community) | Open | Update scorecard, unskip filesystem assertion |
 | modelcontextprotocol/servers#4051 | Fix: puppeteer_navigate isError | Open (archived branch) | Update scorecard, unskip assertion |

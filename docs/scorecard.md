@@ -131,7 +131,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `grafana/mcp-grafana` | Go | stdio | 17 | 34% (17/50 tools) | 1 | [grafana/mcp-grafana#792](https://github.com/grafana/mcp-grafana/issues/792). `get_assertions` returns internal error (-32603) instead of `isError:true` on invalid timestamp. 3 live-backend assertions use `skip_unless_env`. |
+| `grafana/mcp-grafana` | Go | stdio | 17 | 34% (17/50 tools) | 1 (fixed) | [grafana/mcp-grafana#793](https://github.com/grafana/mcp-grafana/pull/793) **merged**. `get_assertions` timestamp validation fix. Our first merged fix PR on Grafana. 3 live-backend assertions use `skip_unless_env`. |
 
 ### macOS (Swift)
 
@@ -278,7 +278,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **What:** Passing a non-ISO-8601 timestamp (e.g., `"not-a-date"`) returns MCP internal error (-32603) instead of `isError: true`. The `time.Time` field is unmarshalled by the mcp-go SDK before the tool handler runs; invalid input triggers an unmarshal error that the SDK converts to an internal error rather than a tool error.
 - **Impact:** MCP clients treat -32603 as a server crash. Agents can't self-correct from internal errors the way they can from `isError: true` responses. All other tools in the server validate input correctly.
 - **Issue:** [grafana/mcp-grafana#792](https://github.com/grafana/mcp-grafana/issues/792)
-- **Status:** Fix submitted ([#793](https://github.com/grafana/mcp-grafana/pull/793)), pending merge
+- **Status:** Fix merged ([#793](https://github.com/grafana/mcp-grafana/pull/793), merged 2026-04-27)
 
 ### Bug #6: arxiv-mcp-server: get_abstract returns error content without isError flag
 
