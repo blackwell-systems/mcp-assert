@@ -126,6 +126,15 @@ mcp-assert run --suite evals/ --fixture evals/fixtures
 
 See the [Getting Started guide](https://blackwell-systems.github.io/mcp-assert/getting-started/) for a full walkthrough.
 
+### Already using pytest?
+
+```bash
+pip install pytest-mcp-assert
+pytest --mcp-suite evals/
+```
+
+Each YAML assertion becomes a pytest test item. No migration needed.
+
 ## Zero-Effort Coverage
 
 ```bash
