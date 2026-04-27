@@ -1,0 +1,13 @@
+name: get_price_history returns MSFT price data
+server:
+  command: uvx
+  args: [yfinance-mcp]
+assert:
+  tool: get_price_history
+  args:
+    symbol: "MSFT"
+    period: "5d"
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

@@ -1,0 +1,10 @@
+name: self_test returns isError without credentials
+server:
+  command: npx
+  args: [-y, lighthouse-mcp-server]
+assert:
+  tool: self_test
+  args: {}
+  expect:
+    is_error: true
+timeout: 15s

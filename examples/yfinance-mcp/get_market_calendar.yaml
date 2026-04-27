@@ -1,0 +1,11 @@
+name: get_market_calendar returns trading schedule
+server:
+  command: uvx
+  args: [yfinance-mcp]
+assert:
+  tool: get_market_calendar
+  args: {}
+  expect:
+    not_error: true
+    not_empty: true
+timeout: 15s

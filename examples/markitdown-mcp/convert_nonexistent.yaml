@@ -1,0 +1,11 @@
+name: convert_to_markdown returns isError for nonexistent file
+server:
+  command: uvx
+  args: [markitdown-mcp]
+assert:
+  tool: convert_to_markdown
+  args:
+    uri: "file:///tmp/nonexistent-file.pdf"
+  expect:
+    is_error: true
+timeout: 15s

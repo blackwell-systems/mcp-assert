@@ -1,0 +1,10 @@
+name: describe_regions returns isError without credentials
+server:
+  command: npx
+  args: [-y, lighthouse-mcp-server]
+assert:
+  tool: describe_regions
+  args: {}
+  expect:
+    is_error: true
+timeout: 15s

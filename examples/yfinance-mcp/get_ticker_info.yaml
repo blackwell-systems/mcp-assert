@@ -1,0 +1,13 @@
+name: get_ticker_info returns Apple stock data
+server:
+  command: uvx
+  args: [yfinance-mcp]
+assert:
+  tool: get_ticker_info
+  args:
+    symbol: "AAPL"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["Apple"]
+timeout: 15s

@@ -1,0 +1,13 @@
+name: search finds Tesla
+server:
+  command: uvx
+  args: [yfinance-mcp]
+assert:
+  tool: search
+  args:
+    query: "Tesla"
+  expect:
+    not_error: true
+    not_empty: true
+    contains: ["TSLA"]
+timeout: 15s
