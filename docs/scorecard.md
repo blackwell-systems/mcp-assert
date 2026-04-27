@@ -10,10 +10,10 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server suites | 60 total (58 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
 | Languages tested | 7 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift, C#) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 536 (453 server + 63 agent-lsp + 20 trajectory) |
+| Total assertions | 546 (463 server + 63 agent-lsp + 20 trajectory) |
 | Upstream bugs found | 20 (9 servers affected) |
 | Upstream issues filed | 6 (1 unfiled: repo archived) |
-| Upstream fix PRs submitted | 6 (5 ours pending, 1 closed after maintainer fix) |
+| Upstream fix PRs submitted | 6 (4 ours pending, 1 merged, 1 closed after maintainer fix) |
 | Clean scans (no bugs) | 45 |
 | Internal bugs fixed | 6 |
 
@@ -131,7 +131,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `grafana/mcp-grafana` | Go | stdio | 17 | 34% (17/50 tools) | 1 (fixed) | [grafana/mcp-grafana#793](https://github.com/grafana/mcp-grafana/pull/793) **merged**. `get_assertions` timestamp validation fix. Our first merged fix PR on Grafana. 3 live-backend assertions use `skip_unless_env`. |
+| `grafana/mcp-grafana` | Go | stdio | 27 | 54% (27/50 tools) | 1 (fixed) | [grafana/mcp-grafana#793](https://github.com/grafana/mcp-grafana/pull/793) **merged**. `get_assertions` timestamp validation fix. 10 live-backend assertions use `skip_unless_env` (annotations, incidents, dashboards, Prometheus, Loki, Sift). |
 
 ### macOS (Swift)
 
