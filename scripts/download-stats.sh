@@ -22,7 +22,7 @@ npm_week=$(curl -sf "https://api.npmjs.org/downloads/point/last-week/${NPM_PKG}"
 gh_total=$(gh api "repos/${REPO}/releases" --jq '[.[].assets[].download_count] | add // 0' 2>/dev/null || echo "?")
 
 brew_30d=$(curl -sf "https://formulae.brew.sh/api/formula/${PYPI_PKG}.json" \
-  | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['analytics']['install']['30d'].get('${PYPI_PKG}',0))" 2>/dev/null || echo "?")
+  | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['analytics']['install']['30d'].get('${PYPI_PKG}',0))" 2>/dev/null || echo "--")
 
 # Calculate total weekly
 total="?"
@@ -31,7 +31,7 @@ if [[ "$pypi_week" != "?" && "$npm_week" != "?" ]]; then
   if [[ "$pytest_week" != "?" && "$pytest_week" != "0" ]]; then
     total=$((total + pytest_week))
   fi
-  if [[ "$brew_30d" != "?" && "$brew_30d" != "0" ]]; then
+  if [[ "$brew_30d" != "--" && "$brew_30d" != "?" && "$brew_30d" != "0" ]]; then
     brew_week=$((brew_30d / 4))
     total=$((total + brew_week))
   fi
