@@ -3,3 +3,7 @@
 .saw-state/
 gate-cache.json
 .playwright-mcp/
+
+# vitest-plugin build artifacts
+vitest-plugin/node_modules/
+vitest-plugin/dist/

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- **vitest-mcp-assert**: Vitest integration for running mcp-assert YAML assertions as Vitest tests. Two usage modes: `describeMcpSuite('name', 'evals/')` for auto-discovery, or `runMcpAssert('evals/echo.yaml')` for per-test control. Same YAML files work across pytest, Vitest, and the CLI. Published as `vitest-mcp-assert` on npm.
+
 ## [0.6.0] - 2026-04-26
 
 ### Added

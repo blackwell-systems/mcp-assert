@@ -1,0 +1,45 @@
+{
+  "name": "vitest-mcp-assert",
+  "version": "0.1.0",
+  "description": "Vitest integration for mcp-assert: run MCP server assertion YAML files as Vitest tests",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "vitest",
+    "mcp",
+    "model-context-protocol",
+    "testing",
+    "assertions",
+    "mcp-assert"
+  ],
+  "author": "Dayna Blackwell",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blackwell-systems/mcp-assert",
+    "directory": "vitest-plugin"
+  },
+  "peerDependencies": {
+    "vitest": ">=1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  }
+}
