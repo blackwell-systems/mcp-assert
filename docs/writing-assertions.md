@@ -57,7 +57,7 @@ server:
     API_KEY: "$MY_API_KEY"
 ```
 
-If the referenced variable is not set in the host environment, the original string is preserved unchanged (e.g., `${DB_USER}` remains literal). This lets you share assertion files across environments without hardcoding secrets.
+If the referenced variable is not set in the host environment, it is replaced with an empty string, matching standard shell behavior. Use `skip_unless_env` to skip assertions that require specific environment variables.
 
 ## Minimal assertion
 

@@ -143,7 +143,7 @@ This package defines the data model and all validation logic. It has no I/O beyo
 |------|----------------|
 | `types.go` | All core types: `Suite`, `Assertion`, `ServerConfig`, `AssertBlock`, `Expect`, `Result`, `Status`, and the block types for resources, prompts, completion, sampling, logging, and trajectory. |
 | `loader.go` | `LoadSuite()` reads a directory (or single file) of YAML, parses each into an `Assertion`, and returns a `Suite`. Recurses one level into subdirectories. Defaults the `name` field to the filename if omitted. |
-| `checker.go` | `Check()` evaluates all 18 expectation types against a response string. `CheckWithSnapshots()` adds `file_unchanged` comparison. `CheckProgress()` checks progress notification counts. Also contains `jsonPathLookup()` for simple `$.dot.path[N]` queries. |
+| `checker.go` | `Check()` evaluates 15 registered check functions (covering 16 of the 18 expectation fields; `min_results` and `max_results` share one check). `CheckWithSnapshots()` adds `file_unchanged` comparison. `CheckProgress()` checks `min_progress` notification counts. Also contains `jsonPathLookup()` for simple `$.dot.path[N]` queries. |
 | `trajectory.go` | `CheckTrajectory()` evaluates the 4 trajectory assertion types (order, presence, absence, args_contain) against a trace of tool calls. `LoadAuditLog()` parses JSONL files into trace entries. |
 | `sampling_types.go` | `SamplingAssertBlock` type for assertions that test tools which trigger server-side LLM sampling. |
 | `logging_types.go` | `LoggingAssertBlock`, `LoggingExpect`, and `LogMessage` types for assertions that test log level setting and message capture. |
@@ -229,9 +229,11 @@ type Assertion struct {
     AssertSampling   *SamplingAssertBlock   // or test sampling
     AssertLogging    *LoggingAssertBlock    // or test logging
     Trace            []TraceEntry           // or validate a tool call trace
+    AuditLog         string                 // path to JSONL audit log (alternative to Trace)
     Trajectory       []TrajectoryAssertion  // trajectory checks (no server)
     Timeout          string
     Skip             bool
+    SkipUnlessEnv    string                 // skip if this env var is not set
 }
 ```
 
@@ -248,6 +250,8 @@ type ServerConfig struct {
     Env                map[string]string  // environment variables
     Transport          string             // "stdio", "sse", or "http"
     URL                string             // endpoint for sse/http
+    Headers            map[string]string  // custom headers for sse/http (supports ${VAR} expansion)
+    Docker             string             // Docker image for container isolation (stdio only)
     ClientCapabilities ClientCapabilities // mock bidirectional responses
 }
 ```

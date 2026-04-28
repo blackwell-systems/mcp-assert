@@ -4,11 +4,11 @@
 
 | Item | Priority | Description |
 |------|----------|-------------|
-| **Blog post** | Ready | "We tested 50 MCP servers from Anthropic, Google, OpenAI, Microsoft, Mozilla, Sentry, and AWS. Here's what we found." The scorecard data is the content; needs prose around it. Publish on docs site (mkdocs already deployed). |
-| **MCP server leaderboard** | High | Static page on docs site ranking servers by coverage score and pass rate. Data exists for 50 servers. Becomes valuable once there's external traffic (blog post drives traffic). |
-| **antvis CI integration PR** | Blocked on #292 merge | antvis maintainer asked us to add mcp-assert to their CI. Submit follow-up PR with `evals/` directory (25 assertions) + GitHub Actions workflow using `mcp-assert-action@v1`. This is the first external adoption. |
+| **Blog post** | Ready | "We tested 55 MCP servers from Anthropic, Google, OpenAI, Microsoft, Mozilla, Sentry, and AWS. Here's what we found." The scorecard data is the content; needs prose around it. Publish on docs site (mkdocs already deployed). |
+| **MCP server leaderboard** | High | Static page on docs site ranking servers by coverage score and pass rate. Data exists for 55 servers. Becomes valuable once there's external traffic (blog post drives traffic). |
+| **antvis CI integration PR** | Ready (#292 merged) | antvis maintainer asked us to add mcp-assert to their CI. Submit follow-up PR with `evals/` directory (25 assertions) + GitHub Actions workflow using `mcp-assert-action@v1`. [#294](https://github.com/antvis/mcp-server-chart/pull/294) submitted. First external adoption. |
 | **Download stats dashboard** | Medium | Script or tool that queries PyPI, npm, GitHub releases, and Homebrew APIs to produce a unified download report. Optionally append to CSV in repo for historical tracking. |
-| **C# server suites** | Medium | `modelcontextprotocol/csharp-sdk` has examples. Last major language gap (7th language). |
+| **C# server suites** | Done (v0.6.0) | `modelcontextprotocol/csharp-sdk` QuickstartWeatherServer. 2 assertions, 100% tool coverage (2/2 tools). 7th language. |
 | **Reference suite registry** | Medium | Canonical protocol conformance assertions any MCP server can run. Independent of server-specific fixtures. "Does this server speak MCP correctly?" |
 | **Docker images** | Low | Per-runtime images (node, python, go) for running `mcp-assert audit/ci` without installing the binary. Useful for CI without install (`docker run ghcr.io/blackwell-systems/mcp-assert:node ci --suite evals/`) and as the backend for the hosted audit experiment. Not needed until hosted audit or Docker Hub pull metrics become a priority. |
 | **Nix flake** | Low | Nix users are quality-focused and vocal. |
@@ -84,7 +84,7 @@ Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-
 
 | PR/Issue | Repo | Status | What happens when it merges |
 |----------|------|--------|----------------------------|
-| antvis/mcp-server-chart#292 | Fix: isError on chart failures | Open, maintainer engaged | Submit CI integration PR immediately |
+| antvis/mcp-server-chart#292 | Fix: isError on chart failures | **Merged** (2026-04-28) | CI integration PR #294 submitted |
 | grafana/mcp-grafana#793 | Fix: timestamp validation | **Merged** (2026-04-27) | Scorecard updated, assertion unskipped |
 | mark3labs/mcp-go#828 | Fix: stderr hooks | Open | Update scorecard |
 | modelcontextprotocol/servers#4044 | Fix: blob content type (community) | Open | Update scorecard, unskip filesystem assertion |
@@ -98,7 +98,7 @@ Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-
 |--------|---------|-----------|---------|
 | Playwright | 67% (14/21) | ~85% | click/hover/drag need snapshot element refs (multi-step chaining) |
 | Google Storage | 35% (6/17) | ~80% | Needs GCP credentials (use skip_unless_env) |
-| Grafana | 34% (17/50) | ~60% | Needs running Grafana instance (docker-compose with service container) |
+| Grafana | 100% (50/50) | 100% | Complete. 10 live-backend assertions use `skip_unless_env`. |
 | git-mcp (idosal) | 39% (14/36) | ~60% | Many write tools need valid repo state |
 | Perplexity | 100% auth errors only | 100% real | Needs API key ($5 free credits) |
 
@@ -127,7 +127,7 @@ Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-
 | **`skip_unless_env` field** | 0.6.0 | Conditional assertion skipping based on env vars. Live-backend and no-auth assertions coexist in same suite. |
 | **Per-assertion Docker isolation** | 0.6.0 | `docker:` field in server YAML. Fresh container per assertion for safe write testing. |
 | **Coverage expansion** | 0.6.0 | SQLite 100%, Memory 100%, engram 100%. Anthropic git 92%, Playwright 67%. |
-| **11 new server suites** | 0.6.0 | 48 servers, 504 assertions, 6 languages, 20 bugs. XcodeBuildMCP, Puppeteer, Context7, Chrome DevTools, Firefox DevTools, Excalidraw, SEC EDGAR, mcp-devtools, mcp-math, DuckDuckGo, Kubernetes, plus Perplexity, Peekaboo, CodeGraphContext, deep-research from pre-release. |
+| **11 new server suites** | 0.6.0 | 55 servers, 570 assertions, 7 languages, 20 bugs. XcodeBuildMCP, Puppeteer, Context7, Chrome DevTools, Firefox DevTools, Excalidraw, SEC EDGAR, mcp-devtools, mcp-math, DuckDuckGo, Kubernetes, plus Perplexity, Peekaboo, CodeGraphContext, deep-research from pre-release. |
 | **Vitest plugin** | 0.7.0 | `npm install -D vitest-mcp-assert`. Auto-discover YAML files or per-test control. Same bridge architecture as pytest plugin. |
 | **pytest plugin** | 0.5.0 | `pip install pytest-mcp-assert`. Published to PyPI via release pipeline. |
 | **Badge snippet on pass** | 0.5.0 | CLI and GitHub Action output ready-to-paste badge markdown. |

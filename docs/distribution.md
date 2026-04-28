@@ -233,12 +233,32 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | `microsoft/playwright-mcp` | TypeScript | 14 | 67% (14/21 tools) | Clean. Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, tabs, navigate back, press key, wait for element. |
 | `openai/sample-deep-research-mcp` | Python | 4 | 100% (2/2 tools) | Clean. Search and fetch against static JSON. |
 | `@google-cloud/storage-mcp` | TypeScript | 6 | 35% (6/17 tools) | Clean. Bucket metadata, object listing, IAM policy. |
-| `grafana/mcp-grafana` | Go | 17 | 34% (17/50 tools) | 1 bug. 3 live-backend assertions use `skip_unless_env`. |
+| `grafana/mcp-grafana` | Go | 54 | 100% (50/50 tools) | 1 bug (fixed). 10 live-backend assertions use `skip_unless_env`. |
 | `blazickjp/arxiv-mcp-server` | Python | 5 | 50% (5/10 tools) | 1 bug: isError flag not set on error content. |
 | `awslabs/aws-documentation-mcp-server` | Python | 4 | 100% (4/4 tools) | Clean. Search, recommend, no-results handling. |
 | `exa-labs/exa-mcp-server` | JavaScript | 2 | 100% (2/2 tools) | Clean. Proper 401 with API key guidance. |
 | `onmyway133/git-mcp` | TypeScript | 14 | 39% (14/36 tools) | Clean. Status, log, branches, diff, show, reflog. |
-| **Total** | **6 languages** | **504** | | **51 suites** |
+| `nicobailey/codegraph-context-mcp` | TypeScript | 16 | 76% (16/21 tools) | Clean. Code graph indexer. |
+| `perplexityai/mcp-server` | TypeScript | 4 | 100% (4/4 tools) | Clean. All tools return isError with 401. |
+| `Gentleman-Programming/engram` | Go | 16 | 100% (16/16 tools) | Clean. Full coverage including writes. |
+| `steipete/Peekaboo` | Swift | 6 | 27% (6/22 tools) | 1 bug. First Swift server. |
+| `@modelcontextprotocol/server-puppeteer` | TypeScript | 7 | 100% (7/7 tools) | 1 bug: puppeteer_navigate crashes on invalid URL. |
+| `getsentry/XcodeBuildMCP` | TypeScript | 10 | 37% (10/27 tools) | Clean. Sentry-backed. |
+| `chrome-devtools-mcp` | TypeScript | 7 | 24% (7/29 tools) | Clean. |
+| `mozilla/firefox-devtools-mcp` | TypeScript | 7 | 24% (7/29 tools) | Clean. Mozilla-backed. |
+| `@upstash/context7-mcp` | TypeScript | 2 | 100% (2/2 tools) | Clean. Upstash-backed. |
+| `modelcontextprotocol/csharp-sdk` | C# | 2 | 100% (2/2 tools) | Clean. 7th language. |
+| `duckduckgo-mcp-server` | Python | 2 | 100% (2/2 tools) | Clean. Zero auth. |
+| `excalidraw-architect-mcp` | Python | 4 | 100% (4/4 tools) | Clean. Zero auth. |
+| `mcp-server-kubernetes` | Python | 2 | 40% (2/5 tools) | Clean. |
+| `lighthouse-mcp-server` | TypeScript | 2 | 4% (2/57 tools) | Clean. Tencent Cloud. |
+| `markitdown-mcp` | Python | 1 | 100% (1/1 tool) | Clean. Microsoft MarkItDown. |
+| `mcp-server-math` | Python | 4 | 25% (4/16 tools) | Clean. Zero auth. |
+| `mobile-next/mobile-mcp` | TypeScript | 6 | 29% (6/21 tools) | Clean. |
+| `sec-edgar-mcp` | Python | 5 | 24% (5/21 tools) | Clean. Uses `skip_unless_env`. |
+| `Pimzino/spec-workflow-mcp` | TypeScript | 1 | 100% (1/1 tool) | Clean. |
+| `narumiruna/yfinance-mcp` | Python | 4 | 22% (4/18 tools) | Clean. Zero auth. |
+| **Total** | **7 languages** | **570** | | **61 suites** |
 
 ## Target servers (next)
 
@@ -246,7 +266,6 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 |--------|----------|-------|------------|
 | Rust MCP servers (`rmcp` SDK) | Rust | -- | Underserved community, no existing testing tools |
 | Java MCP servers (Spring, Quarkus) | Java | -- | Enterprise community, high signal |
-| C# MCP servers (csharp-sdk) | C# | -- | .NET community, underserved |
 
 ## Content (planned)
 

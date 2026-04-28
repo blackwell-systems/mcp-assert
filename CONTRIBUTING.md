@@ -71,22 +71,28 @@ internal/report/
 
 2. **Implement checker in `internal/assertion/checker.go`:**
    
-   Add a case to the `Check` function:
+   Add a check function and register it in the `checkRegistry` slice:
    ```go
-   if expect.MyNewCheck != "" {
-       if !strings.Contains(result, expect.MyNewCheck) {
-           return fmt.Errorf("expected to find '%s' but didn't", expect.MyNewCheck)
+   func checkMyNewCheck(expect Expect, response string, _ bool) error {
+       if expect.MyNewCheck != "" {
+           if !strings.Contains(response, expect.MyNewCheck) {
+               return fmt.Errorf("expected to find %q but didn't", expect.MyNewCheck)
+           }
        }
+       return nil
    }
+   ```
+   Then add an entry to `checkRegistry`:
+   ```go
+   {"my_new_check", checkMyNewCheck},
    ```
 
 3. **Add tests in `internal/assertion/checker_test.go`:**
    
    ```go
    func TestMyNewCheck(t *testing.T) {
-       result := assertion.Result{Content: "hello world"}
        expect := assertion.Expect{MyNewCheck: "hello"}
-       err := assertion.Check(expect, result)
+       err := assertion.Check(expect, "hello world", false)
        if err != nil {
            t.Errorf("expected pass, got: %v", err)
        }

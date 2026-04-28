@@ -1,6 +1,6 @@
 # Examples
 
-mcp-assert ships with 51 suites for 48 MCP servers in 6 languages (Go, TypeScript, Python, Rust, Kotlin/Java, Swift), plus a trajectory suite that runs without a server. 3 transports: stdio, SSE, HTTP. 504 total assertions.
+mcp-assert ships with 61 suites for 55 MCP servers in 7 languages (Go, TypeScript, Python, Rust, Kotlin/Java, Swift, C#), plus a trajectory suite that runs without a server. 3 transports: stdio, SSE, HTTP. 570 total assertions.
 
 ## Summary
 
@@ -39,7 +39,7 @@ mcp-assert ships with 51 suites for 48 MCP servers in 6 languages (Go, TypeScrip
 | `examples/playwright-mcp/` | microsoft/playwright-mcp | TypeScript | stdio | 14 |
 | `examples/openai-deep-research/` | openai/sample-deep-research-mcp | Python | stdio | 4 |
 | `examples/google-storage-mcp/` | @google-cloud/storage-mcp | TypeScript | stdio | 6 |
-| `examples/grafana-mcp/` | grafana/mcp-grafana | Go | stdio | 17 |
+| `examples/grafana-mcp/` | grafana/mcp-grafana | Go | stdio | 54 |
 | `examples/arxiv-mcp/` | blazickjp/arxiv-mcp-server | Python | stdio | 5 |
 | `examples/aws-docs-mcp/` | awslabs/aws-documentation-mcp-server | Python | stdio | 4 |
 | `examples/exa-mcp/` | exa-labs/exa-mcp-server | JavaScript | stdio | 2 |
@@ -49,6 +49,23 @@ mcp-assert ships with 51 suites for 48 MCP servers in 6 languages (Go, TypeScrip
 | `examples/codegraph-context/` | nicobailey/codegraph-context-mcp | TypeScript | stdio | 16 |
 | `examples/deep-research/` | u14app/deep-research | JavaScript | HTTP | 5 |
 | `examples/peekaboo/` | steipete/Peekaboo | Swift | stdio | 6 |
+| `examples/puppeteer-mcp/` | @modelcontextprotocol/server-puppeteer | TypeScript | stdio | 7 |
+| `examples/chrome-devtools-mcp/` | chrome-devtools-mcp | TypeScript | stdio | 7 |
+| `examples/firefox-devtools-mcp/` | mozilla/firefox-devtools-mcp | TypeScript | stdio | 7 |
+| `examples/context7-mcp/` | @upstash/context7-mcp | TypeScript | stdio | 2 |
+| `examples/csharp-weather/` | modelcontextprotocol/csharp-sdk | C# | stdio | 2 |
+| `examples/duckduckgo-mcp/` | duckduckgo-mcp-server | Python | stdio | 2 |
+| `examples/excalidraw-architect-mcp/` | excalidraw-architect-mcp | Python | stdio | 4 |
+| `examples/kubernetes-mcp/` | mcp-server-kubernetes | Python | stdio | 2 |
+| `examples/lighthouse-mcp/` | lighthouse-mcp-server | TypeScript | stdio | 2 |
+| `examples/markitdown-mcp/` | markitdown-mcp | Python | stdio | 1 |
+| `examples/mcp-devtools/` | sammcj/mcp-devtools | Go | stdio | 5 |
+| `examples/mcp-math/` | mcp-server-math | Python | stdio | 4 |
+| `examples/mobile-mcp/` | mobile-next/mobile-mcp | TypeScript | stdio | 6 |
+| `examples/sec-edgar-mcp/` | sec-edgar-mcp | Python | stdio | 5 |
+| `examples/spec-workflow-mcp/` | Pimzino/spec-workflow-mcp | TypeScript | stdio | 1 |
+| `examples/xcodebuild-mcp/` | getsentry/XcodeBuildMCP | TypeScript | stdio | 10 |
+| `examples/yfinance-mcp/` | narumiruna/yfinance-mcp | Python | stdio | 4 |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 |
 
 ---

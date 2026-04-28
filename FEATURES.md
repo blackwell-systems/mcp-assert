@@ -206,7 +206,7 @@ Behavior:
 
 ---
 
-## Example Suites (51 suites, 6 languages, 504 assertions)
+## Example Suites (61 suites, 7 languages, 570 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|
@@ -243,7 +243,7 @@ Behavior:
 | `examples/playwright-mcp/` | microsoft/playwright-mcp | TypeScript | stdio | 14 | Navigate, snapshot, screenshot, JS evaluate, console, network, resize, close, tabs, navigate back, press key, wait for element, invalid URL rejection (67% tool coverage) |
 | `examples/openai-deep-research/` | openai/sample-deep-research-mcp | Python | stdio | 4 | 100% tool coverage (2/2 tools). Search and fetch against static JSON. |
 | `examples/google-storage-mcp/` | @google-cloud/storage-mcp | TypeScript | stdio | 6 | Bucket metadata, object listing, IAM policy, input validation. |
-| `examples/grafana-mcp/` | grafana/mcp-grafana | Go | stdio | 17 | 1 bug. 3 live-backend assertions via `skip_unless_env`. |
+| `examples/grafana-mcp/` | grafana/mcp-grafana | Go | stdio | 54 | 1 bug (fixed). 100% tool coverage (50/50 tools). 10 live-backend assertions via `skip_unless_env`. |
 | `examples/arxiv-mcp/` | blazickjp/arxiv-mcp-server | Python | stdio | 5 | 1 bug: isError flag not set on error content. |
 | `examples/aws-docs-mcp/` | awslabs/aws-documentation-mcp-server | Python | stdio | 4 | Search, recommend, no-results handling (100% tool coverage) |
 | `examples/exa-mcp/` | exa-labs/exa-mcp-server | JavaScript | stdio | 2 | Proper 401 with isError and API key guidance (100% tool coverage) |
@@ -253,6 +253,23 @@ Behavior:
 | `examples/codegraph-context/` | nicobailey/codegraph-context-mcp | TypeScript | stdio | 16 | Code graph indexer with 21 tools. |
 | `examples/deep-research/` | u14app/deep-research | JavaScript | HTTP | 5 | All tools return `isError:true` with "Unsupported Provider" when no LLM credentials configured. |
 | `examples/peekaboo/` | steipete/Peekaboo | Swift | stdio | 6 | First Swift MCP server. 1 bug: `image` returns internal error instead of `isError:true`. |
+| `examples/puppeteer-mcp/` | @modelcontextprotocol/server-puppeteer | TypeScript | stdio | 7 | 100% tool coverage. 1 bug: `puppeteer_navigate` crashes on invalid URL. |
+| `examples/chrome-devtools-mcp/` | chrome-devtools-mcp | TypeScript | stdio | 7 | 29 tools, all return `isError:true` properly. |
+| `examples/firefox-devtools-mcp/` | mozilla/firefox-devtools-mcp | TypeScript | stdio | 7 | 29 tools via WebDriver BiDi. Mozilla-backed. |
+| `examples/context7-mcp/` | @upstash/context7-mcp | TypeScript | stdio | 2 | Library resolution and documentation search. Upstash-backed. |
+| `examples/csharp-weather/` | modelcontextprotocol/csharp-sdk QuickstartWeatherServer | C# | stdio | 2 | First C# server (7th language). |
+| `examples/duckduckgo-mcp/` | duckduckgo-mcp-server | Python | stdio | 2 | Search and fetch_content. Zero auth. |
+| `examples/excalidraw-architect-mcp/` | excalidraw-architect-mcp | Python | stdio | 4 | Architecture diagrams, mermaid conversion. Zero auth. |
+| `examples/kubernetes-mcp/` | mcp-server-kubernetes | Python | stdio | 2 | kubectl get, describe error handling. |
+| `examples/lighthouse-mcp/` | lighthouse-mcp-server | TypeScript | stdio | 2 | Tencent Cloud Lighthouse. 57 tools. |
+| `examples/markitdown-mcp/` | markitdown-mcp | Python | stdio | 1 | Microsoft MarkItDown document-to-markdown converter. |
+| `examples/mcp-devtools/` | sammcj/mcp-devtools | Go | stdio | 5 | 4 bugs: internal error instead of isError. |
+| `examples/mcp-math/` | mcp-server-math | Python | stdio | 4 | 16 math tools. Zero auth. |
+| `examples/mobile-mcp/` | mobile-next/mobile-mcp | TypeScript | stdio | 6 | 21 tools for iOS/Android automation. |
+| `examples/sec-edgar-mcp/` | sec-edgar-mcp | Python | stdio | 5 | SEC EDGAR filings, insider trading, financials. Uses `skip_unless_env`. |
+| `examples/spec-workflow-mcp/` | Pimzino/spec-workflow-mcp | TypeScript | stdio | 1 | Spec-driven development workflow. |
+| `examples/xcodebuild-mcp/` | getsentry/XcodeBuildMCP | TypeScript | stdio | 10 | 27 tools. Sentry-backed. |
+| `examples/yfinance-mcp/` | narumiruna/yfinance-mcp | Python | stdio | 4 | Live stock market data. Zero auth. |
 | `examples/trajectory/` | Inline trace (no server) | N/A | N/A | 20 | All 20 agent-lsp skill protocols: required tool call sequences, safety gates, absence checks, order constraints |
 
 ---
@@ -270,7 +287,7 @@ See the [Badge guide](https://blackwell-systems.github.io/mcp-assert/badge/) for
 
 ---
 
-## Install Methods (6)
+## Install Methods (7)
 
 | Method | Command |
 |--------|---------|
@@ -279,6 +296,7 @@ See the [Badge guide](https://blackwell-systems.github.io/mcp-assert/badge/) for
 | Go | `go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest` |
 | Homebrew | `brew install blackwell-systems/tap/mcp-assert` |
 | Scoop | `scoop install mcp-assert` (via `blackwell-systems/scoop-bucket`) |
+| Winget | `winget install BlackwellSystems.mcp-assert` |
 | curl\|sh | `curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/install.sh \| sh` |
 
 ---
@@ -448,7 +466,7 @@ internal/assertion/
   logging_checker.go        Logging assertion checker
 internal/runner/
   audit.go                  Zero-config audit: discover tools, call each, report quality score, generate YAML
-  runner.go                 Run, Matrix, CI commands, MCP client lifecycle
+  runner.go                 Package doc comment (actual logic in commands.go, client.go, execute.go)
   client.go                 MCP client creation, transport selection, client capabilities
   commands.go               CLI command dispatch
   execute.go                Assertion routing (assert, resources, prompts, completion, sampling, logging, trajectory)

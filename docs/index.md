@@ -2,7 +2,7 @@
 
 Test any MCP server in any language. No SDK required. No LLM required.
 
-A single Go binary that connects to your MCP server over stdio, SSE, or HTTP, calls your tools, and asserts the results. Define assertions in YAML, run them in CI. Works with servers written in Go, TypeScript, Python, Rust, Java: anything that speaks MCP.
+A single Go binary that connects to your MCP server over stdio, SSE, or HTTP, calls your tools, and asserts the results. Define assertions in YAML, run them in CI. Works with servers written in Go, TypeScript, Python, Rust, Java, C#, Swift, or anything else that speaks MCP.
 
 ## Why
 

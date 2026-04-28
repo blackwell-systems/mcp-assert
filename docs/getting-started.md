@@ -202,4 +202,4 @@ Edit the generated YAMLs to replace `TODO` placeholders with real values, then r
 - [CLI Reference](cli.md): full command reference with flags and examples
 - [CI Integration](ci-integration.md): GitHub Action, JUnit XML, regression detection
 - [Badge](badge.md): add the "Works with mcp-assert" badge to your README
-- [Examples](examples.md): 51 suites across 48 servers in 6 languages (504 assertions)
+- [Examples](examples.md): 61 suites across 55 servers in 7 languages (570 assertions)

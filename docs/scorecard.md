@@ -6,15 +6,15 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 54 |
-| Server suites | 60 total (58 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
+| Servers scanned | 55 |
+| Server suites | 61 total (59 server + 1 agent-lsp + 1 trajectory; server suites include HTTP/SSE transport variants, prompts, resources, completion, logging suites) |
 | Languages tested | 7 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift, C#) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 546 (463 server + 63 agent-lsp + 20 trajectory) |
+| Total assertions | 570 (487 server + 63 agent-lsp + 20 trajectory) |
 | Upstream bugs found | 20 (9 servers affected) |
 | Upstream issues filed | 6 (1 unfiled: repo archived) |
 | Upstream fix PRs submitted | 6 (3 ours pending, 2 merged, 1 closed after maintainer fix) |
-| Clean scans (no bugs) | 45 |
+| Clean scans (no bugs) | 46 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -77,6 +77,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | `makenotion/notion-mcp-server` | TypeScript | stdio | 22 | 100% (22/22 tools) | 0 | Clean. Official Notion server (4.2K stars). |
 | `mongodb/mongodb-mcp-server` | TypeScript | stdio | 4 | -- | 0 | Clean. Knowledge search, error handling. Exemplary error messages with LLM-aware guidance. |
 | `onmyway133/git-mcp` | TypeScript | stdio | 14 | 39% (14/36 tools) | 0 | Clean. Status, log, branches, diff, show, reflog, invalid repo rejection. |
+| `nicobailey/codegraph-context-mcp` | TypeScript | stdio | 16 | 76% (16/21 tools) | 0 | Clean. Code graph indexer with 21 tools. |
 
 ### Go (additional)
 
@@ -131,7 +132,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `grafana/mcp-grafana` | Go | stdio | 27 | 54% (27/50 tools) | 1 (fixed) | [grafana/mcp-grafana#793](https://github.com/grafana/mcp-grafana/pull/793) **merged**. `get_assertions` timestamp validation fix. 10 live-backend assertions use `skip_unless_env` (annotations, incidents, dashboards, Prometheus, Loki, Sift). |
+| `grafana/mcp-grafana` | Go | stdio | 54 | 100% (50/50 tools) | 1 (fixed) | [grafana/mcp-grafana#793](https://github.com/grafana/mcp-grafana/pull/793) **merged**. `get_assertions` timestamp validation fix. 10 live-backend assertions use `skip_unless_env` (annotations, incidents, dashboards, Prometheus, Loki, Sift). |
 
 ### macOS (Swift)
 
@@ -320,7 +321,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 ## Observations
 
-**Bug rate:** 20 bugs across 9 of 45 servers scanned. The most common pattern: unhandled exceptions propagating as JSON-RPC `-32603` internal errors instead of returning `isError: true`. This affects antvis (9 tools), mcp-devtools (4 tools), Puppeteer (1 tool), Grafana (1 tool), Peekaboo (1 tool). Less common: missing isError flag (arxiv), logic bugs (rmcp), spec violations (filesystem blob type), transport corruption (mcp-go stdio).
+**Bug rate:** 20 bugs across 9 of 55 servers scanned. The most common pattern: unhandled exceptions propagating as JSON-RPC `-32603` internal errors instead of returning `isError: true`. This affects antvis (9 tools), mcp-devtools (4 tools), Puppeteer (1 tool), Grafana (1 tool), Peekaboo (1 tool). Less common: missing isError flag (arxiv), logic bugs (rmcp), spec violations (filesystem blob type), transport corruption (mcp-go stdio).
 
 **Clean scans are valuable too.** fastmcp's clean result (25K-star framework, zero bugs) validates the Python MCP ecosystem's foundations. We document clean scans as positive signals, not wasted effort.
 
