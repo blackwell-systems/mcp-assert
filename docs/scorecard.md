@@ -13,7 +13,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Total assertions | 546 (463 server + 63 agent-lsp + 20 trajectory) |
 | Upstream bugs found | 20 (9 servers affected) |
 | Upstream issues filed | 6 (1 unfiled: repo archived) |
-| Upstream fix PRs submitted | 6 (4 ours pending, 1 merged, 1 closed after maintainer fix) |
+| Upstream fix PRs submitted | 6 (3 ours pending, 2 merged, 1 closed after maintainer fix) |
 | Clean scans (no bugs) | 45 |
 | Internal bugs fixed | 6 |
 
@@ -68,7 +68,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `antvis/mcp-server-chart` | TypeScript | stdio | 25 | 93% (25/27 tools) | 9 | [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291). 9 tools crash with unhandled exceptions on default/minimal input. Stack traces leak to agents. |
+| `antvis/mcp-server-chart` | TypeScript | stdio | 25 | 93% (25/27 tools) | 9 | [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291). 9 tools crash with unhandled exceptions on default/minimal input. Stack traces leak to agents. **Fix PR [#292](https://github.com/antvis/mcp-server-chart/pull/292) merged.** CI integration follow-up in progress. |
 
 ### TypeScript (additional)
 
@@ -269,7 +269,9 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **What:** Tools throw raw JavaScript exceptions (TypeError, G6 graph errors) on default/minimal input. Exceptions propagate as MCP error -32603 with full stack traces instead of returning `isError: true` with helpful messages.
 - **Impact:** LLM agents receive cryptic Node.js stack traces they cannot recover from. The `generate_radar_chart` tool also crashes with populated data when field names don't match undocumented expectations.
 - **Issue:** [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291)
-- **Status:** Open
+- **Fix PR:** [#292](https://github.com/antvis/mcp-server-chart/pull/292) **merged** (2026-04-28)
+- **CI integration:** [#294](https://github.com/antvis/mcp-server-chart/pull/294) submitted. 25 assertion YAML files + GitHub Actions workflow using `mcp-assert-action@v1`. First external adoption.
+- **Status:** Fixed. CI integration pending review.
 
 ### Bug #5: grafana/mcp-grafana: get_assertions returns internal error on invalid input
 
