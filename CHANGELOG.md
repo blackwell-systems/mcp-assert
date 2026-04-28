@@ -3,11 +3,26 @@
 All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, Semantic Versioning.
 
-## [Unreleased]
+## [0.7.0] - 2026-04-28
 
 ### Added
 
 - **vitest-mcp-assert**: Vitest integration for running mcp-assert YAML assertions as Vitest tests. Two usage modes: `describeMcpSuite('name', 'evals/')` for auto-discovery, or `runMcpAssert('evals/echo.yaml')` for per-test control. Same YAML files work across pytest, Vitest, and the CLI. Published as `vitest-mcp-assert` on npm.
+- **Grafana suite expanded to 54 assertions** (100% tool coverage, 50/50 tools). 10 live-backend assertions use `skip_unless_env`.
+- **5 new server suites**: yfinance (2 assertions), lighthouse (3), markitdown (2), C# QuickstartWeatherServer (2, 7th language), Pimzino/spec-workflow-mcp (1), mobile-mcp (6).
+- **Winget distribution**: `winget install BlackwellSystems.mcp-assert`. Auto-updated on each release.
+- **Download stats SVG** in README tracking pip, pytest plugin, npm CLI, npm vitest plugin, brew, and GitHub releases.
+- **First external CI adoption**: antvis/mcp-server-chart (#292 merged, #294 CI integration submitted). 25 assertions via GitHub Actions workflow.
+
+### Fixed
+
+- PyPI stats fallback when API blocks custom User-Agent in CI.
+- Grafana assertion unskipped after upstream PR #793 merged.
+- Brew stats display shows `--` instead of `?` for third-party taps.
+
+### Docs
+
+- Comprehensive documentation audit: aligned all 11 markdown files with codebase reality (570 assertions, 61 suites, 55 servers, 7 languages).
 
 ## [0.6.0] - 2026-04-26
 
