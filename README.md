@@ -126,14 +126,26 @@ mcp-assert run --suite evals/ --fixture evals/fixtures
 
 See the [Getting Started guide](https://blackwell-systems.github.io/mcp-assert/getting-started/) for a full walkthrough.
 
-### Already using pytest?
+### Already using Vitest or pytest?
 
 ```bash
+# Vitest
+npm install -D vitest-mcp-assert
+```
+
+```ts
+// mcp.test.ts
+import { describeMcpSuite } from 'vitest-mcp-assert'
+describeMcpSuite('mcp server', 'evals/')
+```
+
+```bash
+# pytest
 pip install pytest-mcp-assert
 pytest --mcp-suite evals/
 ```
 
-Each YAML assertion becomes a pytest test item. No migration needed.
+Same YAML files, native test runner output. No migration needed.
 
 ## Zero-Effort Coverage
 
@@ -201,6 +213,32 @@ mcp_fixture = "fixtures/"
 ```
 
 Then just run `pytest`. See `pytest-plugin/README.md` for all options.
+
+## Vitest Integration
+
+Run mcp-assert assertions as Vitest tests:
+
+```bash
+npm install -D vitest-mcp-assert
+```
+
+Auto-discover all YAML files in a directory:
+
+```ts
+// mcp.test.ts
+import { describeMcpSuite } from 'vitest-mcp-assert'
+describeMcpSuite('mcp server', 'evals/')
+```
+
+Or run individual assertions:
+
+```ts
+import { test } from 'vitest'
+import { runMcpAssert } from 'vitest-mcp-assert'
+test('echo tool', () => runMcpAssert('evals/echo.yaml'))
+```
+
+Same YAML files work across Vitest, pytest, and the CLI. See `vitest-plugin/README.md` for all options.
 
 ## Documentation
 
