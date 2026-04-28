@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="320" height="224" viewBox="0 0 320 224">
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="246" viewBox="0 0 320 246">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#1a1a2e"/>
@@ -11,8 +11,8 @@
   </defs>
 
   <!-- Card background -->
-  <rect width="320" height="224" rx="12" fill="url(#bg)"/>
-  <rect x="1" y="1" width="318" height="222" rx="11" fill="none" stroke="#334155" stroke-width="1"/>
+  <rect width="320" height="246" rx="12" fill="url(#bg)"/>
+  <rect x="1" y="1" width="318" height="244" rx="11" fill="none" stroke="#334155" stroke-width="1"/>
 
   <!-- Title -->
   <text x="24" y="36" fill="#e2e8f0" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600">mcp-assert downloads</text>
@@ -28,19 +28,22 @@
   <text x="24" y="96" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">pip (pytest plugin)</text>
   <text x="296" y="96" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">213/wk</text>
 
-  <text x="24" y="118" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">npm</text>
+  <text x="24" y="118" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">npm (cli)</text>
   <text x="296" y="118" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">649/wk</text>
 
-  <text x="24" y="140" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">brew</text>
-  <text x="296" y="140" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">--/30d</text>
+  <text x="24" y="140" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">npm (vitest plugin)</text>
+  <text x="296" y="140" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">--/wk</text>
 
-  <text x="24" y="162" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">github releases</text>
-  <text x="296" y="162" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">143 total</text>
+  <text x="24" y="162" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">brew</text>
+  <text x="296" y="162" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">--/30d</text>
+
+  <text x="24" y="184" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">github releases</text>
+  <text x="296" y="184" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">145 total</text>
 
   <!-- Divider -->
-  <line x1="24" y1="178" x2="296" y2="178" stroke="#334155" stroke-width="1"/>
+  <line x1="24" y1="200" x2="296" y2="200" stroke="#334155" stroke-width="1"/>
 
   <!-- Total -->
-  <text x="24" y="206" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700">~1874/week</text>
-  <text x="296" y="206" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">across all channels</text>
+  <text x="24" y="228" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700">~1874/week</text>
+  <text x="296" y="228" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">across all channels</text>
 </svg>
