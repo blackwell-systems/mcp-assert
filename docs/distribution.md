@@ -82,6 +82,31 @@ Source: `pytest-plugin/` directory in this repo. Published to PyPI automatically
 
 **Maintenance surface:** The plugin is a thin bridge (~170 lines in `plugin.py`). It calls the mcp-assert Go binary with `--json` and maps the JSON output to pytest Items. The version is stamped from the git tag at publish time (sed in the release workflow). Breakage scenarios: (1) the `--json` output format changes in the Go binary, (2) the Go binary isn't on PATH when pytest collects, (3) PyPI token expires. The plugin has no dependencies beyond pytest itself.
 
+### Vitest Plugin
+```bash
+npm install -D vitest-mcp-assert @blackwell-systems/mcp-assert
+```
+
+Two usage modes. Auto-discovery:
+```ts
+// mcp.test.ts
+import { describeMcpSuite } from 'vitest-mcp-assert'
+describeMcpSuite('mcp server', 'evals/')
+```
+
+Or per-test control:
+```ts
+import { test } from 'vitest'
+import { runMcpAssert } from 'vitest-mcp-assert'
+test('echo tool', () => runMcpAssert('evals/echo.yaml'))
+```
+
+Each YAML assertion becomes a Vitest test with the same pass/fail semantics. Same YAML files work across pytest, Vitest, and the CLI.
+
+Source: `vitest-plugin/` directory in this repo. Published to npm as `vitest-mcp-assert`.
+
+**Maintenance surface:** The plugin is a thin bridge (~150 lines across 5 TypeScript files). It calls the mcp-assert Go binary with `--json` and maps the JSON output to Vitest test outcomes. Same architecture as the pytest plugin. Breakage scenarios: (1) the `--json` output format changes in the Go binary, (2) the Go binary isn't found via the 3-tier resolution (explicit, PATH, npm package). The plugin has no runtime dependencies beyond vitest as a peer dependency.
+
 ### "Works with mcp-assert" Badge
 Static and dynamic (CI-verified) badge for MCP server READMEs. Every badge is a backlink. See the [Badge guide](badge.md).
 
