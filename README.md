@@ -13,7 +13,8 @@ The testing standard for deterministic MCP tools. Works with any language, any t
 
 A single Go binary that acts as an MCP client: connects to your server over stdio, SSE, or HTTP, calls your tools with predefined inputs, and evaluates the responses against assertions you define in YAML. Your server can't tell the difference between mcp-assert and a real agent. Run in CI to catch regressions on every push. Works with servers written in Go, TypeScript, Python, Rust, Java, C#, Swift, or anything else that speaks MCP.
 
-**Scope:** mcp-assert is built for tools with knowable correct outputs: data retrieval, state changes, validation, navigation. Tools that generate creative content or natural language prose are better evaluated by LLM-as-judge frameworks. Most MCP servers mix both; mcp-assert covers the deterministic majority.
+> [!NOTE]
+> mcp-assert is built for tools with knowable correct outputs: data retrieval, state changes, validation, navigation. Tools that generate creative content or natural language prose are better evaluated by LLM-as-judge frameworks. Most MCP servers mix both; mcp-assert covers the deterministic majority.
 
 Add it to any MCP server project in one line:
 
@@ -47,7 +48,10 @@ LLM-as-judge frameworks exist for good reason: tools that generate commit messag
 
 Most MCP servers are heavy on the first three and light on the last two. If your server returns data, mcp-assert covers it.
 
-mcp-assert is designed to be the standard testing layer for the deterministic parts of the MCP ecosystem, the way pytest is for Python APIs or Jest is for JavaScript. The [scan-and-contribute scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/) tracks real bugs found in real MCP servers.
+mcp-assert is designed to be the standard testing layer for the deterministic parts of the MCP ecosystem, the way pytest is for Python APIs or Jest is for JavaScript.
+
+> [!WARNING]
+> We scanned 58 MCP servers and found 25 bugs across 10 servers. The most common failure: tools throw unhandled exceptions instead of returning `isError: true`, leaving agents unable to recover. See the [scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/).
 
 ## Why not just write tests in Go/Python/etc?
 
@@ -107,9 +111,9 @@ mcp-assert audit --server "npx my-mcp-server"
   3 tools tested, 2 healthy, 1 crashed
 ```
 
-The audit connects, discovers every tool via `tools/list`, calls each one with schema-generated inputs, and reports which tools crash vs. handle errors properly. This is discovery: it tests crash resistance and error handling, not business logic.
+> [!TIP]
+> The audit connects, discovers every tool via `tools/list`, calls each one with schema-generated inputs, and reports which tools crash vs. handle errors properly. No YAML needed. To go deeper, generate assertion files and customize them:
 
-To go deeper, generate assertion YAML files and customize them:
 
 ```bash
 # Audit + generate starter YAML for CI
@@ -152,7 +156,8 @@ pip install pytest-mcp-assert
 pytest --mcp-suite evals/
 ```
 
-Same YAML files, native test runner output. No migration needed.
+> [!IMPORTANT]
+> Same YAML files work across the CLI, Vitest, and pytest. No migration needed. Write once, run anywhere.
 
 ## Zero-Effort Coverage
 
