@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="mcp-assert" width="200">
+  <img src="assets/logo.png" alt="mcp-assert" width="400">
 </p>
 
 <h1 align="center">mcp-assert</h1>
