@@ -38,6 +38,28 @@ gh_total=$(gh api "repos/${REPO}/releases" --jq '[.[].assets[].download_count] |
 brew_30d=$(curl -sf "https://formulae.brew.sh/api/formula/${PYPI_PKG}.json" \
   | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['analytics']['install']['30d'].get('${PYPI_PKG}',0))" 2>/dev/null || echo "--")
 
+# ── Fetch all-time totals ───────────────────────────────────────────
+pypi_alltime=$(curl -sf -A "$UA" --max-time 10 "https://pypistats.org/api/packages/${PYPI_PKG}/overall" \
+  | python3 -c "import json,sys; print(sum(r['downloads'] for r in json.load(sys.stdin).get('data',[])))" 2>/dev/null || echo "0")
+
+pytest_alltime=$(curl -sf -A "$UA" --max-time 10 "https://pypistats.org/api/packages/${PYTEST_PKG}/overall" \
+  | python3 -c "import json,sys; print(sum(r['downloads'] for r in json.load(sys.stdin).get('data',[])))" 2>/dev/null || echo "0")
+
+npm_alltime=$(curl -sf --max-time 10 "https://api.npmjs.org/downloads/point/2000-01-01:2030-01-01/${NPM_PKG}" \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['downloads'])" 2>/dev/null || echo "0")
+
+vitest_alltime=$(curl -sf --max-time 10 "https://api.npmjs.org/downloads/point/2000-01-01:2030-01-01/${VITEST_PKG}" \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['downloads'])" 2>/dev/null || echo "0")
+
+# Calculate cumulative total
+cumulative="?"
+if [[ "$pypi_alltime" != "0" || "$npm_alltime" != "0" ]]; then
+  cumulative=$((pypi_alltime + pytest_alltime + npm_alltime + vitest_alltime))
+  if [[ "$gh_total" != "?" ]]; then
+    cumulative=$((cumulative + gh_total))
+  fi
+fi
+
 # Calculate total weekly
 total="?"
 if [[ "$pypi_week" != "?" && "$npm_week" != "?" ]]; then
@@ -58,7 +80,7 @@ date_str=$(date +"%Y-%m-%d")
 
 # ── Generate SVG ─────────────────────────────────────────────────────
 cat > "$OUT" << SVGEOF
-<svg xmlns="http://www.w3.org/2000/svg" width="320" height="246" viewBox="0 0 320 246">
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="268" viewBox="0 0 320 268">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#1a1a2e"/>
@@ -71,8 +93,8 @@ cat > "$OUT" << SVGEOF
   </defs>
 
   <!-- Card background -->
-  <rect width="320" height="246" rx="12" fill="url(#bg)"/>
-  <rect x="1" y="1" width="318" height="244" rx="11" fill="none" stroke="#334155" stroke-width="1"/>
+  <rect width="320" height="268" rx="12" fill="url(#bg)"/>
+  <rect x="1" y="1" width="318" height="266" rx="11" fill="none" stroke="#334155" stroke-width="1"/>
 
   <!-- Title -->
   <text x="24" y="36" fill="#e2e8f0" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600">mcp-assert downloads</text>
@@ -103,11 +125,14 @@ cat > "$OUT" << SVGEOF
   <!-- Divider -->
   <line x1="24" y1="200" x2="296" y2="200" stroke="#334155" stroke-width="1"/>
 
-  <!-- Total -->
-  <text x="24" y="228" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700">~${total}/week</text>
-  <text x="296" y="228" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">across all channels</text>
+  <!-- Totals -->
+  <text x="24" y="224" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700">~${total}/week</text>
+  <text x="296" y="224" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">across all channels</text>
+
+  <text x="24" y="250" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700">${cumulative} total</text>
+  <text x="296" y="250" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">cumulative downloads</text>
 </svg>
 SVGEOF
 
 echo "Generated ${OUT}"
-echo "  pip: ${pypi_week}/wk  pytest: ${pytest_week}/wk  npm: ${npm_week}/wk  vitest: ${vitest_week}/wk  brew: ${brew_30d}/30d  gh: ${gh_total} total  ~${total}/wk"
+echo "  pip: ${pypi_week}/wk  pytest: ${pytest_week}/wk  npm: ${npm_week}/wk  vitest: ${vitest_week}/wk  brew: ${brew_30d}/30d  gh: ${gh_total} total  ~${total}/wk  ${cumulative} cumulative"
