@@ -5,6 +5,8 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-04-28
+
 ### Added
 
 - **AWS docs MCP server suite**: 4 assertions, clean scan. First Amazon-backed server.
@@ -22,11 +24,14 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **Client refactor**: extracted `stdioServerProcess` and `buildStdioServerProcess` from `createMCPClient`. Sorted env vars for deterministic behavior. Absolute fixture paths for Docker.
 - **Suite runner refactor**: extracted `runSuite`, `runAssertionWithFixture`, and `collectFixSuggestions` to eliminate duplication between Run and CI commands. Defer-based cleanup for panic safety.
 - **Execute refactor**: extracted `initializedClient`, `passResult`/`failResult`/`skipResult`, and `runSetupSteps` from execute.go. Net reduction of 187 lines across all executors.
+- **Coverage refactor**: fixed empty-tool counting for non-tool assertions (sampling, resources), removed dead setup loop, reuses shared `initializedClientFromConfig` and `parseServerSpec` helpers.
+- **Fixture isolation**: symlinks are now explicitly skipped (previously silently followed), `copyFile` errors wrap source/destination paths, cleanup calls use explicit `_ =` ignore.
 
 ### Fixed
 
 - **GitHub Action name**: `init` command scaffolded `mcp-assert@v1` instead of `mcp-assert-action@v1` in CI snippet.
 - **Fixture stat handling**: `init` now distinguishes "file missing" from "permission error" instead of treating all stat errors as missing.
+- **Coverage tool counting**: assertions with empty `assert.tool` (e.g., resource or prompt assertions) no longer increment `testedTools[""]`, which could inflate coverage numbers.
 
 ### Docs
 

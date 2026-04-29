@@ -10,7 +10,8 @@ import (
 
 // copyDir recursively copies the directory tree rooted at src into dst.
 // dst must not already exist; it is created with the same permissions as src.
-// File permissions are preserved. Symlinks are not followed.
+// File permissions are preserved. Symlinks are skipped entirely to avoid
+// copying files outside the fixture tree or creating cycles.
 func copyDir(src, dst string) error {
 	srcInfo, err := os.Stat(src)
 	if err != nil {
@@ -27,6 +28,12 @@ func copyDir(src, dst string) error {
 	return filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+
+		// Skip symlinks entirely; following them could copy files outside the
+		// fixture tree or create cycles.
+		if d.Type()&fs.ModeSymlink != 0 {
+			return nil
 		}
 
 		rel, err := filepath.Rel(src, path)
@@ -51,23 +58,25 @@ func copyDir(src, dst string) error {
 func copyFile(src, dst string) error {
 	srcFile, err := os.Open(src)
 	if err != nil {
-		return err
+		return fmt.Errorf("open source file %s: %w", src, err)
 	}
 	defer srcFile.Close()
 
 	info, err := srcFile.Stat()
 	if err != nil {
-		return err
+		return fmt.Errorf("stat source file %s: %w", src, err)
 	}
 
 	dstFile, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, info.Mode())
 	if err != nil {
-		return err
+		return fmt.Errorf("open destination file %s: %w", dst, err)
 	}
 	defer dstFile.Close()
 
-	_, err = io.Copy(dstFile, srcFile)
-	return err
+	if _, err := io.Copy(dstFile, srcFile); err != nil {
+		return fmt.Errorf("copy %s to %s: %w", src, dst, err)
+	}
+	return nil
 }
 
 // isolateFixture copies the fixture directory to a temporary location and
@@ -88,9 +97,9 @@ func isolateFixture(fixture, dockerImage string) (string, func()) {
 	// Copy into a subdirectory so the structure mirrors the original.
 	dst := filepath.Join(tmp, filepath.Base(fixture))
 	if err := copyDir(fixture, dst); err != nil {
-		os.RemoveAll(tmp)
+		_ = os.RemoveAll(tmp)
 		return fixture, func() {}
 	}
 
-	return dst, func() { os.RemoveAll(tmp) }
+	return dst, func() { _ = os.RemoveAll(tmp) }
 }

@@ -34,19 +34,31 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
-// initializedClient creates an MCP client, connects to the server, and performs
-// the initialize handshake. On success, the caller is responsible for calling
-// cancel() and mcpClient.Close(). On error, all resources are cleaned up
-// before returning.
+// initializedClient creates an MCP client from an assertion's server config,
+// connects to the server, and performs the initialize handshake. On success,
+// the caller is responsible for calling cancel() and mcpClient.Close(). On
+// error, all resources are cleaned up before returning.
 func initializedClient(
 	a assertion.Assertion,
 	fixture string,
 	timeout time.Duration,
 	dockerImage string,
 ) (context.Context, context.CancelFunc, client.MCPClient, error) {
+	return initializedClientFromConfig(a.Server, fixture, timeout, dockerImage)
+}
+
+// initializedClientFromConfig creates an MCP client from a ServerConfig,
+// connects, and performs the initialize handshake. Use this when you have a
+// bare ServerConfig (e.g., coverage command) rather than a full Assertion.
+func initializedClientFromConfig(
+	server assertion.ServerConfig,
+	fixture string,
+	timeout time.Duration,
+	dockerImage string,
+) (context.Context, context.CancelFunc, client.MCPClient, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 
-	mcpClient, err := createMCPClient(a.Server, fixture, dockerImage)
+	mcpClient, err := createMCPClient(server, fixture, dockerImage)
 	if err != nil {
 		cancel()
 		return nil, nil, nil, fmt.Errorf("failed to start MCP server: %w", err)

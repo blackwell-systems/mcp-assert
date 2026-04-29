@@ -1,11 +1,9 @@
 package runner
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
@@ -13,7 +11,9 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
-// Coverage queries the MCP server's tool list and compares against assertion files.
+// Coverage queries the MCP server's tools/list and reports which server tools
+// have direct tool assertions in the suite. Non-tool assertion types (resources,
+// prompts, logging) are not counted; this is specifically tool coverage.
 func Coverage(args []string) error {
 	fs := flag.NewFlagSet("coverage", flag.ExitOnError)
 	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")
@@ -34,40 +34,30 @@ func Coverage(args []string) error {
 		return err
 	}
 
+	// Count which tools have direct assertions. Setup tools are intentionally
+	// excluded: they are test infrastructure, not coverage targets.
 	testedTools := make(map[string]int) // tool name -> assertion count
 	for _, a := range suite.Assertions {
-		testedTools[a.Assert.Tool]++
-		for _, s := range a.Setup {
-			// Don't count setup tools as "tested" — they're infrastructure.
-			_ = s
+		if a.Assert.Tool != "" {
+			testedTools[a.Assert.Tool]++
+		}
+		if a.AssertSampling != nil && a.AssertSampling.Tool != "" {
+			testedTools[a.AssertSampling.Tool]++
 		}
 	}
 
 	// Start the server and query tools/list.
-	parts := strings.Fields(*serverSpec)
-	if len(parts) == 0 {
-		return fmt.Errorf("--server cannot be empty")
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
-	defer cancel()
-
-	serverConfig := assertion.ServerConfig{
-		Command: parts[0],
-		Args:    parts[1:],
-	}
-	mcpClient, err := createMCPClient(serverConfig, "", "")
+	serverConfig, err := parseServerSpec(*serverSpec)
 	if err != nil {
-		return fmt.Errorf("failed to start server: %w", err)
+		return err
 	}
-	defer mcpClient.Close()
 
-	initReq := mcp.InitializeRequest{}
-	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
-	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
-	if _, err := mcpClient.Initialize(ctx, initReq); err != nil {
-		return fmt.Errorf("MCP initialize failed: %w", err)
+	ctx, cancel, mcpClient, err := initializedClientFromConfig(serverConfig, "", *timeout, "")
+	if err != nil {
+		return err
 	}
+	defer cancel()
+	defer mcpClient.Close()
 
 	toolsResult, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
 	if err != nil {

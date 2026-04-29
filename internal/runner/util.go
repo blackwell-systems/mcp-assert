@@ -60,6 +60,20 @@ func writeReports(results []assertion.Result, junitPath, markdownPath, badgePath
 	}
 }
 
+// parseServerSpec parses a "--server" string like "agent-lsp go:gopls" into a
+// ServerConfig. This is the shared entry point for commands that accept a
+// server override string (coverage, generate, audit, etc.).
+func parseServerSpec(serverSpec string) (assertion.ServerConfig, error) {
+	parts := strings.Fields(serverSpec)
+	if len(parts) == 0 {
+		return assertion.ServerConfig{}, fmt.Errorf("--server cannot be empty")
+	}
+	return assertion.ServerConfig{
+		Command: parts[0],
+		Args:    parts[1:],
+	}, nil
+}
+
 // applyServerOverride parses a "--server" string like "agent-lsp go:gopls"
 // and replaces the assertion's server config.
 func applyServerOverride(a *assertion.Assertion, serverSpec string) {
