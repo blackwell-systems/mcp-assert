@@ -9,6 +9,7 @@ PYTEST_PKG="pytest-mcp-assert"
 NPM_PKG="@blackwell-systems/mcp-assert"
 VITEST_PKG="vitest-mcp-assert"
 OUT="${1:-assets/download-stats.svg}"
+CACHE="${OUT%.svg}.cache"
 
 # ── Fetch all-time totals ───────────────────────────────────────────
 UA="mcp-assert-stats/1.0 (https://github.com/blackwell-systems/mcp-assert)"
@@ -27,23 +28,54 @@ vitest_total=$(curl -sf --max-time 10 "https://api.npmjs.org/downloads/point/200
 
 gh_total=$(gh api "repos/${REPO}/releases" --jq '[.[].assets[].download_count] | add // 0' 2>/dev/null || echo "?")
 
+# ── High-water mark: never regress displayed totals ────────────────
+# Cache stores the last known good value per channel. Downloads are
+# monotonic, so if the API returns a lower number or fails, we keep
+# the previous value.
+read_cache() {
+  local key="$1"
+  if [[ -f "$CACHE" ]]; then
+    grep "^${key}=" "$CACHE" 2>/dev/null | cut -d= -f2
+  fi
+}
+
+use_or_cache() {
+  local key="$1" val="$2"
+  local prev
+  prev=$(read_cache "$key")
+  prev="${prev:-0}"
+  if [[ "$val" != "?" && "$val" != "--" ]] && (( val >= prev )); then
+    echo "$val"
+  elif [[ "$prev" != "0" ]]; then
+    echo "$prev"
+  else
+    echo "$val"
+  fi
+}
+
+pypi_total=$(use_or_cache pip "$pypi_total")
+pytest_total=$(use_or_cache pytest "$pytest_total")
+npm_total=$(use_or_cache npm "$npm_total")
+vitest_total=$(use_or_cache vitest "$vitest_total")
+gh_total=$(use_or_cache gh "$gh_total")
+
+# Write cache with current best values.
+cat > "$CACHE" << CACHEEOF
+pip=${pypi_total}
+pytest=${pytest_total}
+npm=${npm_total}
+vitest=${vitest_total}
+gh=${gh_total}
+CACHEEOF
+
 # ── Calculate cumulative total ──────────────────────────────────────
-cumulative="?"
-if [[ "$pypi_total" != "?" && "$npm_total" != "?" ]]; then
-  cumulative=$((pypi_total))
-  if [[ "$pytest_total" != "?" ]]; then
-    cumulative=$((cumulative + pytest_total))
+cumulative=0
+for v in "$pypi_total" "$pytest_total" "$npm_total" "$vitest_total" "$gh_total"; do
+  if [[ "$v" != "?" && "$v" != "--" ]]; then
+    cumulative=$((cumulative + v))
   fi
-  if [[ "$npm_total" != "?" ]]; then
-    cumulative=$((cumulative + npm_total))
-  fi
-  if [[ "$vitest_total" != "--" && "$vitest_total" != "?" ]]; then
-    cumulative=$((cumulative + vitest_total))
-  fi
-  if [[ "$gh_total" != "?" ]]; then
-    cumulative=$((cumulative + gh_total))
-  fi
-fi
+done
+if (( cumulative == 0 )); then cumulative="?"; fi
 
 # Format numbers with commas
 fmt() {
