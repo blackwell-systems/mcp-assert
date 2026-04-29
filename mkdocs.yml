@@ -24,6 +24,7 @@ nav:
   - CLI Reference: cli.md
   - Examples: examples.md
   - CI Integration: ci-integration.md
+  - Test Runner Integrations: test-runner-integrations.md
   - Badge: badge.md
   - Architecture: architecture.md
   - Scorecard: scorecard.md
