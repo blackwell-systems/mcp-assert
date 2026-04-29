@@ -1,3 +1,4 @@
+// Package runner
 // client.go handles MCP client creation for all three transport modes.
 //
 // Transport selection:
@@ -18,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
@@ -25,6 +27,85 @@ import (
 	clienttransport "github.com/mark3labs/mcp-go/client/transport"
 	"github.com/mark3labs/mcp-go/mcp"
 )
+
+// stdioServerProcess holds the resolved command, args, and env for launching
+// an MCP server subprocess. Produced by buildStdioServerProcess, which handles
+// fixture substitution, env var expansion, and Docker wrapping.
+type stdioServerProcess struct {
+	command string
+	args    []string
+	env     []string
+}
+
+// buildStdioServerProcess resolves the server config into a concrete command
+// to execute. Handles fixture path substitution, environment variable expansion,
+// and Docker container wrapping (if dockerImage is set or server.Docker is set).
+func buildStdioServerProcess(server assertion.ServerConfig, fixture, dockerImage string) stdioServerProcess {
+	serverCmd := server.Command
+
+	serverArgs := make([]string, len(server.Args))
+	copy(serverArgs, server.Args)
+
+	if fixture != "" {
+		for i, arg := range serverArgs {
+			serverArgs[i] = strings.ReplaceAll(arg, "{{fixture}}", fixture)
+		}
+	}
+
+	// Sort env var keys for deterministic behavior. Map iteration order is
+	// random in Go; sorting ensures consistent Docker -e flag ordering and
+	// reproducible process environments, which matters for a testing tool.
+	keys := make([]string, 0, len(server.Env))
+	for k := range server.Env {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	envSlice := make([]string, 0, len(keys))
+	for _, k := range keys {
+		envSlice = append(envSlice, k+"="+expandEnvVars(server.Env[k]))
+	}
+
+	// Docker isolation: wrap the server command in "docker run --rm -i".
+	// The per-assertion docker field takes precedence over the CLI --docker flag.
+	effectiveDocker := server.Docker
+	if effectiveDocker == "" {
+		effectiveDocker = dockerImage
+	}
+
+	if effectiveDocker == "" {
+		return stdioServerProcess{
+			command: serverCmd,
+			args:    serverArgs,
+			env:     envSlice,
+		}
+	}
+
+	dockerArgs := []string{"run", "--rm", "-i"}
+	if fixture != "" {
+		absFixture, err := filepath.Abs(fixture)
+		if err == nil {
+			fixture = absFixture
+		}
+		dockerArgs = append(dockerArgs, "-v", fixture+":"+fixture)
+	}
+	for _, e := range envSlice {
+		dockerArgs = append(dockerArgs, "-e", e)
+	}
+	dockerArgs = append(dockerArgs, effectiveDocker, serverCmd)
+	dockerArgs = append(dockerArgs, serverArgs...)
+
+	return stdioServerProcess{
+		command: "docker",
+		args:    dockerArgs,
+		env:     nil, // env is passed via -e flags
+	}
+}
+
+// hasClientCapabilities reports whether any mock client capabilities are configured.
+func hasClientCapabilities(caps assertion.ClientCapabilities) bool {
+	return len(caps.Roots) > 0 || caps.Sampling != nil || len(caps.Elicitation) > 0
+}
 
 // expandEnvVars resolves ${VAR} and $VAR patterns in a string
 // from the parent process environment. Unset variables are replaced
@@ -77,51 +158,16 @@ func createMCPClient(server assertion.ServerConfig, fixture string, dockerImage 
 		}
 		return client.NewStreamableHttpClient(server.URL, httpOpts...)
 	case "stdio", "":
-		// Default: launch server as a subprocess via stdio.
-		serverCmd := server.Command
-		serverArgs := make([]string, len(server.Args))
-		copy(serverArgs, server.Args)
+		process := buildStdioServerProcess(server, fixture, dockerImage)
 
-		if fixture != "" {
-			for i, arg := range serverArgs {
-				serverArgs[i] = strings.ReplaceAll(arg, "{{fixture}}", fixture)
-			}
-		}
-
-		var envSlice []string
-		for k, v := range server.Env {
-			envSlice = append(envSlice, k+"="+expandEnvVars(v))
-		}
-
-		// Docker isolation: wrap the server command in "docker run --rm -i".
-		// The per-assertion docker field takes precedence over the CLI --docker flag.
-		// Fixture directories are bind-mounted so the server can access test files.
-		effectiveDocker := server.Docker
-		if effectiveDocker == "" {
-			effectiveDocker = dockerImage
-		}
-		if effectiveDocker != "" {
-			dockerArgs := []string{"run", "--rm", "-i"}
-			if fixture != "" {
-				dockerArgs = append(dockerArgs, "-v", fixture+":"+fixture)
-			}
-			for _, e := range envSlice {
-				dockerArgs = append(dockerArgs, "-e", e)
-			}
-			dockerArgs = append(dockerArgs, effectiveDocker, serverCmd)
-			dockerArgs = append(dockerArgs, serverArgs...)
-			serverCmd = "docker"
-			serverArgs = dockerArgs
-			envSlice = nil // env is passed via -e flags
-		}
-
-		// If client capabilities are set, use NewClient directly to pass options.
 		caps := server.ClientCapabilities
-		if len(caps.Roots) > 0 || caps.Sampling != nil || len(caps.Elicitation) > 0 {
-			return createStdioClientWithCapabilities(serverCmd, envSlice, serverArgs, fixture, caps)
+		if hasClientCapabilities(caps) {
+			return createStdioClientWithCapabilities(
+				process.command, process.env, process.args, fixture, caps,
+			)
 		}
 
-		return client.NewStdioMCPClient(serverCmd, envSlice, serverArgs...)
+		return client.NewStdioMCPClient(process.command, process.env, process.args...)
 	default:
 		return nil, fmt.Errorf("unknown transport %q (expected stdio, sse, or http)", transport)
 	}
