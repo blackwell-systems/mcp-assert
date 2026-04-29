@@ -7,7 +7,7 @@
 
 The testing standard for deterministic MCP tools. Works with any language, any transport.
 
-A single Go binary that acts as an MCP client: connects to your server over stdio, SSE, or HTTP, calls your tools, and asserts the results. Define assertions in YAML, run them in CI. Works with servers written in Go, TypeScript, Python, Rust, Java, C#, Swift, or anything else that speaks MCP.
+A single Go binary that acts as an MCP client: connects to your server over stdio, SSE, or HTTP, calls your tools with predefined inputs, and evaluates the responses against assertions you define in YAML. Your server can't tell the difference between mcp-assert and a real agent. Run in CI to catch regressions on every push. Works with servers written in Go, TypeScript, Python, Rust, Java, C#, Swift, or anything else that speaks MCP.
 
 **Scope:** mcp-assert is built for tools with knowable correct outputs: data retrieval, state changes, validation, navigation. Tools that generate creative content or natural language prose are better evaluated by LLM-as-judge frameworks. Most MCP servers mix both; mcp-assert covers the deterministic majority.
 
