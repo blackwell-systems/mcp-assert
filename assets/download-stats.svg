@@ -23,10 +23,10 @@
 
   <!-- Stats rows -->
   <text x="24" y="74" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">pip (mcp-assert)</text>
-  <text x="296" y="74" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">4269</text>
+  <text x="296" y="74" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">4,269</text>
 
   <text x="24" y="96" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">pip (pytest plugin)</text>
-  <text x="296" y="96" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">0?</text>
+  <text x="296" y="96" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">1,218</text>
 
   <text x="24" y="118" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">npm (cli)</text>
   <text x="296" y="118" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">810</text>
@@ -41,6 +41,6 @@
   <line x1="24" y1="178" x2="296" y2="178" stroke="#334155" stroke-width="1"/>
 
   <!-- Total -->
-  <text x="24" y="206" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700">5403 total</text>
+  <text x="24" y="206" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700">6,621 total</text>
   <text x="296" y="206" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">cumulative downloads</text>
 </svg>
