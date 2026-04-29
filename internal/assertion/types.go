@@ -153,25 +153,49 @@ type AssertBlock struct {
 }
 
 // Expect defines deterministic assertions on the tool result.
+// Each field is an independent check; all specified checks must pass for the
+// assertion to succeed. Unset fields (nil/empty) are skipped. This struct is
+// shared across tool, resource, prompt, and completion assertion blocks.
 type Expect struct {
-	Contains     []string          `yaml:"contains"`
-	ContainsAny  []string          `yaml:"contains_any,omitempty"`
-	NotContains  []string          `yaml:"not_contains"`
-	Equals       *string           `yaml:"equals"`
-	JSONPath     map[string]any    `yaml:"json_path"`
-	MinResults   *int              `yaml:"min_results"`
-	MaxResults   *int              `yaml:"max_results"`
-	NotEmpty      *bool             `yaml:"not_empty"`
-	NotError      *bool             `yaml:"not_error"`
-	IsError       *bool             `yaml:"is_error"`
-	MatchesRegex  []string          `yaml:"matches_regex"`
-	FileContains     map[string]string `yaml:"file_contains"`
-	FileNotContains  map[string]string `yaml:"file_not_contains,omitempty"`
-	FileUnchanged    []string          `yaml:"file_unchanged"`
-	NetDelta      *int              `yaml:"net_delta"`
-	InOrder       []string          `yaml:"in_order"`
-	MinProgress   *int              `yaml:"min_progress,omitempty"` // minimum number of notifications/progress received
-	FileNotExists []string          `yaml:"file_not_exists,omitempty"`
+	// Text content checks: applied against the concatenated text of all
+	// content blocks in the tool result.
+	Contains    []string `yaml:"contains"`              // every string must appear in the result text
+	ContainsAny []string `yaml:"contains_any,omitempty"` // at least one string must appear
+	NotContains []string `yaml:"not_contains"`           // none of these strings may appear
+	Equals      *string  `yaml:"equals"`                 // result text must match exactly (pointer so unset is distinguishable from empty string)
+
+	// Structured content checks: applied when the result text is valid JSON.
+	JSONPath map[string]any `yaml:"json_path"` // JSONPath expression -> expected value (e.g. "$.name": "alice")
+
+	// Result shape checks: applied to the list of content blocks.
+	MinResults *int  `yaml:"min_results"` // minimum number of content blocks returned
+	MaxResults *int  `yaml:"max_results"` // maximum number of content blocks returned
+	NotEmpty   *bool `yaml:"not_empty"`   // result must contain at least one non-empty content block
+
+	// MCP error semantics: checks on the isError field of the tool result.
+	// NotError asserts the tool did NOT return isError:true (healthy response).
+	// IsError asserts the tool DID return isError:true (graceful error handling).
+	NotError *bool `yaml:"not_error"` // true -> assert isError is absent or false
+	IsError  *bool `yaml:"is_error"`  // true -> assert isError is true
+
+	// Pattern matching: applied against the concatenated result text.
+	MatchesRegex []string `yaml:"matches_regex"` // each regex must match somewhere in the result text
+
+	// File system checks: verify side effects by reading files after the tool call.
+	// Keys are file paths (relative to fixture dir), values are expected substrings.
+	FileContains    map[string]string `yaml:"file_contains"`               // file must contain the substring
+	FileNotContains map[string]string `yaml:"file_not_contains,omitempty"` // file must NOT contain the substring
+	FileUnchanged   []string          `yaml:"file_unchanged"`              // file content must be identical to before the tool call
+	FileNotExists   []string          `yaml:"file_not_exists,omitempty"`   // file must not exist after the tool call
+
+	// Speculative execution checks: for agent-lsp simulate_edit_atomic results.
+	NetDelta *int `yaml:"net_delta"` // expected net diagnostic delta (0 = safe to apply)
+
+	// Ordering checks: applied against the concatenated result text.
+	InOrder []string `yaml:"in_order"` // strings must appear in this order within the result
+
+	// Progress/notification checks: applied to captured notifications during tool execution.
+	MinProgress *int `yaml:"min_progress,omitempty"` // minimum number of progress notifications received
 }
 
 // Result is the outcome of running a single assertion.
