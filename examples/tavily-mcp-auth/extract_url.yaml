@@ -1,0 +1,18 @@
+name: tavily_extract returns content from a known URL
+server:
+  command: npx
+  args:
+    - -y
+    - tavily-mcp@latest
+  env:
+    TAVILY_API_KEY: ${TAVILY_API_KEY}
+assert:
+  tool: tavily_extract
+  args:
+    urls:
+      - "https://modelcontextprotocol.io"
+  expect:
+    not_error: true
+    not_empty: true
+skip_unless_env: TAVILY_API_KEY
+timeout: 30s
