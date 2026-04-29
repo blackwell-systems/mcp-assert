@@ -268,7 +268,7 @@ Full documentation is available at [blackwell-systems.github.io/mcp-assert](http
 - [Dogfooding](https://blackwell-systems.github.io/mcp-assert/dogfooding/): findings from testing our own servers
 
 <p align="center">
-  <img src="assets/download-stats.svg" alt="Download stats" width="320">
+  <img src="assets/download-stats.svg?v=2" alt="Download stats" width="320">
 </p>
 
 <p align="center">
