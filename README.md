@@ -29,7 +29,10 @@ mcp-assert connects to your server exactly like a real MCP agent: stdio, SSE, or
 
 ### Adopted in production
 
-[Ant Group's antvis team](https://github.com/antvis/mcp-server-chart) (4K stars, 35K monthly npm downloads) integrated mcp-assert into their CI within 3 days of launch. Fix PRs merged into Grafana, LangChain, and the official MCP SDKs. The testing standard for MCP, the way pytest is for Python APIs or Jest is for JavaScript.
+- **[Ant Group (AntV)](https://github.com/antvis/mcp-server-chart)**: integrated into CI within 3 days of launch
+- **Fix PRs merged**: Grafana, LangChain, official MCP SDKs
+
+The testing standard for MCP, like pytest for Python or Jest for JavaScript.
 
 Add it to any MCP server project in one line:
 
@@ -44,7 +47,7 @@ Add it to any MCP server project in one line:
 </p>
 
 > [!NOTE]
-> mcp-assert covers tools with knowable correct outputs: data retrieval, state changes, validation, navigation. For creative/subjective outputs (summaries, commit messages), use LLM-as-judge frameworks. Most MCP servers are heavy on the former. mcp-assert covers the deterministic majority.
+> LLMs are for subjective outputs. Assertions are for deterministic ones. Most MCP tools are deterministic. mcp-assert covers them.
 
 ## Install
 
@@ -74,9 +77,9 @@ curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/i
 
 ## Quick Start
 
-### Audit a server in one command
+### Audit any MCP server in seconds. No setup.
 
-Point `mcp-assert audit` at any MCP server. No YAML, no setup:
+Point it at any server:
 
 ```bash
 mcp-assert audit --server "npx my-mcp-server"
@@ -169,9 +172,9 @@ For deterministic tools, mcp-assert is the better fit. For subjective outputs, L
 | Regression | Not supported | Baseline comparison, fail on backslide |
 | Multi-language | Not supported | Same assertion across N language servers |
 
-## Why not just write tests in Go/Python/etc?
+## Why not just write tests?
 
-You could. But you'd have to build: MCP protocol bootstrapping (~200 lines of boilerplate for stdio transport, JSON-RPC framing, initialize handshake), a server-agnostic runner (your Go tests can't test your TypeScript server), and eval features (pass@k metrics, regression detection, Docker isolation, JUnit output). mcp-assert handles all of that. One YAML file, any server, any language.
+You'd need MCP protocol bootstrapping, a server-agnostic runner (your Go tests can't test your TypeScript server), and eval features (regression detection, Docker isolation, JUnit output). mcp-assert handles all of that. One YAML file, any server, any language.
 
 ## CI Integration
 
