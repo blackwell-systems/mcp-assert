@@ -1,0 +1,11 @@
+name: tavily_map returns expected result
+server:
+    command: npx
+    args: [-y, tavily-mcp@latest]
+assert:
+    tool: tavily_map
+    args:
+        url: TODO
+    expect:
+        not_error: true
+timeout: 30s

@@ -1,0 +1,11 @@
+name: read_documentation returns expected result
+server:
+    command: uvx
+    args: [awslabs.aws-documentation-mcp-server@latest]
+assert:
+    tool: read_documentation
+    args:
+        url: TODO
+    expect:
+        not_error: true
+timeout: 30s

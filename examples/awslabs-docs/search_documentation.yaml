@@ -1,0 +1,11 @@
+name: search_documentation returns expected result
+server:
+    command: uvx
+    args: [awslabs.aws-documentation-mcp-server@latest]
+assert:
+    tool: search_documentation
+    args:
+        search_phrase: TODO_QUERY
+    expect:
+        not_error: true
+timeout: 30s

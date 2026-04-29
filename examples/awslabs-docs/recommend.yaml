@@ -1,0 +1,11 @@
+name: recommend returns expected result
+server:
+    command: uvx
+    args: [awslabs.aws-documentation-mcp-server@latest]
+assert:
+    tool: recommend
+    args:
+        url: TODO
+    expect:
+        not_error: true
+timeout: 30s
