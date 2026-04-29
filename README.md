@@ -2,8 +2,6 @@
   <img src="assets/logo.png" alt="mcp-assert" width="400">
 </p>
 
-<h1 align="center">mcp-assert</h1>
-
 [![Blackwell Systems](https://raw.githubusercontent.com/blackwell-systems/blackwell-docs-theme/main/badge-trademark.svg)](https://github.com/blackwell-systems)
 [![Go](https://img.shields.io/badge/go-1.23+-blue.svg)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
