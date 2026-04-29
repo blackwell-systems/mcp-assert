@@ -1,3 +1,12 @@
+// commands.go contains the top-level CLI commands: Run, Matrix, and CI.
+//
+// Each command follows the same pattern:
+//  1. Parse flags with a dedicated FlagSet
+//  2. Load the assertion suite from YAML
+//  3. Iterate assertions (with optional server override and fixture isolation)
+//  4. Collect results and produce output (console, JSON, JUnit, badge, etc.)
+//  5. Optionally detect regressions against a baseline
+//  6. Exit non-zero if any assertion failed or pass rate is below threshold
 package runner
 
 import (
@@ -12,7 +21,9 @@ import (
 	"github.com/blackwell-systems/mcp-assert/internal/report"
 )
 
-// Run executes assertions from a suite directory.
+// Run executes assertions from a suite directory. This is the primary command
+// for local development: load the suite, run each assertion (optionally
+// multiple trials), print results, and exit non-zero on any failure.
 func Run(args []string) error {
 	fs := flag.NewFlagSet("run", flag.ExitOnError)
 	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")
@@ -60,12 +71,13 @@ func Run(args []string) error {
 	}
 	report.ClearProgress()
 
-	// --fix: scan nearby positions for position-sensitive failures.
+	// --fix: when position-sensitive assertions fail (e.g., line/column in
+	// LSP assertions drifted), scan nearby positions to find where the symbol
+	// actually is now and suggest corrected coordinates.
 	var fixSuggestions []FixSuggestion
 	if *fix {
 		for _, r := range allResults {
 			if r.Status == assertion.StatusFail && IsPositionError(r.Detail) {
-				// Find the corresponding assertion.
 				for _, a := range suite.Assertions {
 					if a.Name == r.Name {
 						if s, err := ScanNearbyPositions(a, *fixture, *timeout, *docker, 3, 5); err == nil && s != nil {
@@ -119,7 +131,9 @@ func Run(args []string) error {
 	return nil
 }
 
-// Matrix runs assertions across multiple language server configurations.
+// Matrix runs the same assertion suite against multiple language servers.
+// Each --languages entry is a "lang:server" pair (e.g., "go:gopls,ts:typescript-language-server").
+// Results include a Language field so the report can show a cross-language comparison matrix.
 func Matrix(args []string) error {
 	fs := flag.NewFlagSet("matrix", flag.ExitOnError)
 	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")
@@ -163,7 +177,9 @@ func Matrix(args []string) error {
 	return nil
 }
 
-// CI runs assertions with CI-specific exit codes.
+// CI runs assertions with CI-specific behavior: threshold-based pass/fail,
+// automatic GitHub Step Summary output, baseline regression detection, and
+// the --fail-on-regression flag for blocking regressions in pull requests.
 func CI(args []string) error {
 	fs := flag.NewFlagSet("ci", flag.ExitOnError)
 	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")

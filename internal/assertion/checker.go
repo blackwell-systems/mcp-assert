@@ -1,3 +1,15 @@
+// checker.go implements the assertion engine for mcp-assert.
+//
+// Each Expect field maps to a dedicated check function. The functions are
+// registered in checkRegistry as an ordered slice (not a map) so evaluation
+// order is deterministic. Check() iterates the registry and short-circuits
+// on the first failure; this means earlier checks (e.g. not_error) act as
+// guards for later ones (e.g. json_path), avoiding confusing cascading errors.
+//
+// Adding a new assertion type:
+//  1. Add a field to Expect in types.go
+//  2. Write a checkFoo function matching the checkFunc signature
+//  3. Append a checkEntry to checkRegistry (order matters for guard semantics)
 package assertion
 
 import (
@@ -50,6 +62,9 @@ func Check(expect Expect, resultText string, isError bool) error {
 	return nil
 }
 
+// checkNotError fails when the server returned isError:true but the assertion
+// expected a healthy response. Evaluated first so downstream content checks
+// don't run against error payloads.
 func checkNotError(expect Expect, _ string, isError bool) error {
 	if expect.NotError != nil && *expect.NotError && isError {
 		return fmt.Errorf("expected no error but tool returned isError=true")
@@ -57,6 +72,8 @@ func checkNotError(expect Expect, _ string, isError bool) error {
 	return nil
 }
 
+// checkIsError fails when the assertion expected an error (is_error: true)
+// but the server returned a successful result. Used to verify graceful error handling.
 func checkIsError(expect Expect, _ string, isError bool) error {
 	if expect.IsError != nil && *expect.IsError && !isError {
 		return fmt.Errorf("expected error but tool returned isError=false")
@@ -64,6 +81,9 @@ func checkIsError(expect Expect, _ string, isError bool) error {
 	return nil
 }
 
+// checkNotEmpty fails if the response is empty, null, or a zero-value JSON container.
+// The extra checks for "null", "[]", and "{}" prevent false passes on responses
+// that technically contain bytes but carry no meaningful content.
 func checkNotEmpty(expect Expect, response string, _ bool) error {
 	if expect.NotEmpty != nil && *expect.NotEmpty {
 		trimmed := strings.TrimSpace(response)
@@ -74,6 +94,8 @@ func checkNotEmpty(expect Expect, response string, _ bool) error {
 	return nil
 }
 
+// checkEquals performs an exact string comparison after trimming whitespace.
+// Uses a pointer field so callers can distinguish "not set" from "set to empty string."
 func checkEquals(expect Expect, response string, _ bool) error {
 	if expect.Equals != nil {
 		if strings.TrimSpace(response) != strings.TrimSpace(*expect.Equals) {
@@ -83,6 +105,8 @@ func checkEquals(expect Expect, response string, _ bool) error {
 	return nil
 }
 
+// checkContains requires every string in Contains to appear in the response.
+// All entries must match (logical AND).
 func checkContains(expect Expect, response string, _ bool) error {
 	for _, s := range expect.Contains {
 		if !strings.Contains(response, s) {
@@ -92,6 +116,8 @@ func checkContains(expect Expect, response string, _ bool) error {
 	return nil
 }
 
+// checkContainsAny requires at least one of the listed strings to appear
+// in the response (logical OR). Useful for non-deterministic outputs.
 func checkContainsAny(expect Expect, response string, _ bool) error {
 	if len(expect.ContainsAny) > 0 {
 		found := false
@@ -108,6 +134,8 @@ func checkContainsAny(expect Expect, response string, _ bool) error {
 	return nil
 }
 
+// checkNotContains fails if any of the listed strings appear in the response.
+// Commonly used to verify that error messages or sensitive data are absent.
 func checkNotContains(expect Expect, response string, _ bool) error {
 	for _, s := range expect.NotContains {
 		if strings.Contains(response, s) {
@@ -117,6 +145,8 @@ func checkNotContains(expect Expect, response string, _ bool) error {
 	return nil
 }
 
+// checkMatchesRegex compiles each pattern and verifies it matches somewhere
+// in the response. Invalid regex syntax is reported as a check failure (not a panic).
 func checkMatchesRegex(expect Expect, response string, _ bool) error {
 	for _, pattern := range expect.MatchesRegex {
 		re, err := regexp.Compile(pattern)
@@ -130,6 +160,9 @@ func checkMatchesRegex(expect Expect, response string, _ bool) error {
 	return nil
 }
 
+// checkJSONPath parses the response as JSON and evaluates each JSONPath
+// expression against it. Comparison uses fmt.Sprintf("%v") on both sides,
+// so numeric types are coerced to their string representation for matching.
 func checkJSONPath(expect Expect, response string, _ bool) error {
 	if len(expect.JSONPath) > 0 {
 		var parsed any
@@ -151,6 +184,10 @@ func checkJSONPath(expect Expect, response string, _ bool) error {
 	return nil
 }
 
+// checkMinMaxResults counts items in a JSON array (or a well-known array field
+// inside an object) and checks the count against MinResults/MaxResults bounds.
+// The well-known field names ("locations", "items", etc.) handle common MCP
+// response shapes where the array is nested inside a wrapper object.
 func checkMinMaxResults(expect Expect, response string, _ bool) error {
 	if expect.MinResults != nil || expect.MaxResults != nil {
 		var arr []any
@@ -179,6 +216,9 @@ func checkMinMaxResults(expect Expect, response string, _ bool) error {
 	return nil
 }
 
+// checkNetDelta extracts the "net_delta" field from an agent-lsp
+// simulate_edit_atomic response. A net_delta of 0 means the edit introduced
+// no new diagnostics and is safe to apply.
 func checkNetDelta(expect Expect, response string, _ bool) error {
 	if expect.NetDelta != nil {
 		var obj map[string]any
@@ -196,6 +236,9 @@ func checkNetDelta(expect Expect, response string, _ bool) error {
 	return nil
 }
 
+// checkFileContains reads files from disk after the tool call completes and
+// verifies each contains the expected substring. Used to assert side effects
+// (e.g., a write_file tool actually wrote the correct content).
 func checkFileContains(expect Expect, _ string, _ bool) error {
 	for path, expected := range expect.FileContains {
 		content, err := os.ReadFile(path)
@@ -209,6 +252,8 @@ func checkFileContains(expect Expect, _ string, _ bool) error {
 	return nil
 }
 
+// checkFileNotContains is the inverse of checkFileContains: fails if any
+// file contains the unexpected substring.
 func checkFileNotContains(expect Expect, _ string, _ bool) error {
 	for path, unexpected := range expect.FileNotContains {
 		content, err := os.ReadFile(path)
@@ -222,6 +267,8 @@ func checkFileNotContains(expect Expect, _ string, _ bool) error {
 	return nil
 }
 
+// checkFileNotExists verifies that certain files do not exist after execution.
+// Useful for testing delete operations or ensuring no unintended files are created.
 func checkFileNotExists(expect Expect, _ string, _ bool) error {
 	for _, path := range expect.FileNotExists {
 		if _, err := os.Stat(path); err == nil {
@@ -233,6 +280,9 @@ func checkFileNotExists(expect Expect, _ string, _ bool) error {
 	return nil
 }
 
+// checkInOrder verifies that the listed strings appear in the response in the
+// specified order. Each subsequent search starts after the previous match,
+// so the strings need not be contiguous but must be ordered.
 func checkInOrder(expect Expect, response string, _ bool) error {
 	if len(expect.InOrder) > 0 {
 		searchFrom := 0

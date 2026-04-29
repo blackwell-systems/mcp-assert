@@ -1,3 +1,9 @@
+// mcp-assert is a deterministic correctness testing tool for MCP servers.
+//
+// The CLI uses a simple subcommand dispatch: the first argument selects the
+// command (run, ci, matrix, audit, etc.), and remaining arguments are passed
+// to that command's flag parser. Each command is implemented in the runner
+// package (commands.go and its siblings).
 package main
 
 import (
@@ -7,6 +13,7 @@ import (
 	"github.com/blackwell-systems/mcp-assert/internal/runner"
 )
 
+// Version is set at build time via -ldflags. Defaults to "dev" for local builds.
 var Version = "dev"
 
 func main() {
@@ -77,6 +84,7 @@ func main() {
 	}
 }
 
+// printUsage writes the top-level help text to stdout.
 func printUsage() {
 	fmt.Print(`mcp-assert - Deterministic correctness testing for MCP servers
 

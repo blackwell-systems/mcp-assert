@@ -1,3 +1,16 @@
+// client.go handles MCP client creation for all three transport modes.
+//
+// Transport selection:
+//   - "stdio" (default): launches the server as a child process. Most common
+//     for local development and CI. Supports Docker isolation (wraps the
+//     command in "docker run --rm -i").
+//   - "sse": connects to a running server via Server-Sent Events at a URL.
+//   - "http": connects via Streamable HTTP (the newer MCP transport).
+//
+// For stdio clients that need mock capabilities (roots, sampling, elicitation),
+// createStdioClientWithCapabilities builds a client with static handlers that
+// respond to server-initiated requests with pre-configured values from the
+// YAML assertion file.
 package runner
 
 import (
@@ -80,8 +93,9 @@ func createMCPClient(server assertion.ServerConfig, fixture string, dockerImage 
 			envSlice = append(envSlice, k+"="+expandEnvVars(v))
 		}
 
-		// Docker isolation: wrap server command in docker run --rm -i.
-		// Per-assertion docker field takes precedence over the CLI --docker flag.
+		// Docker isolation: wrap the server command in "docker run --rm -i".
+		// The per-assertion docker field takes precedence over the CLI --docker flag.
+		// Fixture directories are bind-mounted so the server can access test files.
 		effectiveDocker := server.Docker
 		if effectiveDocker == "" {
 			effectiveDocker = dockerImage
@@ -159,7 +173,8 @@ func createStdioClientWithCapabilities(
 		}))
 	}
 
-	// Elicitation: respond with preset values.
+	// Elicitation: respond to server-initiated user prompts with preset values.
+	// Servers use elicitation to ask the user for input; we return canned answers.
 	if len(caps.Elicitation) > 0 {
 		opts = append(opts, client.WithElicitationHandler(&staticElicitationHandler{values: caps.Elicitation}))
 	}
@@ -207,7 +222,8 @@ type staticElicitationHandler struct {
 }
 
 func (h *staticElicitationHandler) Elicit(_ context.Context, _ mcp.ElicitationRequest) (*mcp.ElicitationResult, error) {
-	// Check for explicit action override.
+	// If the preset values include an "action" key, use it to control whether
+	// the response is accept/decline/cancel. Otherwise default to accept.
 	action := mcp.ElicitationResponseActionAccept
 	if a, ok := h.values["action"]; ok {
 		if actionStr, ok := a.(string); ok {
@@ -222,9 +238,10 @@ func (h *staticElicitationHandler) Elicit(_ context.Context, _ mcp.ElicitationRe
 
 	var content any
 	if c, ok := h.values["content"]; ok {
+		// Explicit "content" key overrides the entire response body.
 		content = c
 	} else {
-		// Filter out the "action" key from values used as content.
+		// No explicit content: use all non-"action" keys as the response body.
 		filtered := make(map[string]any)
 		for k, v := range h.values {
 			if k != "action" {

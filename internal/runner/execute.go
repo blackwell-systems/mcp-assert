@@ -1,3 +1,22 @@
+// execute.go contains the per-assertion execution logic.
+//
+// runAssertion is the central dispatcher. It handles skip conditions, then
+// routes to the appropriate sub-executor based on which assertion block is set:
+//
+//   - Trajectory: offline sequence check (no server needed)
+//   - AssertResources: resources/list or resources/read
+//   - AssertPrompts: prompts/list or prompts/get
+//   - AssertCompletion: completion/complete
+//   - AssertSampling: tool call that triggers server-side sampling
+//   - AssertLogging: logging/setLevel + notification capture
+//   - Assert (default): tools/call with Expect checks
+//
+// Each sub-executor follows the same lifecycle:
+//  1. Create an MCP client and perform the initialize handshake
+//  2. Run setup steps (with variable capture)
+//  3. Execute the primary operation
+//  4. Evaluate the Expect block
+//  5. Return a Result with PASS, FAIL, or SKIP
 package runner
 
 import (
@@ -13,6 +32,9 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
+// runAssertion dispatches a single assertion to the appropriate executor
+// based on which block is set (assert, assert_resources, trajectory, etc.).
+// Returns a Result capturing pass/fail status, timing, and failure detail.
 func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string) assertion.Result {
 	start := time.Now()
 
@@ -89,7 +111,8 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 		}
 	}
 
-	// Register progress notification handler before setup so it's active for the full lifetime.
+	// Register progress notification handler before setup so it captures
+	// notifications from both setup steps and the main tool call.
 	var progressCount int32
 	if a.Assert.CaptureProgress {
 		mcpClient.OnNotification(func(n mcp.JSONRPCNotification) {
@@ -99,8 +122,10 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 		})
 	}
 
-	// Run setup steps with variable capture.
-	captured := make(map[string]string) // variable_name -> captured value
+	// Run setup steps sequentially, capturing values from responses via JSONPath.
+	// Captured variables are substituted into subsequent setup args and the main
+	// tool call args (e.g., capture a session ID, then use it in the assertion).
+	captured := make(map[string]string)
 	for _, step := range a.Setup {
 		stepArgs := substituteAll(step.Args, fixture, captured)
 		req := mcp.CallToolRequest{}
@@ -134,7 +159,8 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 		}
 	}
 
-	// Snapshot files for file_unchanged assertions.
+	// Snapshot files before the tool call so file_unchanged can compare
+	// before vs. after content to verify the tool did not modify them.
 	snapshots := make(map[string]string)
 	for _, path := range a.Assert.Expect.FileUnchanged {
 		p := strings.ReplaceAll(path, "{{fixture}}", fixture)
@@ -251,7 +277,8 @@ func runResourceAssertion(a assertion.Assertion, fixture string, timeout time.Du
 		}
 	}
 
-	// Handle resource subscriptions.
+	// Handle resource subscriptions: register a notification listener before
+	// subscribing so we can count update notifications received during the test.
 	var notificationCount int32
 	if rb.Subscribe != "" {
 		mcpClient.OnNotification(func(n mcp.JSONRPCNotification) {
@@ -539,7 +566,8 @@ func runCompletionAssertion(a assertion.Assertion, fixture string, timeout time.
 		}
 	}
 
-	// Build the completion request with the appropriate reference type.
+	// Build the completion request. The reference type determines whether we are
+	// completing against a prompt argument or a resource URI template.
 	completeReq := mcp.CompleteRequest{}
 	completeReq.Params.Argument = mcp.CompleteArgument{
 		Name:  cb.Argument.Name,

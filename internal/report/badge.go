@@ -1,3 +1,7 @@
+// badge.go generates a shields.io endpoint JSON file for embedding pass/fail
+// badges in READMEs and dashboards. The JSON format follows the shields.io
+// endpoint schema (https://shields.io/endpoint): schemaVersion, label, message,
+// and color. The badge URL is: https://img.shields.io/endpoint?url=<hosted-json>
 package report
 
 import (
@@ -8,7 +12,8 @@ import (
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
 )
 
-// ShieldsEndpoint is the shields.io JSON endpoint schema.
+// ShieldsEndpoint is the shields.io endpoint JSON schema. Consumers host this
+// file and point a shields.io badge URL at it to render a dynamic badge.
 type ShieldsEndpoint struct {
 	SchemaVersion int    `json:"schemaVersion"`
 	Label         string `json:"label"`
@@ -16,7 +21,9 @@ type ShieldsEndpoint struct {
 	Color         string `json:"color"`
 }
 
-// WriteBadge writes a shields.io endpoint JSON file.
+// WriteBadge writes a shields.io endpoint JSON file showing "passed/total"
+// with a color reflecting the overall status: green (all pass), red (any fail),
+// or yellow (all skipped, no passes).
 func WriteBadge(results []assertion.Result, path string) error {
 	passed, failed, _ := countByStatus(results)
 	total := len(results)
@@ -37,6 +44,8 @@ func WriteBadge(results []assertion.Result, path string) error {
 	return os.WriteFile(path, data, 0644)
 }
 
+// badgeColor picks the badge color: red if any failures, bright green if all
+// pass, yellow otherwise (e.g., all skipped).
 func badgeColor(passed, failed, total int) string {
 	if failed > 0 {
 		return "red"

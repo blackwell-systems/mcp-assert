@@ -1,3 +1,13 @@
+// loader.go discovers and parses assertion YAML files into a Suite.
+//
+// Two loading modes are supported:
+//   - Single file: path points directly to a .yaml/.yml file.
+//   - Directory: path points to a directory. All YAML files in the directory
+//     are loaded, plus YAML files one subdirectory deep. Deeper nesting is
+//     intentionally ignored to keep suite layout predictable.
+//
+// Each YAML file is parsed into exactly one Assertion struct. If the file
+// does not include a "name" field, the filename is used as the assertion name.
 package assertion
 
 import (
@@ -74,6 +84,8 @@ func LoadSuite(path string) (*Suite, error) {
 	return suite, nil
 }
 
+// loadFile reads a single YAML file and unmarshals it into an Assertion.
+// Falls back to using the filename as the assertion name when "name" is omitted.
 func loadFile(path string) (*Assertion, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -89,6 +101,7 @@ func loadFile(path string) (*Assertion, error) {
 	return &a, nil
 }
 
+// isYAML returns true for filenames ending in .yaml or .yml.
 func isYAML(name string) bool {
 	return strings.HasSuffix(name, ".yaml") || strings.HasSuffix(name, ".yml")
 }
