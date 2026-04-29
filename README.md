@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="mcp-assert" width="400">
+  <img src="assets/logo.png" alt="mcp-assert" width="600">
 </p>
 
 [![Blackwell Systems](https://raw.githubusercontent.com/blackwell-systems/blackwell-docs-theme/main/badge-trademark.svg)](https://github.com/blackwell-systems)
