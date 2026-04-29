@@ -3,7 +3,7 @@
 // Each command follows the same pattern:
 //  1. Parse flags with a dedicated FlagSet
 //  2. Load the assertion suite from YAML
-//  3. Iterate assertions (with optional server override and fixture isolation)
+//  3. Execute assertions via runSuite (shared lifecycle)
 //  4. Collect results and produce output (console, JSON, JUnit, badge, etc.)
 //  5. Optionally detect regressions against a baseline
 //  6. Exit non-zero if any assertion failed or pass rate is below threshold
@@ -20,6 +20,90 @@ import (
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
 	"github.com/blackwell-systems/mcp-assert/internal/report"
 )
+
+// suiteRunOptions configures the shared suite execution lifecycle.
+type suiteRunOptions struct {
+	fixture  string
+	server   string
+	docker   string
+	timeout  time.Duration
+	trials   int
+	progress bool
+}
+
+// runSuite executes every assertion in the suite, applying server overrides,
+// fixture isolation, and optional multi-trial repetition. Returns the collected
+// results. This is the shared core of Run and CI.
+func runSuite(suite *assertion.Suite, opts suiteRunOptions) []assertion.Result {
+	trials := opts.trials
+	if trials <= 0 {
+		trials = 1
+	}
+
+	total := len(suite.Assertions) * trials
+	current := 0
+
+	var results []assertion.Result
+	for _, a := range suite.Assertions {
+		if opts.server != "" {
+			applyServerOverride(&a, opts.server)
+		}
+
+		for trial := 1; trial <= trials; trial++ {
+			current++
+			if opts.progress {
+				report.ProgressLine(current, total, a.Name)
+			}
+
+			r := runAssertionWithFixture(a, opts.fixture, opts.docker, opts.timeout)
+			r.Trial = trial
+			results = append(results, r)
+		}
+	}
+
+	if opts.progress {
+		report.ClearProgress()
+	}
+
+	return results
+}
+
+// runAssertionWithFixture wraps runAssertion with fixture isolation and
+// deferred cleanup. Using defer ensures cleanup runs even if runAssertion
+// panics, which matters for Docker containers that need teardown.
+func runAssertionWithFixture(a assertion.Assertion, fixture, docker string, timeout time.Duration) assertion.Result {
+	isoFixture, cleanup := isolateFixture(fixture, docker)
+	defer cleanup()
+	return runAssertion(a, isoFixture, timeout, docker)
+}
+
+// collectFixSuggestions scans for position-sensitive assertion failures and
+// probes nearby positions to find where the symbol actually is now. Returns
+// suggestions with corrected coordinates.
+func collectFixSuggestions(
+	suite *assertion.Suite,
+	results []assertion.Result,
+	fixture string,
+	timeout time.Duration,
+	docker string,
+) []FixSuggestion {
+	var suggestions []FixSuggestion
+	for _, r := range results {
+		if r.Status != assertion.StatusFail || !IsPositionError(r.Detail) {
+			continue
+		}
+		for _, a := range suite.Assertions {
+			if a.Name != r.Name {
+				continue
+			}
+			if s, err := ScanNearbyPositions(a, fixture, timeout, docker, 3, 5); err == nil && s != nil {
+				suggestions = append(suggestions, *s)
+			}
+			break
+		}
+	}
+	return suggestions
+}
 
 // Run executes assertions from a suite directory. This is the primary command
 // for local development: load the suite, run each assertion (optionally
@@ -52,42 +136,18 @@ func Run(args []string) error {
 		return err
 	}
 
-	totalAssertions := len(suite.Assertions) * *trials
-	current := 0
-	var allResults []assertion.Result
-	for _, a := range suite.Assertions {
-		if *server != "" {
-			applyServerOverride(&a, *server)
-		}
-		for trial := 1; trial <= *trials; trial++ {
-			current++
-			report.ProgressLine(current, totalAssertions, a.Name)
-			isoFixture, cleanup := isolateFixture(*fixture, *docker)
-			r := runAssertion(a, isoFixture, *timeout, *docker)
-			cleanup()
-			r.Trial = trial
-			allResults = append(allResults, r)
-		}
-	}
-	report.ClearProgress()
+	allResults := runSuite(suite, suiteRunOptions{
+		fixture:  *fixture,
+		server:   *server,
+		docker:   *docker,
+		timeout:  *timeout,
+		trials:   *trials,
+		progress: true,
+	})
 
-	// --fix: when position-sensitive assertions fail (e.g., line/column in
-	// LSP assertions drifted), scan nearby positions to find where the symbol
-	// actually is now and suggest corrected coordinates.
 	var fixSuggestions []FixSuggestion
 	if *fix {
-		for _, r := range allResults {
-			if r.Status == assertion.StatusFail && IsPositionError(r.Detail) {
-				for _, a := range suite.Assertions {
-					if a.Name == r.Name {
-						if s, err := ScanNearbyPositions(a, *fixture, *timeout, *docker, 3, 5); err == nil && s != nil {
-							fixSuggestions = append(fixSuggestions, *s)
-						}
-						break
-					}
-				}
-			}
-		}
+		fixSuggestions = collectFixSuggestions(suite, allResults, *fixture, *timeout, *docker)
 	}
 
 	if *jsonOut {
@@ -110,7 +170,6 @@ func Run(args []string) error {
 		}
 	}
 
-	// Regression detection.
 	if *baselinePath != "" {
 		baseline, err := report.LoadBaseline(*baselinePath)
 		if err != nil {
@@ -162,12 +221,9 @@ func Matrix(args []string) error {
 		lang, server := parts[0], parts[1]
 
 		for _, a := range suite.Assertions {
-			// Override server config for matrix mode.
 			a.Server.Command = "agent-lsp"
 			a.Server.Args = []string{lang + ":" + server}
-			isoFixture, cleanup := isolateFixture(*fixture, "")
-			r := runAssertion(a, isoFixture, *timeout, "")
-			cleanup()
+			r := runAssertionWithFixture(a, *fixture, "", *timeout)
 			r.Language = lang
 			allResults = append(allResults, r)
 		}
@@ -211,34 +267,18 @@ func CI(args []string) error {
 		return err
 	}
 
-	var allResults []assertion.Result
-	for i, a := range suite.Assertions {
-		if *server != "" {
-			applyServerOverride(&a, *server)
-		}
-		report.ProgressLine(i+1, len(suite.Assertions), a.Name)
-		isoFixture, cleanup := isolateFixture(*fixture, *docker)
-		r := runAssertion(a, isoFixture, *timeout, *docker)
-		cleanup()
-		allResults = append(allResults, r)
-	}
-	report.ClearProgress()
+	allResults := runSuite(suite, suiteRunOptions{
+		fixture:  *fixture,
+		server:   *server,
+		docker:   *docker,
+		timeout:  *timeout,
+		trials:   1,
+		progress: true,
+	})
 
-	// --fix: scan nearby positions for position-sensitive failures.
 	var fixSuggestions []FixSuggestion
 	if *fix {
-		for _, r := range allResults {
-			if r.Status == assertion.StatusFail && IsPositionError(r.Detail) {
-				for _, a := range suite.Assertions {
-					if a.Name == r.Name {
-						if s, err := ScanNearbyPositions(a, *fixture, *timeout, *docker, 3, 5); err == nil && s != nil {
-							fixSuggestions = append(fixSuggestions, *s)
-						}
-						break
-					}
-				}
-			}
-		}
+		fixSuggestions = collectFixSuggestions(suite, allResults, *fixture, *timeout, *docker)
 	}
 
 	report.PrintResults(allResults)
@@ -258,7 +298,6 @@ func CI(args []string) error {
 		}
 	}
 
-	// Regression detection.
 	if *baselinePath != "" {
 		baseline, err := report.LoadBaseline(*baselinePath)
 		if err != nil {

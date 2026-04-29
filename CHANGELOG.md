@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- **AWS docs MCP server suite**: 4 assertions, clean scan. First Amazon-backed server.
+- **Tavily MCP server suite**: 5 crash assertions (no auth) + 3 auth-gated assertions (search, extract, empty query).
+- **Linear MCP server suite**: 24 crash assertions. All tools throw McpError when unauthenticated.
+- **Docker MCP server scan**: 1 tool, clean.
+- **npm package README**: added to `@blackwell-systems/mcp-assert` for npmjs.com display.
+- **Test runner integrations docs page**: combined Vitest + pytest documentation on the docs site.
+
+### Changed
+
+- **README rewrite**: hook-first structure, ASCII diagram, "acts like a real agent" section, adoption proof, GitHub callout boxes.
+- **Download stats**: switched from unreliable weekly rates to cumulative totals per channel. Updated every 4 hours.
+- **Command dispatch**: replaced 50-line switch statement with command registry map.
+- **Client refactor**: extracted `stdioServerProcess` and `buildStdioServerProcess` from `createMCPClient`. Sorted env vars for deterministic behavior. Absolute fixture paths for Docker.
+- **Suite runner refactor**: extracted `runSuite`, `runAssertionWithFixture`, and `collectFixSuggestions` to eliminate duplication between Run and CI commands. Defer-based cleanup for panic safety.
+
+### Docs
+
+- Comprehensive comments added to 9 core source files (types.go, checker.go, loader.go, runner.go, client.go, execute.go, commands.go, main.go, badge.go).
+- All markdown docs audited and aligned with codebase reality (58 servers, 603 assertions, 30 bugs).
+
 ## [0.7.0] - 2026-04-28
 
 ### Added
