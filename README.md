@@ -29,6 +29,7 @@ mcp-assert connects to your server exactly like a real MCP agent: stdio, SSE, or
 
 ### Adopted in production
 
+- **[Wyre Technology](https://github.com/wyre-technology)**: 25 MCP servers tested via shared baseline workflow using `mcp-assert-action`
 - **[Ant Group (AntV)](https://github.com/antvis/mcp-server-chart)**: integrated into CI within 3 days of launch
 - **Fix PRs merged**: Grafana, LangChain, official MCP SDKs
 
