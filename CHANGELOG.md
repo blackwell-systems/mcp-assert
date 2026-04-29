@@ -21,6 +21,12 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **Command dispatch**: replaced 50-line switch statement with command registry map.
 - **Client refactor**: extracted `stdioServerProcess` and `buildStdioServerProcess` from `createMCPClient`. Sorted env vars for deterministic behavior. Absolute fixture paths for Docker.
 - **Suite runner refactor**: extracted `runSuite`, `runAssertionWithFixture`, and `collectFixSuggestions` to eliminate duplication between Run and CI commands. Defer-based cleanup for panic safety.
+- **Execute refactor**: extracted `initializedClient`, `passResult`/`failResult`/`skipResult`, and `runSetupSteps` from execute.go. Net reduction of 187 lines across all executors.
+
+### Fixed
+
+- **GitHub Action name**: `init` command scaffolded `mcp-assert@v1` instead of `mcp-assert-action@v1` in CI snippet.
+- **Fixture stat handling**: `init` now distinguishes "file missing" from "permission error" instead of treating all stat errors as missing.
 
 ### Docs
 
