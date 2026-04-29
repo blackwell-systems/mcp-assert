@@ -153,7 +153,7 @@ func initWithServer(dir, serverSpec, fixture string, timeout time.Duration) erro
 	fmt.Println()
 	fmt.Println("  Add to CI (GitHub Actions):")
 	fmt.Println()
-	fmt.Println("    - uses: blackwell-systems/mcp-assert@v1")
+	fmt.Println("    - uses: blackwell-systems/mcp-assert-action@v1")
 	fmt.Println("      with:")
 	fmt.Printf("        suite: %s\n", dir)
 	fmt.Printf("        server: %q\n", serverSpec)
@@ -183,10 +183,14 @@ func initTemplate(dir string) error {
 		return fmt.Errorf("creating fixtures: %w", err)
 	}
 	helloPath := filepath.Join(fixtureDir, "hello.txt")
-	if _, err := os.Stat(helloPath); err != nil {
+	if _, err := os.Stat(helloPath); err == nil {
+		// already exists; leave it alone
+	} else if os.IsNotExist(err) {
 		if err := os.WriteFile(helloPath, []byte(fixtureContent), 0o644); err != nil {
-			return fmt.Errorf("writing fixture: %w", err)
+			return fmt.Errorf("writing fixture %s: %w", helloPath, err)
 		}
+	} else {
+		return fmt.Errorf("checking fixture %s: %w", helloPath, err)
 	}
 
 	fmt.Printf("Created %s with:\n", dir)
