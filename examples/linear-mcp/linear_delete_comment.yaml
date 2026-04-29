@@ -1,0 +1,11 @@
+name: linear_delete_comment returns expected result
+server:
+    command: npx
+    args: [-y, mcp-server-linear]
+assert:
+    tool: linear_delete_comment
+    args:
+        id: TODO
+    expect:
+        not_error: true
+timeout: 30s
