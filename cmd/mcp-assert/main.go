@@ -22,63 +22,40 @@ func main() {
 		os.Exit(0)
 	}
 
-	switch os.Args[1] {
-	case "run":
-		if err := runner.Run(os.Args[2:]); err != nil {
+	// Command registry: maps subcommand names to their entry points.
+	// Adding a new command is a single line here plus the implementation
+	// in the runner package.
+	commands := map[string]func([]string) error{
+		"run":       runner.Run,
+		"matrix":    runner.Matrix,
+		"ci":        runner.CI,
+		"init":      runner.Init,
+		"coverage":  runner.Coverage,
+		"snapshot":  runner.Snapshot,
+		"generate":  runner.Generate,
+		"watch":     runner.Watch,
+		"audit":     runner.Audit,
+		"intercept": runner.Intercept,
+	}
+
+	cmd := os.Args[1]
+
+	if fn, ok := commands[cmd]; ok {
+		if err := fn(os.Args[2:]); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
-	case "matrix":
-		if err := runner.Matrix(os.Args[2:]); err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
-	case "ci":
-		if err := runner.CI(os.Args[2:]); err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
-	case "init":
-		if err := runner.Init(os.Args[2:]); err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
-	case "coverage":
-		if err := runner.Coverage(os.Args[2:]); err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
-	case "snapshot":
-		if err := runner.Snapshot(os.Args[2:]); err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
-	case "generate":
-		if err := runner.Generate(os.Args[2:]); err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
-	case "watch":
-		if err := runner.Watch(os.Args[2:]); err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
-	case "audit":
-		if err := runner.Audit(os.Args[2:]); err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
-	case "intercept":
-		if err := runner.Intercept(os.Args[2:]); err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
+		return
+	}
+
+	// Special commands that don't follow the standard error-returning pattern.
+	switch cmd {
 	case "--version", "version":
 		fmt.Printf("mcp-assert %s\n", Version)
 	case "--help", "-h", "help":
 		printUsage()
 	default:
-		fmt.Fprintf(os.Stderr, "unknown command: %s\n", os.Args[1])
+		fmt.Fprintf(os.Stderr, "unknown command: %s\n", cmd)
 		printUsage()
 		os.Exit(1)
 	}
