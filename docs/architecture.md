@@ -2,7 +2,9 @@
 
 ## Overview
 
-mcp-assert is a command-line testing tool for MCP servers. It reads test definitions from YAML files, starts each MCP server as a subprocess (or connects to a remote one), sends requests using the MCP protocol, and checks the responses against expectations you define. If the response matches, the test passes. If not, it fails with a clear error message.
+mcp-assert is an MCP client that tests MCP servers. It connects to a server exactly like Claude, Cursor, or any other MCP host would: full initialize handshake, standard JSON-RPC tool calls, proper transport negotiation. The server cannot distinguish mcp-assert from a real agent. This is the core design principle: test against the real protocol, not a mock.
+
+It reads test definitions from YAML files, starts each MCP server as a subprocess (or connects to a remote one), sends requests using the MCP protocol, and checks the responses against expectations you define. If the response matches, the test passes. If not, it fails with a clear error message.
 
 The problem it solves: MCP servers expose tools, prompts, and resources to AI agents, but there is no built-in way to verify that those capabilities return correct results. mcp-assert fills that gap by providing deterministic, repeatable correctness tests that run in CI or locally, for any MCP server written in any language.
 
