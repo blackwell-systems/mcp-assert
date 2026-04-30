@@ -31,6 +31,9 @@ gh_total=$(gh api "repos/${REPO}/releases" --jq '[.[].assets[].download_count] |
 docker_total=$(curl -sf --max-time 10 "https://hub.docker.com/v2/repositories/blackwellsystems/mcp-assert/" \
   | python3 -c "import json,sys; print(json.load(sys.stdin)['pull_count'])" 2>/dev/null || echo "--")
 
+# Snap doesn't expose public download counts via API.
+# Stats are only visible on the Snapcraft dashboard.
+
 # ── High-water mark: never regress displayed totals ────────────────
 # Cache stores the last known good value per channel. Downloads are
 # monotonic, so if the API returns a lower number or fails, we keep

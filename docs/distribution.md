@@ -125,13 +125,20 @@ Static and dynamic (CI-verified) badge for MCP server READMEs. Every badge is a 
 ### Awesome MCP DevTools
 PR submitted ([punkpeye/awesome-mcp-devtools#144](https://github.com/punkpeye/awesome-mcp-devtools/pull/144)). Pending maintainer review. Listed under Testing Tools.
 
+### Snap (Linux)
+```bash
+sudo snap install mcp-assert --classic
+```
+
+Published to the Snap Store on each release. Uses `classic` confinement since mcp-assert needs to launch arbitrary server processes. Built via `snapcore/action-build` and published via `snapcore/action-publish` in the `snap` job of `release.yml`.
+
 ### Planned
 
 | Channel | Priority | Description |
 |---------|----------|-------------|
 | Nix flake / nixpkgs | Medium | Nix users are quality-focused and vocal. High signal in a niche community. |
 | AUR | Low | Arch Linux users. PKGBUILD file. |
-| Conda-forge | Low | Data science / ML engineers. |
+| Chocolatey | Low | Windows, tracks download counts. |
 | MCP registry integration | Low | Test badge on Glama and Smithery listings. |
 
 ## How to release
@@ -157,6 +164,7 @@ A single `git tag` triggers the entire pipeline. Every channel is automated.
    | `npm-publish` | Runs `scripts/npm-publish.sh`, downloads binaries from the Release, publishes platform packages to npm | npm |
    | `pypi-publish` | Runs `scripts/pypi-publish.sh`, builds platform wheels with Go binary inside, publishes to PyPI with twine | PyPI |
    | `pytest-plugin-publish` | Builds and publishes the `pytest-mcp-assert` plugin to PyPI with twine | PyPI (pytest plugin) |
+   | `snap` | Builds snap package with snapcore/action-build, publishes to Snap Store | Snap Store |
    | `vitest-plugin-publish` | Builds and publishes the `vitest-mcp-assert` plugin to npm | npm (vitest plugin) |
    | `winget` | Submits manifest PR to microsoft/winget-pkgs via winget-releaser | Winget |
 
@@ -194,6 +202,7 @@ A single `git tag` triggers the entire pipeline. Every channel is automated.
 | `DOCKERHUB_USERNAME` | Repository secret | Docker Hub push |
 | `DOCKERHUB_TOKEN` | Repository secret | Docker Hub push |
 | `HOMEBREW_TAP_TOKEN` | Repository secret | Homebrew formula push, winget fork |
+| `SNAP_TOKEN` | Repository secret | Snap Store publish |
 
 ### Rollback
 

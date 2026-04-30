@@ -1,0 +1,36 @@
+name: mcp-assert
+base: core24
+version: git
+summary: Deterministic testing for MCP servers
+description: |
+  mcp-assert connects to any MCP server over stdio, SSE, or HTTP, calls tools,
+  and asserts results. 18 assertion types defined in YAML, runs against any MCP
+  server in any language. Zero-effort coverage with generate and snapshot commands.
+
+  Usage:
+    mcp-assert audit --server "npx my-server"
+    mcp-assert run --suite evals/ --server "node server.js"
+
+  https://github.com/blackwell-systems/mcp-assert
+
+grade: stable
+confinement: classic
+license: MIT
+
+parts:
+  mcp-assert:
+    plugin: go
+    source: .
+    source-type: local
+    build-snaps:
+      - go/1.23/stable
+    go-buildtags:
+      - ""
+    go-generate: []
+    override-build: |
+      cd $CRAFT_PART_SRC
+      CGO_ENABLED=0 go build -ldflags="-s -w" -o $CRAFT_PART_INSTALL/bin/mcp-assert ./cmd/mcp-assert
+
+apps:
+  mcp-assert:
+    command: bin/mcp-assert

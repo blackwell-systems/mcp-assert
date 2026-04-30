@@ -66,6 +66,12 @@ go install github.com/blackwell-systems/mcp-assert/cmd/mcp-assert@latest
 # Homebrew
 brew install blackwell-systems/tap/mcp-assert
 
+# Docker
+docker run blackwellsystems/mcp-assert audit --server "npx my-server"
+
+# Snap (Linux)
+sudo snap install mcp-assert --classic
+
 # Scoop (Windows)
 scoop bucket add blackwell-systems https://github.com/blackwell-systems/scoop-bucket
 scoop install mcp-assert

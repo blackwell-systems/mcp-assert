@@ -142,6 +142,22 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
+  snap:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: snapcore/action-build@v1
+        id: snapcraft
+
+      - uses: snapcore/action-publish@v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_TOKEN }}
+        with:
+          snap: ${{ steps.snapcraft.outputs.snap }}
+          release: stable
+
   vitest-plugin-publish:
     needs: release
     runs-on: ubuntu-latest
