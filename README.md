@@ -153,6 +153,22 @@ pytest --mcp-suite evals/
 > [!IMPORTANT]
 > Same YAML files work across the CLI, Vitest, and pytest. No migration needed. Write once, run anywhere.
 
+## Everything you can do
+
+| Command | What it does | Setup required |
+|---------|-------------|----------------|
+| `audit --server "..."` | Scan any server, classify every tool as healthy/crashed/timed out | None |
+| `init --server "..."` | Generate a complete test suite from tools/list + capture snapshots | None |
+| `run --suite evals/` | Run YAML assertions, report pass/fail | YAML files |
+| `ci --suite evals/` | Run with thresholds, baselines, JUnit XML, GitHub Step Summary | YAML files |
+| `coverage --suite evals/ --server "..."` | Report which tools have assertions and which don't | YAML files |
+| `snapshot --suite evals/ --update` | Capture responses as golden files for regression detection | YAML files |
+| `watch --suite evals/` | Re-run on YAML changes, show diffs when status flips | YAML files |
+| `matrix --languages go:gopls,ts:tsserver` | Same suite across multiple language servers | YAML files |
+| `intercept --server "..." --trajectory t.yaml` | Proxy between agent and server, capture live tool call trace | Trajectory YAML |
+
+Start with `audit` (zero setup), move to `init` (generates everything), then customize the YAML for your specific assertions.
+
 ## Zero-Effort Coverage
 
 ```bash
