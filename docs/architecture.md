@@ -705,3 +705,486 @@ To add a new block type (like `assert_notifications:` for testing arbitrary serv
 **Color degrades gracefully.** TTY detection via `os.ModeCharDevice`. `NO_COLOR` env var. `TERM=dumb`. In CI (pipes), output is plain `PASS`/`FAIL`/`SKIP` with no escape codes.
 
 **Setup tools are not counted as "tested" by coverage.** The `coverage` command only counts the `assert.tool` field, not tools that appear in `setup:` blocks. This correctly reflects that setup tools are prerequisites, not the subject of the test.
+
+---
+
+## Error Model
+
+MCP defines two distinct error layers. Understanding the difference is critical for writing correct assertions and for interpreting audit results.
+
+### Application errors (`isError: true`)
+
+The tool ran, understood the request, and is reporting a failure. The JSON-RPC response is a normal `result` with the `isError` flag set to `true`:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [{ "type": "text", "text": "File not found: /tmp/missing.txt" }],
+    "isError": true
+  }
+}
+```
+
+The agent receives the error message and can reason about it: retry with a different path, ask the user for help, or try an alternative approach. This is the correct way for MCP tools to report failures.
+
+mcp-assert checks this with `not_error: true` (expects `isError` to be false) or `is_error: true` (expects `isError` to be true for negative tests).
+
+### Protocol errors (JSON-RPC error codes)
+
+The server crashed, panicked, or threw an unhandled exception. Instead of a `result`, the response is a JSON-RPC `error` object:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "code": -32603,
+    "message": "Internal error",
+    "data": "TypeError: Cannot read properties of undefined"
+  }
+}
+```
+
+The agent receives an opaque error code with no actionable message. It cannot distinguish "file not found" from "server crashed" from "out of memory." The `-32603` code (Internal Error) is the most common: it means the tool handler threw an exception instead of catching it and returning `isError: true`.
+
+### How errors flow through mcp-assert
+
+```
+Server response
+       │
+       ├── JSON-RPC error (-32603, -32600, etc.)
+       │     └── Assertion FAILS with: "server returned error: Internal error"
+       │
+       ├── Result with isError: true
+       │     ├── If expect.not_error: true  → FAIL ("expected no error, got isError")
+       │     └── If expect.is_error: true   → PASS (negative test)
+       │
+       └── Result with isError: false
+             ├── If expect.is_error: true   → FAIL ("expected error, got success")
+             └── Continue to content checks (contains, equals, json_path, etc.)
+```
+
+### Transport errors
+
+A third category exists below the JSON-RPC layer: the connection itself fails. The server process exits before responding, the SSE connection drops, or the HTTP request times out. These produce failures like "transport error: transport closed" or "context deadline exceeded." mcp-assert reports these as assertion failures with the transport error as the detail message.
+
+### The audit classification
+
+The `audit` command uses the error model to classify each tool into three categories:
+
+| Classification | Condition | Meaning |
+|----------------|-----------|---------|
+| **Healthy** | `isError: false` or `isError: true` | Tool handled the input correctly (success or reported failure) |
+| **Crashed** | JSON-RPC error (-32603) | Tool threw an unhandled exception |
+| **Timed out** | Context deadline exceeded | Tool did not respond within the timeout |
+
+A tool returning `isError: true` with a helpful error message is **healthy**, not crashed. The audit quality score reflects this: servers that catch errors and return `isError: true` get 100% even if every tool "fails," because the failures are handled correctly.
+
+---
+
+## Template Engine
+
+mcp-assert replaces template variables in tool arguments, setup step arguments, and certain configuration fields before sending requests to the server. Three substitution types are supported.
+
+### `{{fixture}}` substitution
+
+Replaced with the absolute path to the isolated fixture directory (or the original fixture path if isolation is disabled). This runs first, before any other substitution.
+
+```yaml
+assert:
+  tool: read_file
+  args:
+    path: "{{fixture}}/hello.txt"
+```
+
+After substitution: `path: "/tmp/mcp-assert-fixture-abc123/test-data/hello.txt"`
+
+### `{{variable}}` capture substitution
+
+Setup steps can capture values from tool responses using the `capture` field. Captured values are substituted into subsequent setup steps and the main assertion's arguments.
+
+```yaml
+setup:
+  - tool: create_item
+    args:
+      name: "test"
+    capture:
+      item_id: "$.id"
+  - tool: get_item
+    args:
+      id: "{{item_id}}"
+```
+
+The `capture` field maps variable names to JSON path expressions. After the first setup step runs, the response is parsed as JSON, `$.id` is extracted, and `{{item_id}}` is available for the rest of the assertion.
+
+### `${ENV}` expansion in environment variables
+
+Server environment variables support shell-style variable expansion:
+
+```yaml
+server:
+  command: my-server
+  env:
+    API_KEY: "${API_KEY}"
+    DB_URL: "${DATABASE_URL:-sqlite:///tmp/test.db}"
+```
+
+This uses Go's `os.ExpandEnv`, which supports `$VAR`, `${VAR}`, and default values via `${VAR:-default}`. Expansion happens at runtime, not at YAML parse time.
+
+### Substitution order
+
+1. **Fixture substitution**: all `{{fixture}}` tokens are replaced in tool arguments.
+2. **Variable substitution**: `{{captured_var}}` tokens are replaced with values from prior setup steps.
+3. **Environment expansion**: `${VAR}` patterns in `server.env` values are expanded from the process environment.
+
+Substitution is recursive for tool arguments (nested maps and arrays are walked), but not for the `server` block fields (command, args) except `server.env` values and `server.args` (which get fixture substitution only).
+
+### Implementation
+
+`substituteAll()` in `internal/runner/substitute.go` walks the argument map recursively. For each string value, it replaces `{{fixture}}` first, then replaces any `{{key}}` where `key` matches a captured variable name. The function also handles `substituteFixture()` for the simpler case where only fixture substitution is needed.
+
+`extractJSONPath()` in the same file implements the `$.field.subfield[N]` path syntax used by `capture`. It walks parsed JSON using dot notation, with bracket syntax for array indices. It does not support full JSONPath (no wildcards, no filters, no recursive descent).
+
+---
+
+## Audit Command Flow
+
+The `audit` command is a distinct execution path from `run`. It requires no YAML files: just point it at a server and it discovers and tests everything automatically.
+
+### Lifecycle
+
+```
+mcp-assert audit --server "npx my-server" --timeout 15s
+```
+
+1. **Parse the server spec.** `strings.Fields("npx my-server")` splits into command and args.
+
+2. **Connect and initialize.** Same `createMCPClient` + `Initialize` handshake as `run`.
+
+3. **Discover tools.** Send `tools/list` request. The server responds with its full tool catalog, including JSON Schema for each tool's input parameters.
+
+4. **Generate inputs.** For each tool, the audit command generates a plausible input from the tool's JSON Schema. For required string fields, it uses the field name as the value (e.g., `{"path": "path"}`). For numbers, it uses `0`. For booleans, `false`. For arrays, an empty array. If no schema is provided, it sends an empty object.
+
+5. **Call each tool.** Send `tools/call` for every discovered tool, one at a time. Capture the response and the `isError` flag, and measure the duration.
+
+6. **Classify results.** Each tool is classified as healthy (normal response or `isError: true`), crashed (JSON-RPC error), or timed out (deadline exceeded).
+
+7. **Report.** Print a quality score (percentage of tools that are healthy), a per-tool result table, and next-steps guidance for fixing crashed tools.
+
+8. **Optionally generate YAML stubs.** With `--output <dir>`, write a starter assertion YAML file for each discovered tool. The generated YAML includes the tool name, the schema-derived arguments, and basic expectations (`not_error: true`, `not_empty: true`).
+
+### Why audit exists
+
+Most MCP servers have never been tested by an external client. The most common failure mode is tools that throw exceptions instead of returning `isError: true`. The audit command finds these in seconds without any setup. Every bug filed by the mcp-assert project was discovered via `audit` first, then confirmed with a targeted assertion YAML.
+
+---
+
+## Snapshot Testing Flow
+
+The `snapshot` command captures tool responses as golden files for regression detection. This is conceptually similar to Jest's snapshot testing.
+
+### Update mode (`--update`)
+
+```
+mcp-assert snapshot --suite evals/ --server "npx my-server" --update
+```
+
+1. Load the suite and iterate assertions.
+2. For each assertion, start the server, run setup, call the tool.
+3. Write the response text to a snapshot file alongside the YAML: `evals/echo.yaml` produces `evals/.snapshots/echo.snap`.
+4. Report how many snapshots were created, updated, or unchanged.
+
+### Verify mode (default)
+
+```
+mcp-assert snapshot --suite evals/ --server "npx my-server"
+```
+
+1. Load the suite, run each assertion, capture the response.
+2. Compare the response against the stored snapshot file.
+3. If the response differs, report the diff and fail.
+4. If no snapshot exists, report it as a new (uncaptured) snapshot.
+
+### Diff display
+
+When a snapshot changes, the runner computes a line-by-line unified diff using an LCS (longest common subsequence) algorithm. The diff is printed with `+`/`-` markers, similar to `git diff`. The diff implementation is in `internal/report/diff.go`.
+
+### When to use snapshots vs expectations
+
+Snapshots are useful when you want to detect any change in a tool's output, even changes you did not anticipate. Expectations (`contains`, `json_path`, etc.) are useful when you want to check specific properties and ignore everything else. Snapshots are stricter but more brittle; expectations are more targeted but may miss unexpected changes.
+
+---
+
+## Security Model
+
+mcp-assert runs arbitrary server commands as subprocesses. Understanding the trust boundaries matters.
+
+### Trusted input: YAML files
+
+Assertion YAML files are fully trusted. They specify commands to execute, arguments to pass, and files to read. A malicious YAML file can run arbitrary code via the `server.command` field. This is by design: the YAML files are part of your test suite, committed to version control, and reviewed like any other code.
+
+### Untrusted input: server responses
+
+Server responses are untrusted. A malicious or buggy server could return arbitrary text, but this text is only used for:
+
+- String comparison against expected values (no execution)
+- JSON parsing for `json_path` checks (using Go's `encoding/json`, which is safe)
+- Display in terminal output (ANSI escape injection is possible but limited to the user's own terminal)
+
+Server responses are never passed to `exec`, `eval`, or used to construct file paths for writing.
+
+### Command injection surface
+
+The `--server` CLI flag and the `server.command` YAML field specify shell commands. These are split using `strings.Fields()`, not passed through a shell. This means shell metacharacters (`&&`, `|`, `;`, `$()`) are treated as literal arguments, not interpreted. A `--server` value of `my-server; rm -rf /` would try to launch a binary literally named `my-server;` with arguments `rm`, `-rf`, `/`.
+
+However, environment variable expansion in `server.env` uses `os.ExpandEnv`, which resolves `${VAR}` from the process environment. If environment variables contain malicious values, those values are passed to the server process. This is standard behavior for any tool that forwards environment variables.
+
+### Fixture path traversal
+
+The `{{fixture}}` template is replaced with an absolute path. The fixture isolation mechanism copies the entire directory to a temp location, so path traversal attempts (e.g., `{{fixture}}/../../etc/passwd`) resolve to paths inside the temp copy, not the original filesystem. However, if fixture isolation is disabled (no `--fixture` flag), there is no protection: the server sees whatever paths the YAML specifies.
+
+### Docker isolation
+
+When `--docker <image>` is used, the server runs inside a fresh container. The fixture directory is mounted read-write via `-v`. The container is destroyed after the assertion (`--rm`). This provides filesystem and process isolation but not network isolation (the container shares the host network by default).
+
+---
+
+## Performance Characteristics
+
+### What dominates test duration
+
+For most assertion suites, **server startup time** dominates. Each assertion starts a fresh server process. Typical startup times:
+
+| Server type | Startup time | Example |
+|-------------|-------------|---------|
+| Node.js MCP servers | 200-500ms | filesystem, memory, fetch |
+| Python MCP servers | 300-800ms | mcp-server-time, sqlite |
+| Go MCP servers | 10-50ms | agent-lsp, grafana-mcp |
+| JVM MCP servers | 2-5s | Spring AI servers |
+| Docker-wrapped servers | 1-3s | Any server + `--docker` |
+
+A suite of 25 assertions against a Node.js server takes roughly 10-15 seconds. The same suite against a Go server takes 2-3 seconds. Tool call time is usually negligible (under 100ms) unless the tool does real work (network requests, file I/O).
+
+### What's cheap
+
+- **YAML parsing**: ~1ms per file. Negligible even for 100+ assertions.
+- **Assertion checking**: pure string/JSON operations, under 1ms per assertion.
+- **Report generation**: under 10ms for all formats combined.
+- **Fixture copying**: depends on fixture size, but typically under 50ms for small test data.
+
+### Optimization strategies
+
+**Reduce server restarts.** Use `setup` steps to perform multiple operations within a single assertion's server lifetime. For example, instead of two assertions (one to create a file, one to read it), use one assertion with a setup step that creates the file and an assert block that reads it.
+
+**Use `skip_unless_env` for slow tests.** Auth-gated assertions that call real APIs should be skipped in fast CI runs and only enabled when credentials are available.
+
+**Use `--trials 1` in CI.** The `--trials N` flag runs each assertion N times for reliability measurement, multiplying total duration. Use `--trials 1` for pass/fail CI and reserve `--trials 5+` for dedicated reliability analysis.
+
+**Parallelize at the suite level.** mcp-assert itself runs assertions sequentially within a suite. To parallelize, split your assertions into multiple suite directories and run separate `mcp-assert run` processes. The GitHub Action supports this via matrix strategies.
+
+---
+
+## Wire Format Examples
+
+These are the actual JSON-RPC messages exchanged between mcp-assert and the server for each block type. Understanding the wire format helps when debugging assertion failures or writing new block types.
+
+### Tool call (`assert:`)
+
+Request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "read_file",
+    "arguments": {
+      "path": "/tmp/mcp-assert-fixture-abc123/test-data/hello.txt"
+    }
+  }
+}
+```
+
+Response (success):
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      { "type": "text", "text": "Hello, world!\n" }
+    ],
+    "isError": false
+  }
+}
+```
+
+Response (application error):
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      { "type": "text", "text": "File not found: /tmp/missing.txt" }
+    ],
+    "isError": true
+  }
+}
+```
+
+### Resource read (`assert_resources:`)
+
+Request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "resources/read",
+  "params": {
+    "uri": "test://static/greeting"
+  }
+}
+```
+
+Response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "contents": [
+      {
+        "uri": "test://static/greeting",
+        "mimeType": "text/plain",
+        "text": "Hello from the resource"
+      }
+    ]
+  }
+}
+```
+
+### Prompt get (`assert_prompts:`)
+
+Request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "prompts/get",
+  "params": {
+    "name": "code_review",
+    "arguments": { "language": "go" }
+  }
+}
+```
+
+Response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "result": {
+    "description": "Review Go code for best practices",
+    "messages": [
+      {
+        "role": "user",
+        "content": { "type": "text", "text": "Review the following Go code..." }
+      }
+    ]
+  }
+}
+```
+
+### Completion (`assert_completion:`)
+
+Request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "completion/complete",
+  "params": {
+    "ref": { "type": "ref/prompt", "name": "code_review" },
+    "argument": { "name": "language", "value": "py" }
+  }
+}
+```
+
+Response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "result": {
+    "completion": {
+      "values": ["python", "pytorch"],
+      "hasMore": false
+    }
+  }
+}
+```
+
+### Logging (`assert_logging:`)
+
+Set level request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "logging/setLevel",
+  "params": { "level": "debug" }
+}
+```
+
+During the subsequent tool call, the server sends log notifications:
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "notifications/message",
+  "params": {
+    "level": "debug",
+    "logger": "my-server",
+    "data": "Processing request..."
+  }
+}
+```
+
+mcp-assert captures these notifications and checks them against `contains_level`, `contains_data`, and `min_messages` expectations.
+
+### Sampling (bidirectional)
+
+During a tool call, the server requests an LLM completion from the client:
+
+Server to client:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 100,
+  "method": "sampling/createMessage",
+  "params": {
+    "messages": [
+      { "role": "user", "content": { "type": "text", "text": "Summarize this code" } }
+    ],
+    "maxTokens": 1000
+  }
+}
+```
+
+Client (mcp-assert) responds with the mock:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 100,
+  "result": {
+    "role": "assistant",
+    "content": { "type": "text", "text": "This code implements a REST API..." },
+    "model": "mock",
+    "stopReason": "end_turn"
+  }
+}
+```
+
+The server uses the mock response to complete its tool execution and returns the final result to the client.
