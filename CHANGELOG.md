@@ -5,13 +5,17 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-04-29
+
 ### Added
 
 - **jest-mcp-assert**: Jest integration for running mcp-assert YAML assertions as Jest tests. Same two usage modes as vitest-mcp-assert: `describeMcpSuite('name', 'evals/')` for auto-discovery, or `runMcpAssert('evals/echo.yaml')` for per-test control. Same YAML files work across Jest, Vitest, pytest, and the CLI. Published as `jest-mcp-assert` on npm.
+- **mcpassert Go test plugin**: Go test helpers for running mcp-assert YAML assertions as subtests. `mcpassert.Run(t, "evals/echo.yaml")` for single assertions, `mcpassert.Suite(t, "evals/")` for auto-discovery. Published as `github.com/blackwell-systems/mcp-assert/go-plugin`.
 - **Docker distribution**: multi-arch container images (linux/amd64, linux/arm64) published to Docker Hub (`blackwellsystems/mcp-assert`) and GHCR (`ghcr.io/blackwell-systems/mcp-assert`) on each release.
 - **Snap distribution**: snapcraft.yaml with classic confinement for Linux users via `snap install mcp-assert --classic`.
-- **mcpassert Go test plugin**: Go test helpers for running mcp-assert YAML assertions as subtests. `mcpassert.Run(t, "evals/echo.yaml")` for single assertions, `mcpassert.Suite(t, "evals/")` for auto-discovery. Published as `github.com/blackwell-systems/mcp-assert/go-plugin`.
 - **Docker pull count** added to download stats SVG.
+- **Wyre Technology adoption**: 25 MCP servers tested via shared baseline workflow using mcp-assert-action.
+- **Vera roadmap adoption**: recommended test harness on project roadmap.
 
 ### Fixed
 
