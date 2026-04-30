@@ -54,13 +54,23 @@ use_or_cache() {
   local prev
   prev=$(read_cache "$key")
   prev="${prev:-0}"
-  if [[ "$val" != "?" && "$val" != "--" && "$prev" != "?" && "$prev" != "--" ]]; then
-    if (( val >= prev )); then
+  # If we got a valid number from the API:
+  if [[ "$val" != "?" && "$val" != "--" ]]; then
+    # If the cached value is also a valid number, keep the higher one.
+    if [[ "$prev" != "?" && "$prev" != "--" && "$prev" != "0" ]]; then
+      if (( val >= prev )); then
+        echo "$val"
+      else
+        echo "$prev"
+      fi
+    else
+      # Cache was empty/invalid, use the fresh value.
       echo "$val"
-      return
     fi
+    return
   fi
-  if [[ "$prev" != "0" ]]; then
+  # API failed: fall back to cache if it has a valid value.
+  if [[ "$prev" != "0" && "$prev" != "--" && "$prev" != "?" ]]; then
     echo "$prev"
   else
     echo "$val"
