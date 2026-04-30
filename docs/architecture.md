@@ -30,9 +30,63 @@ The **Model Context Protocol (MCP)** is a standard for AI agents to interact wit
 - **SSE (Server-Sent Events)**: The client connects to an HTTP endpoint. The server pushes responses as SSE events. This is a legacy transport.
 - **Streamable HTTP**: The client sends HTTP POST requests and receives streamed responses. This is the modern remote transport.
 
-**The handshake.** Before any tool calls, the client sends an `initialize` request declaring its name, version, and the protocol version it supports. The server responds with its own capabilities (which tools, prompts, and resources it offers). After this exchange, the client can make requests.
+**The handshake.** Before any tool calls, the client and server perform an initialization exchange:
 
-**Bidirectional requests.** MCP is not strictly client-to-server. The server can also request things from the client: the list of filesystem roots (`roots/list`), an LLM completion (`sampling/createMessage`), or user input (`elicitation/create`). mcp-assert supports mocking all three of these via the `client_capabilities` YAML field.
+```
+Client (mcp-assert)                          Server (under test)
+       │                                            │
+       │──── initialize ───────────────────────────>│
+       │     { protocolVersion: "2025-03-26",       │
+       │       clientInfo: { name: "mcp-assert" } } │
+       │                                            │
+       │<─── initialize response ──────────────────│
+       │     { protocolVersion: "2025-03-26",       │
+       │       capabilities: {                      │
+       │         tools: { listChanged: true },      │
+       │         prompts: {},                       │
+       │         resources: {}                      │
+       │       },                                   │
+       │       serverInfo: { name: "my-server" } }  │
+       │                                            │
+       │──── initialized (notification) ───────────>│
+       │                                            │
+       │     ═══ handshake complete ═══             │
+       │                                            │
+       │──── tools/call ───────────────────────────>│
+       │     { name: "read_file",                   │
+       │       arguments: { path: "/tmp/foo" } }    │
+       │                                            │
+       │<─── result ───────────────────────────────│
+       │     { content: [{ type: "text",            │
+       │       text: "file contents" }] }           │
+       │                                            │
+```
+
+The client declares its name and the protocol version it supports. The server responds with its own capabilities (which tools, prompts, and resources it offers). The client sends an `initialized` notification to confirm, and then the session is open for requests.
+
+**Bidirectional requests.** MCP is not strictly client-to-server. The server can also request things from the client during a tool call:
+
+```
+Client (mcp-assert)                          Server (under test)
+       │                                            │
+       │──── tools/call { name: "refactor" } ──────>│
+       │                                            │
+       │<─── roots/list (server asks client) ──────│
+       │                                            │
+       │──── roots response ───────────────────────>│
+       │     [{ uri: "file:///workspace" }]         │
+       │                                            │
+       │<─── sampling/createMessage ───────────────│
+       │     (server asks for LLM completion)       │
+       │                                            │
+       │──── mock LLM response ────────────────────>│
+       │     { text: "mocked answer" }              │
+       │                                            │
+       │<─── tools/call result ────────────────────│
+       │                                            │
+```
+
+The server can request filesystem roots (`roots/list`), an LLM completion (`sampling/createMessage`), or user input (`elicitation/create`). mcp-assert supports mocking all three of these via the `client_capabilities` YAML field.
 
 ---
 
@@ -133,7 +187,7 @@ The codebase is organized into three packages under `internal/`, plus the entry 
 
 ### `cmd/mcp-assert/main.go`
 
-The binary entry point. It reads the first CLI argument and dispatches to the appropriate function in the `runner` package (`Audit`, `Run`, `Matrix`, `CI`, `Init`, `Coverage`, `Generate`, `Snapshot`, `Watch`, `Intercept`). There is no framework; it is a simple `switch` statement on `os.Args[1]`. This file also defines `printUsage()` for help text and exposes a `Version` variable set at build time.
+The binary entry point. It reads the first CLI argument and dispatches to the appropriate function in the `runner` package via a command registry map (`map[string]func([]string) error`). Commands include `Audit`, `Run`, `Matrix`, `CI`, `Init`, `Coverage`, `Generate`, `Snapshot`, `Watch`, and `Intercept`. This file also defines `printUsage()` for help text and exposes a `Version` variable set at build time.
 
 ### `internal/assertion/` (types, loading, checking)
 
@@ -307,12 +361,12 @@ The outcome of running a single assertion.
 
 ```go
 type Result struct {
-    Name     string         // assertion name
-    Status   Status         // "PASS", "FAIL", or "SKIP"
-    Detail   string         // error message on failure
-    Duration time.Duration  // wall-clock time
-    Language string         // set in matrix mode
-    Trial    int            // trial number when --trials > 1
+    Name     string      // assertion name
+    Status   Status      // "PASS", "FAIL", or "SKIP"
+    Detail   string      // error message on failure
+    Duration DurationMS  // wall-clock time (serializes as integer milliseconds in JSON)
+    Language string      // set in matrix mode
+    Trial    int         // trial number when --trials > 1
 }
 ```
 
