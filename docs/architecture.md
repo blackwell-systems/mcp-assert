@@ -692,6 +692,63 @@ To add a new block type (like `assert_notifications:` for testing arbitrary serv
 
 ---
 
+## Concurrency Model
+
+mcp-assert uses goroutines in several places, but assertions themselves run sequentially. Understanding where concurrency exists and where it doesn't prevents bugs when contributing.
+
+### Suite execution: sequential
+
+Assertions within a suite run one at a time, in file-name order. There is no parallelism at the assertion level. This is a deliberate choice:
+
+- Fixture isolation copies a directory per assertion. Parallel copies of the same fixture directory would race on filesystem operations.
+- Terminal output (progress indicator, results table) assumes sequential printing.
+- Server subprocess management (start, initialize, call, close) is not designed for interleaving.
+
+To parallelize, run separate `mcp-assert run` processes on different suite directories. The GitHub Action supports this via CI matrix strategies.
+
+### Per-assertion: goroutines for I/O
+
+Within a single assertion, the mcp-go library uses goroutines internally for transport I/O (reading from stdin, writing to stdout). These are managed by the library and cleaned up when the client is closed. mcp-assert does not spawn its own goroutines during normal assertion execution.
+
+The exception is `capture_progress: true`, which registers a notification listener that increments an `atomic.Int32` counter from the mcp-go callback goroutine. The counter is read on the main goroutine after the tool call completes. This is safe because `atomic` operations don't require a mutex.
+
+### Intercept command: explicit goroutines
+
+The `intercept` command is the most concurrent part of the codebase. It spawns:
+
+1. **Agent-to-server goroutine**: reads lines from os.Stdin via a buffered scanner, inspects each for `tools/call` requests, and forwards to the server's stdin pipe.
+2. **Server-to-agent goroutine**: copies from the server's stdout pipe to os.Stdout.
+3. **Main goroutine**: waits for both I/O goroutines to finish (or a timeout), then validates trajectory assertions.
+
+Shared state:
+
+```
+trace []TraceEntry    ← appended by goroutine 1, read by main goroutine
+                        protected by sync.Mutex
+cmd   *exec.Cmd       ← written by goroutine (proxyStdio), read by main
+                        on timeout for Process.Kill()
+                        safe because written before done channel send
+```
+
+On timeout, the main goroutine kills the server process (`cmd.Process.Kill()`), which causes the I/O goroutines to unblock and exit. The main goroutine then waits for the proxy goroutine to finish before reading the trace.
+
+### Watch command: polling loop
+
+The `watch` command polls for file changes in a `for` loop with `time.Sleep`. It does not use goroutines for file watching (no `fsnotify`). When a change is detected, it re-runs the suite synchronously on the main goroutine. There is no concurrent execution of assertions.
+
+### What is NOT safe to parallelize
+
+- **Assertions within a suite.** Fixture isolation, terminal output, and server lifecycle all assume sequential execution.
+- **Setup steps within an assertion.** Steps execute in order because later steps may depend on captured variables from earlier steps.
+- **Checker evaluation.** The checker short-circuits on first failure. Parallel evaluation would produce non-deterministic error messages.
+
+### What IS safe to parallelize
+
+- **Separate suite directories.** Each `mcp-assert run` process is fully independent.
+- **Unrelated tool calls in separate assertions.** No shared state between assertions (each gets its own server, fixture, and context).
+
+---
+
 ## Key Design Decisions
 
 **One server per assertion.** Each assertion starts a fresh MCP server subprocess. This prevents state leakage between tests but means server startup cost is paid per assertion. For fast servers (filesystem, memory) this is negligible. For slow servers (gopls, jdtls) it dominates test duration. The `setup` block amortizes some of this by allowing warmup calls within a single assertion's server lifetime.
