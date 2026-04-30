@@ -1,5 +1,6 @@
-pip=4269
-pytest=1218
+pip=5384
+pytest=1656
 npm=810
 vitest=102
-gh=222
+gh=250
+docker=--

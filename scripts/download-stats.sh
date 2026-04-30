@@ -28,6 +28,9 @@ vitest_total=$(curl -sf --max-time 10 "https://api.npmjs.org/downloads/point/200
 
 gh_total=$(gh api "repos/${REPO}/releases" --jq '[.[].assets[].download_count] | add // 0' 2>/dev/null || echo "?")
 
+docker_total=$(curl -sf --max-time 10 "https://hub.docker.com/v2/repositories/blackwellsystems/mcp-assert/" \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['pull_count'])" 2>/dev/null || echo "--")
+
 # ── High-water mark: never regress displayed totals ────────────────
 # Cache stores the last known good value per channel. Downloads are
 # monotonic, so if the API returns a lower number or fails, we keep
@@ -58,6 +61,7 @@ pytest_total=$(use_or_cache pytest "$pytest_total")
 npm_total=$(use_or_cache npm "$npm_total")
 vitest_total=$(use_or_cache vitest "$vitest_total")
 gh_total=$(use_or_cache gh "$gh_total")
+docker_total=$(use_or_cache docker "$docker_total")
 
 # Write cache with current best values.
 cat > "$CACHE" << CACHEEOF
@@ -66,11 +70,12 @@ pytest=${pytest_total}
 npm=${npm_total}
 vitest=${vitest_total}
 gh=${gh_total}
+docker=${docker_total}
 CACHEEOF
 
 # ── Calculate cumulative total ──────────────────────────────────────
 cumulative=0
-for v in "$pypi_total" "$pytest_total" "$npm_total" "$vitest_total" "$gh_total"; do
+for v in "$pypi_total" "$pytest_total" "$npm_total" "$vitest_total" "$gh_total" "$docker_total"; do
   if [[ "$v" != "?" && "$v" != "--" ]]; then
     cumulative=$((cumulative + v))
   fi
@@ -90,13 +95,17 @@ if [[ "$vitest_total" != "--" && "$vitest_total" != "?" ]]; then
   vitest_fmt=$(fmt "$vitest_total" 2>/dev/null || echo "$vitest_total")
 fi
 gh_fmt=$(fmt "$gh_total" 2>/dev/null || echo "$gh_total")
+docker_fmt="$docker_total"
+if [[ "$docker_total" != "--" && "$docker_total" != "?" ]]; then
+  docker_fmt=$(fmt "$docker_total" 2>/dev/null || echo "$docker_total")
+fi
 cumulative_fmt=$(fmt "$cumulative" 2>/dev/null || echo "$cumulative")
 
 date_str=$(date +"%Y-%m-%d")
 
 # ── Generate SVG ─────────────────────────────────────────────────────
 cat > "$OUT" << SVGEOF
-<svg xmlns="http://www.w3.org/2000/svg" width="320" height="224" viewBox="0 0 320 224">
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="248" viewBox="0 0 320 248">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#1a1a2e"/>
@@ -109,8 +118,8 @@ cat > "$OUT" << SVGEOF
   </defs>
 
   <!-- Card background -->
-  <rect width="320" height="224" rx="12" fill="url(#bg)"/>
-  <rect x="1" y="1" width="318" height="222" rx="11" fill="none" stroke="#334155" stroke-width="1"/>
+  <rect width="320" height="248" rx="12" fill="url(#bg)"/>
+  <rect x="1" y="1" width="318" height="246" rx="11" fill="none" stroke="#334155" stroke-width="1"/>
 
   <!-- Title -->
   <text x="24" y="36" fill="#e2e8f0" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600">mcp-assert downloads</text>
@@ -135,14 +144,17 @@ cat > "$OUT" << SVGEOF
   <text x="24" y="162" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">github releases</text>
   <text x="296" y="162" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">${gh_fmt}</text>
 
+  <text x="24" y="184" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">docker pulls</text>
+  <text x="296" y="184" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">${docker_fmt}</text>
+
   <!-- Divider -->
-  <line x1="24" y1="178" x2="296" y2="178" stroke="#334155" stroke-width="1"/>
+  <line x1="24" y1="200" x2="296" y2="200" stroke="#334155" stroke-width="1"/>
 
   <!-- Total -->
-  <text x="24" y="206" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700">${cumulative_fmt} total</text>
-  <text x="296" y="206" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">cumulative downloads</text>
+  <text x="24" y="228" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700">${cumulative_fmt} total</text>
+  <text x="296" y="228" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">cumulative downloads</text>
 </svg>
 SVGEOF
 
 echo "Generated ${OUT}"
-echo "  pip: ${pypi_total}  pytest: ${pytest_total}  npm: ${npm_total}  vitest: ${vitest_total}  gh: ${gh_total}  total: ${cumulative}"
+echo "  pip: ${pypi_total}  pytest: ${pytest_total}  npm: ${npm_total}  vitest: ${vitest_total}  gh: ${gh_total}  docker: ${docker_total}  total: ${cumulative}"
