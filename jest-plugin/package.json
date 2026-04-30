@@ -1,0 +1,29 @@
+{
+  "name": "jest-mcp-assert",
+  "version": "0.7.1",
+  "description": "Jest integration for mcp-assert: run MCP server assertion YAML files as Jest tests",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["jest", "mcp", "testing", "assertions", "model-context-protocol"],
+  "author": "Blackwell Systems <dayna@blackwell-systems.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blackwell-systems/mcp-assert",
+    "directory": "jest-plugin"
+  },
+  "homepage": "https://github.com/blackwell-systems/mcp-assert",
+  "peerDependencies": {
+    "@jest/globals": ">=29.0.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  }
+}

@@ -2,5 +2,6 @@ pip=5384
 pytest=1656
 npm=810
 vitest=102
+jest=--
 gh=250
 docker=--

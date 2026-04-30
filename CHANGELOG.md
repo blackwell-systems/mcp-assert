@@ -5,6 +5,17 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- **jest-mcp-assert**: Jest integration for running mcp-assert YAML assertions as Jest tests. Same two usage modes as vitest-mcp-assert: `describeMcpSuite('name', 'evals/')` for auto-discovery, or `runMcpAssert('evals/echo.yaml')` for per-test control. Same YAML files work across Jest, Vitest, pytest, and the CLI. Published as `jest-mcp-assert` on npm.
+- **Docker distribution**: multi-arch container images (linux/amd64, linux/arm64) published to Docker Hub (`blackwellsystems/mcp-assert`) and GHCR (`ghcr.io/blackwell-systems/mcp-assert`) on each release.
+- **Snap distribution**: snapcraft.yaml with classic confinement for Linux users via `snap install mcp-assert --classic`.
+- **Docker pull count** added to download stats SVG.
+
+### Fixed
+
+- **Download stats regression**: high-water mark cache prevents PyPI API flakes from regressing displayed totals. Each channel's last known good value is preserved.
+
 ## [0.7.1] - 2026-04-28
 
 ### Added

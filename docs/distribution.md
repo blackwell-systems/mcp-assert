@@ -119,6 +119,30 @@ Source: `vitest-plugin/` directory in this repo. Published to npm as `vitest-mcp
 
 **Maintenance surface:** The plugin is a thin bridge (~150 lines across 5 TypeScript files). It calls the mcp-assert Go binary with `--json` and maps the JSON output to Vitest test outcomes. Same architecture as the pytest plugin. Breakage scenarios: (1) the `--json` output format changes in the Go binary, (2) the Go binary isn't found via the 3-tier resolution (explicit, PATH, npm package). The plugin has no runtime dependencies beyond vitest as a peer dependency.
 
+### Jest Plugin
+```bash
+npm install -D jest-mcp-assert @blackwell-systems/mcp-assert
+```
+
+Two usage modes. Auto-discovery:
+```ts
+// mcp.test.ts
+import { describeMcpSuite } from 'jest-mcp-assert'
+describeMcpSuite('mcp server', 'evals/')
+```
+
+Or per-test control:
+```ts
+import { runMcpAssert } from 'jest-mcp-assert'
+test('echo tool', () => { runMcpAssert('evals/echo.yaml') })
+```
+
+Same YAML files work across Jest, Vitest, pytest, and the CLI.
+
+Source: `jest-plugin/` directory in this repo. Published to npm as `jest-mcp-assert`.
+
+**Maintenance surface:** Same thin bridge architecture as the vitest and pytest plugins (~100 lines). Calls the mcp-assert Go binary with `--json` and maps the JSON output to Jest test outcomes. Uses CommonJS module format (Jest's default).
+
 ### "Works with mcp-assert" Badge
 Static and dynamic (CI-verified) badge for MCP server READMEs. Every badge is a backlink. See the [Badge guide](badge.md).
 
@@ -165,6 +189,7 @@ A single `git tag` triggers the entire pipeline. Every channel is automated.
    | `pypi-publish` | Runs `scripts/pypi-publish.sh`, builds platform wheels with Go binary inside, publishes to PyPI with twine | PyPI |
    | `pytest-plugin-publish` | Builds and publishes the `pytest-mcp-assert` plugin to PyPI with twine | PyPI (pytest plugin) |
    | `snap` | Builds snap package with snapcore/action-build, publishes to Snap Store | Snap Store |
+   | `jest-plugin-publish` | Builds and publishes the `jest-mcp-assert` plugin to npm | npm (jest plugin) |
    | `vitest-plugin-publish` | Builds and publishes the `vitest-mcp-assert` plugin to npm | npm (vitest plugin) |
    | `winget` | Submits manifest PR to microsoft/winget-pkgs via winget-releaser | Winget |
 
