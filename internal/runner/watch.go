@@ -98,7 +98,7 @@ func Watch(args []string) error {
 			}
 			fmt.Println(report.FormatStatusChange(curr.Name, prev.Status, curr.Status, curr.Detail))
 			if prev.Status == assertion.StatusPass && curr.Status == assertion.StatusFail &&
-				prev.Detail != "" && curr.Detail != "" {
+				curr.Detail != "" {
 				diff := report.FormatDiff(curr.Name, prev.Detail, curr.Detail)
 				if diff != "" {
 					fmt.Print(diff)

@@ -3,6 +3,7 @@ package report
 import (
 	"fmt"
 	"os"
+	"sync"
 )
 
 // ANSI color codes.
@@ -16,19 +17,28 @@ const (
 	cyan   = "\033[36m"
 )
 
+var (
+	colorOnce   sync.Once
+	colorCached bool
+)
+
 // ColorEnabled returns true if stdout is a terminal and NO_COLOR is not set.
+// The result is computed once and cached for the lifetime of the process.
 func ColorEnabled() bool {
-	if os.Getenv("NO_COLOR") != "" {
-		return false
-	}
-	if os.Getenv("TERM") == "dumb" {
-		return false
-	}
-	fi, err := os.Stdout.Stat()
-	if err != nil {
-		return false
-	}
-	return fi.Mode()&os.ModeCharDevice != 0
+	colorOnce.Do(func() {
+		if os.Getenv("NO_COLOR") != "" {
+			return
+		}
+		if os.Getenv("TERM") == "dumb" {
+			return
+		}
+		fi, err := os.Stdout.Stat()
+		if err != nil {
+			return
+		}
+		colorCached = fi.Mode()&os.ModeCharDevice != 0
+	})
+	return colorCached
 }
 
 func colorize(color, text string) string {

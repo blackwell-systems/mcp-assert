@@ -5,6 +5,20 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Per-assertion timeout**: YAML `timeout` field (e.g., `timeout: 60s`) now correctly overrides the CLI `--timeout` flag. Previously the field was parsed but silently ignored.
+- **Watch mode diff display**: PASS-to-FAIL transitions now show the unified diff. Previously the condition checked `prev.Detail != ""`, but PASS results always have empty detail, making the branch unreachable.
+- **Intercept timeout**: `--timeout` flag on the `intercept` command now takes effect. Previously the return value of `fs.Duration()` was discarded.
+- **copyFile Close() error**: fixture copy now checks the return value of `Close()`, catching disk-full errors that were previously silently dropped.
+- **Baseline file ordering**: baseline JSON entries are now sorted by name, producing deterministic output across runs.
+
+### Changed
+
+- **ColorEnabled() cached**: result is computed once via `sync.Once` instead of calling `os.Stdout.Stat()` on every invocation.
+- **Dead code removed**: `SortByReliability` (unused export) and custom `repeat()` function (replaced with `strings.Repeat`).
+- **Go plugin**: removed custom `min()` that shadowed the Go 1.21+ builtin.
+
 ## [0.7.2] - 2026-04-29
 
 ### Added

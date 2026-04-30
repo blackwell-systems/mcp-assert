@@ -71,10 +71,13 @@ func copyFile(src, dst string) error {
 	if err != nil {
 		return fmt.Errorf("open destination file %s: %w", dst, err)
 	}
-	defer dstFile.Close()
 
 	if _, err := io.Copy(dstFile, srcFile); err != nil {
+		_ = dstFile.Close()
 		return fmt.Errorf("copy %s to %s: %w", src, dst, err)
+	}
+	if err := dstFile.Close(); err != nil {
+		return fmt.Errorf("closing destination file %s: %w", dst, err)
 	}
 	return nil
 }

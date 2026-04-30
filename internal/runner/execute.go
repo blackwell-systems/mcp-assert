@@ -139,11 +139,23 @@ func runSetupSteps(
 	return captured, nil
 }
 
+// resolveTimeout returns the per-assertion timeout if set in YAML,
+// otherwise falls back to the CLI-provided default.
+func resolveTimeout(a assertion.Assertion, cliTimeout time.Duration) time.Duration {
+	if a.Timeout != "" {
+		if d, err := time.ParseDuration(a.Timeout); err == nil {
+			return d
+		}
+	}
+	return cliTimeout
+}
+
 // runAssertion dispatches a single assertion to the appropriate executor
 // based on which block is set (assert, assert_resources, trajectory, etc.).
 // Returns a Result capturing pass/fail status, timing, and failure detail.
 func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string) assertion.Result {
 	start := time.Now()
+	timeout = resolveTimeout(a, timeout)
 
 	if a.Skip {
 		return skipResult(a.Name, start, "")

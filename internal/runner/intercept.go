@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
 )
@@ -20,7 +21,7 @@ func Intercept(args []string) error {
 	fs := flag.NewFlagSet("intercept", flag.ContinueOnError)
 	serverSpec := fs.String("server", "", "Server command to proxy (required)")
 	trajectoryPath := fs.String("trajectory", "", "Path to YAML file with trajectory assertions (required)")
-	fs.Duration("timeout", 0, "Timeout (0 = no timeout, default)")
+	timeout := fs.Duration("timeout", 0, "Timeout (0 = no timeout, default)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -56,10 +57,27 @@ func Intercept(args []string) error {
 		trace = append(trace, entry)
 	}
 
-	if err := proxyStdio(serverCmd, serverArgs, nil, onToolCall); err != nil {
-		// A non-zero exit from the server is not necessarily fatal; continue to
-		// trajectory validation so results are always reported.
-		fmt.Fprintf(os.Stderr, "server exited: %v\n", err)
+	// Apply timeout if set. When the timeout fires, the server process is
+	// killed and proxyStdio returns, allowing trajectory validation to proceed.
+	done := make(chan error, 1)
+	go func() {
+		done <- proxyStdio(serverCmd, serverArgs, nil, onToolCall)
+	}()
+	if *timeout > 0 {
+		timer := time.NewTimer(*timeout)
+		defer timer.Stop()
+		select {
+		case err := <-done:
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "server exited: %v\n", err)
+			}
+		case <-timer.C:
+			fmt.Fprintf(os.Stderr, "intercept timed out after %s\n", *timeout)
+		}
+	} else {
+		if err := <-done; err != nil {
+			fmt.Fprintf(os.Stderr, "server exited: %v\n", err)
+		}
 	}
 
 	// Print captured trace summary.

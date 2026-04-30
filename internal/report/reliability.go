@@ -2,7 +2,7 @@ package report
 
 import (
 	"fmt"
-	"sort"
+	"strings"
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
 )
@@ -75,7 +75,7 @@ func PrintReliability(results []assertion.Result) {
 
 	fmt.Printf("  %-*s  %6s  %6s  %8s  %6s\n", maxName, "Assertion", "Trials", "Passed", "pass@k", "pass^k")
 	fmt.Printf("  %s  %s  %s  %s  %s\n",
-		repeat("-", maxName), repeat("-", 6), repeat("-", 6), repeat("-", 8), repeat("-", 6))
+		strings.Repeat("-", maxName), strings.Repeat("-", 6), strings.Repeat("-", 6), strings.Repeat("-", 8), strings.Repeat("-", 6))
 
 	for _, s := range stats {
 		name := s.Name
@@ -108,17 +108,3 @@ func PrintReliability(results []assertion.Result) {
 	fmt.Printf("\n  pass@k: %d/%d capable, pass^k: %d/%d reliable\n", capable, total, reliable, total)
 }
 
-// SortByReliability sorts stats by pass rate ascending (worst first).
-func SortByReliability(stats []ReliabilityStats) {
-	sort.Slice(stats, func(i, j int) bool {
-		return stats[i].Rate < stats[j].Rate
-	})
-}
-
-func repeat(s string, n int) string {
-	out := ""
-	for range n {
-		out += s
-	}
-	return out
-}

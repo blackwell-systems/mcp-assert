@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
 )
@@ -28,8 +29,16 @@ func WriteBaseline(results []assertion.Result, path string) error {
 		seen[r.Name] = r
 	}
 
-	var entries []BaselineEntry
-	for _, r := range seen {
+	// Sort by name for deterministic output across runs.
+	names := make([]string, 0, len(seen))
+	for name := range seen {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
+	entries := make([]BaselineEntry, 0, len(names))
+	for _, name := range names {
+		r := seen[name]
 		entries = append(entries, BaselineEntry{
 			Name:     r.Name,
 			Status:   r.Status,
