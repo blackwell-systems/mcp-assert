@@ -10,6 +10,40 @@ The problem it solves: MCP servers expose tools, prompts, and resources to AI ag
 
 The tool is a single Go binary with no runtime dependencies. You write YAML files describing what to call and what to expect, point mcp-assert at them, and get pass/fail results in the terminal, JUnit XML, markdown, or JSON.
 
+### Running example
+
+This document traces a single assertion through every layer of the system. Here it is:
+
+```yaml
+# evals/read_file.yaml
+name: read_file returns file contents
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: read_file
+  args:
+    path: "{{fixture}}/hello.txt"
+  expect:
+    not_error: true
+    contains: ["Hello, world!"]
+```
+
+And the fixture file it reads:
+
+```
+# evals/fixtures/hello.txt
+Hello, world!
+```
+
+Run it:
+
+```bash
+mcp-assert run --suite evals/ --fixture evals/fixtures
+```
+
+This assertion: starts a filesystem MCP server as a subprocess, performs the MCP initialize handshake, calls the `read_file` tool with a path to the fixture file, checks that the response has no error flag, and verifies the response text contains "Hello, world!". Every section below explains one piece of this pipeline.
+
 ---
 
 ## How MCP Works (Brief Primer)
@@ -102,29 +136,42 @@ mcp-assert run --suite evals/ --fixture ./test-data
 
 ### Step 1: CLI dispatch
 
-`cmd/mcp-assert/main.go` reads the first argument (`run`) and calls `runner.Run()`, passing the remaining flags. The `Run` function in `internal/runner/commands.go` parses `--suite`, `--fixture`, `--trials`, output flags, and others.
+`cmd/mcp-assert/main.go` reads the first argument (`run`) and calls `runner.Run()`, passing the remaining flags. For our running example, the command is:
+
+```bash
+mcp-assert run --suite evals/ --fixture evals/fixtures
+```
+
+The `Run` function in `internal/runner/commands.go` parses `--suite` as `"evals/"`, `--fixture` as `"evals/fixtures"`, and defaults `--timeout` to `30s`.
 
 ### Step 2: Load the suite
 
-`assertion.LoadSuite("evals/")` (in `internal/assertion/loader.go`) reads the directory. It collects every `.yaml` and `.yml` file, recursing one level into subdirectories. Each file is parsed into an `Assertion` struct via Go's `yaml.v3` library. If the `name` field is omitted, the filename becomes the assertion name. The result is a `Suite` containing a slice of `Assertion` values.
+`assertion.LoadSuite("evals/")` (in `internal/assertion/loader.go`) reads the directory. It finds `evals/read_file.yaml`, parses it into an `Assertion` struct via Go's `yaml.v3` library, and extracts the `name` ("read_file returns file contents"), `server` block, `assert` block, and `expect` block. The result is a `Suite` containing one `Assertion`.
 
 ### Step 3: Iterate and isolate
 
-The runner loops over each assertion. Before executing, it calls `isolateFixture()` (in `internal/runner/fixture.go`), which copies the entire fixture directory to a temporary location. This ensures each assertion gets a pristine copy of the test data. The original fixture is never modified.
+The runner loops over each assertion. Before executing our `read_file` assertion, it calls `isolateFixture()` (in `internal/runner/fixture.go`), which copies `evals/fixtures/` to a temporary location like `/tmp/mcp-assert-fixture-abc123/fixtures/`. The `hello.txt` file is now at `/tmp/mcp-assert-fixture-abc123/fixtures/hello.txt`. The original fixture directory is never modified.
 
 ### Step 4: Start the MCP server
 
-`createMCPClient()` (in `internal/runner/client.go`) reads the assertion's `server` block and selects the transport:
+`createMCPClient()` (in `internal/runner/client.go`) reads the assertion's `server` block and selects the transport. Our example has no `transport` field, so it defaults to **stdio**. The `{{fixture}}` in the server args is substituted with the isolated fixture path:
 
-- **stdio**: launches the server command as a subprocess, piping stdin/stdout for JSON-RPC.
-- **sse**: connects to the server's URL via SSE.
-- **http**: connects via streamable HTTP.
+```
+command: npx
+args: ["@modelcontextprotocol/server-filesystem", "/tmp/mcp-assert-fixture-abc123/fixtures"]
+```
 
-If `client_capabilities` is set (roots, sampling, or elicitation), the stdio path uses a lower-level construction (`createStdioClientWithCapabilities`) that registers bidirectional request handlers before the client starts. This ensures the handlers are active before the `initialize` handshake, since the server may immediately request roots or sampling.
+The runner launches this as a subprocess, piping stdin/stdout for JSON-RPC. The filesystem server starts and begins listening for MCP messages on stdin.
+
+Other transport options:
+- **sse**: connects to a server's URL via Server-Sent Events.
+- **http**: connects via Streamable HTTP.
+
+If `client_capabilities` is set (roots, sampling, or elicitation), the stdio path uses a lower-level construction (`createStdioClientWithCapabilities`) that registers bidirectional request handlers before the client starts. Our example doesn't use client capabilities.
 
 ### Step 5: Initialize
 
-The runner sends an `initialize` JSON-RPC request with the protocol version and client identity (`mcp-assert v1.0`). The server responds with its capabilities. This is the standard MCP handshake.
+The runner sends an `initialize` JSON-RPC request with the protocol version and client identity (`mcp-assert v1.0`). The filesystem server responds with its capabilities (including the `read_file` tool). This is the standard MCP handshake.
 
 Steps 4 and 5 are combined in `initializedClientFromConfig()` (execute.go), which is the shared entry point for all commands that need a connected client:
 
@@ -162,7 +209,7 @@ On error at any step, all resources are cleaned up before returning. On success,
 
 ### Step 6: Route to the correct handler
 
-`runAssertion()` (in `internal/runner/execute.go`) inspects which block is present on the assertion and dispatches accordingly:
+`runAssertion()` (in `internal/runner/execute.go`) inspects which block is present on the assertion and dispatches accordingly. Our example has only the `assert:` block (no `trajectory:`, `assert_resources:`, etc.), so it falls through to the default `tools/call` path:
 
 | Block present | Handler called | MCP method used |
 |---------------|----------------|-----------------|
@@ -177,15 +224,44 @@ On error at any step, all resources are cleaned up before returning. On success,
 
 ### Step 7: Run setup steps
 
-If the assertion has a `setup:` block, the runner executes each setup tool call sequentially. Setup calls establish the state the assertion needs (for example, starting a language server or opening a document). Template substitution replaces `{{fixture}}` with the isolated fixture path and `{{variable_name}}` with values captured from prior setup responses.
+If the assertion has a `setup:` block, the runner executes each setup tool call sequentially. Our running example has no setup steps, so this is skipped. Setup calls establish the state the assertion needs (for example, starting a language server or opening a document). Template substitution replaces `{{fixture}}` with the isolated fixture path and `{{variable_name}}` with values captured from prior setup responses.
 
 ### Step 8: Snapshot (if needed)
 
-If the assertion's `expect` block contains `file_unchanged` entries, the runner reads those files from disk before the tool call and stores their contents in memory. After the tool call, it compares the files to detect modifications.
+If the assertion's `expect` block contains `file_unchanged` entries, the runner reads those files from disk before the tool call and stores their contents in memory. Our example doesn't use `file_unchanged`, so this is skipped.
 
 ### Step 9: Call the tool under test
 
-The runner sends the `tools/call` JSON-RPC request with the tool name and arguments (after template substitution). It captures the response text and the `isError` flag.
+The runner substitutes `{{fixture}}` in the tool arguments, then sends the `tools/call` JSON-RPC request. For our example, `"{{fixture}}/hello.txt"` becomes `"/tmp/mcp-assert-fixture-abc123/fixtures/hello.txt"`. The JSON-RPC message sent to the server is:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "read_file",
+    "arguments": {
+      "path": "/tmp/mcp-assert-fixture-abc123/fixtures/hello.txt"
+    }
+  }
+}
+```
+
+The server responds:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [{ "type": "text", "text": "Hello, world!\n" }],
+    "isError": false
+  }
+}
+```
+
+The runner extracts the response text (`"Hello, world!\n"`) and the `isError` flag (`false`).
 
 ```go
 // execute.go — the core tool call + check sequence (simplified)
@@ -222,15 +298,39 @@ func Check(expect Expect, response string, isError bool) error {
 
 The `checkRegistry` is an ordered slice of check functions, not a map, so evaluation order is deterministic and documented. Each check function receives the full `Expect` struct but only inspects its own field (e.g., `checkContains` only looks at `expect.Contains`). If the field is nil or empty, the check is a no-op.
 
+For our running example, two checks fire:
+
+1. **`not_error: true`**: checks that `isError` is `false`. It is, so this passes.
+2. **`contains: ["Hello, world!"]`**: checks that the response text contains the substring `"Hello, world!"`. The response is `"Hello, world!\n"`, which contains it, so this passes.
+
+All checks pass, so `Check()` returns `nil` (no error). The assertion is a PASS.
+
 If `capture_progress: true` was set, the runner also checks `min_progress` via `assertion.CheckProgress()`, verifying that enough `notifications/progress` messages arrived during the tool call.
 
 ### Step 11: Clean up
 
-The MCP client is closed (which kills the subprocess for stdio transport). The temporary fixture directory is removed. The `Result` struct (pass, fail, or skip, plus timing) is appended to the results list.
+The MCP client is closed, which kills the filesystem server subprocess. The temporary fixture directory (`/tmp/mcp-assert-fixture-abc123/`) is removed. A `Result` struct is created:
+
+```go
+Result{
+    Name:     "read_file returns file contents",
+    Status:   "PASS",
+    Detail:   "",
+    Duration: 47,  // milliseconds
+}
+```
 
 ### Step 12: Report
 
-After all assertions finish, the runner dispatches results to output sinks. The terminal always gets a human-readable table. Optional flags produce JUnit XML (`--junit`), markdown (`--markdown`), shields.io badge JSON (`--badge`), or raw JSON (`--json`). If `--trials` was greater than 1, reliability metrics (pass@k, pass^k) are also printed.
+After all assertions finish, the runner dispatches results to output sinks. For our example with one passing assertion, the terminal output is:
+
+```
+  ✓ read_file returns file contents    47ms
+
+  1 passed
+```
+
+Optional flags produce JUnit XML (`--junit`), markdown (`--markdown`), shields.io badge JSON (`--badge`), or raw JSON (`--json`). If `--trials` was greater than 1, reliability metrics (pass@k, pass^k) are also printed.
 
 ```
 ┌──────────┐     ┌──────────┐     ┌──────────────┐     ┌────────────┐
