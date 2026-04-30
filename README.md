@@ -11,7 +11,7 @@
 
 **Stop using LLMs to test deterministic tools.** Use assertions instead.
 
-Most MCP tools return predictable outputs: files, rows, locations, status codes. You don't need a language model to grade them. You need `assert.Equal`.
+mcp-assert is an MCP client. It connects to your server over the real protocol (stdio, SSE, or HTTP), calls tools, and checks the responses against expectations you define in YAML. No mocks, no imports, no language lock-in.
 
 > [!WARNING]
 > We scanned 58 MCP servers and found **25 real bugs** across 10 servers. The most common failure: tools crash instead of returning errors agents can recover from. See the [scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/).
