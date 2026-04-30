@@ -198,7 +198,7 @@ Edit the generated YAMLs to replace `TODO` placeholders with real values, then r
 
 ## Next steps
 
-- [Writing Assertions](writing-assertions.md): YAML format, all 18 assertion types + 4 trajectory types, 7 block types, setup steps, capture, fixtures, trajectory assertions
+- [Writing Assertions](writing-assertions.md): YAML format, all 18 assertion types + 4 trajectory types, 8 block types, setup steps, capture, fixtures, trajectory assertions
 - [CLI Reference](cli.md): full command reference with flags and examples
 - [CI Integration](ci-integration.md): GitHub Action, JUnit XML, regression detection
 - [Badge](badge.md): add the "Works with mcp-assert" badge to your README

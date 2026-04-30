@@ -172,6 +172,7 @@ On error at any step, all resources are cleaned up before returning. On success,
 | `assert_completion:` | `runCompletionAssertion` | `completion/complete` |
 | `assert_sampling:` | `runSamplingAssertion` | `tools/call` (triggers server-side sampling) |
 | `assert_logging:` | `runLoggingAssertion` | `logging/setLevel` + `tools/call` |
+| `assert_notifications:` | `runNotificationAssertion` | `tools/call` (captures all notifications) |
 | `assert:` (default) | inline in `runAssertion` | `tools/call` |
 
 ### Step 7: Run setup steps
@@ -262,13 +263,15 @@ This package defines the data model and all validation logic. It has no I/O beyo
 
 | File | Responsibility |
 |------|----------------|
-| `types.go` | All core types: `Suite`, `Assertion`, `ServerConfig`, `AssertBlock`, `Expect`, `Result`, `Status`, and the block types for resources, prompts, completion, sampling, logging, and trajectory. |
+| `types.go` | All core types: `Suite`, `Assertion`, `ServerConfig`, `AssertBlock`, `Expect`, `Result`, `Status`, and the block types for resources, prompts, completion, sampling, logging, notifications, and trajectory. |
 | `loader.go` | `LoadSuite()` reads a directory (or single file) of YAML, parses each into an `Assertion`, and returns a `Suite`. Recurses one level into subdirectories. Defaults the `name` field to the filename if omitted. |
 | `checker.go` | `Check()` evaluates 15 registered check functions (covering 16 of the 18 expectation fields; `min_results` and `max_results` share one check). `CheckWithSnapshots()` adds `file_unchanged` comparison. `CheckProgress()` checks `min_progress` notification counts. Also contains `jsonPathLookup()` for simple `$.dot.path[N]` queries. |
 | `trajectory.go` | `CheckTrajectory()` evaluates the 4 trajectory assertion types (order, presence, absence, args_contain) against a trace of tool calls. `LoadAuditLog()` parses JSONL files into trace entries. |
 | `sampling_types.go` | `SamplingAssertBlock` type for assertions that test tools which trigger server-side LLM sampling. |
 | `logging_types.go` | `LoggingAssertBlock`, `LoggingExpect`, and `LogMessage` types for assertions that test log level setting and message capture. |
 | `logging_checker.go` | Logging-specific assertion checking logic. |
+| `notification_types.go` | `NotificationAssertBlock`, `NotificationExpect`, and `CapturedNotification` types for assertions on arbitrary server notifications. |
+| `notification_checker.go` | Notification-specific assertion checking: count, method, and params content checks. |
 
 ### `internal/runner/` (execution engine)
 
@@ -291,6 +294,7 @@ This package contains all the execution logic: CLI flag parsing, server lifecycl
 | `intercept.go` | `Intercept()` command: proxies stdio between an agent and MCP server, capturing tool calls for live trajectory validation. |
 | `sampling.go` | `runSamplingAssertion()`: handles assertions that test tools triggering server-side `sampling/createMessage`. |
 | `logging.go` | `runLoggingAssertion()`: handles `logging/setLevel` plus `notifications/message` capture. |
+| `notifications.go` | `runNotificationAssertion()`: captures all server notifications during a tool call and checks them against `NotificationExpect`. |
 | `fix.go` | `--fix` mode: `ScanNearbyPositions()` tries nearby line/column values when position-sensitive assertions fail, and generates YAML patch suggestions. |
 | `util.go` | Shared helpers: `writeReports()`, `applyServerOverride()`, `countFails()`, `countPasses()`, `extractText()`. |
 
@@ -358,7 +362,7 @@ type Assertion struct {
 }
 ```
 
-Exactly one block type is active per assertion. The runner checks them in priority order (trajectory first, then resources, prompts, completion, sampling, logging, and finally the default `assert:` block).
+Exactly one block type is active per assertion. The runner checks them in priority order (trajectory first, then resources, prompts, completion, sampling, logging, notifications, and finally the default `assert:` block).
 
 ### ServerConfig
 
@@ -607,7 +611,35 @@ assert_logging:
 
 The runner first calls `logging/setLevel`, then executes the tool while listening for `notifications/message`. The logging-specific `expect` fields (`min_messages`, `contains_level`, `contains_data`) are checked by a dedicated logging checker.
 
-### 7. `trajectory:` (tool call sequence validation)
+### 7. `assert_notifications:` (arbitrary notification capture)
+
+Calls a tool and captures all notifications the server emits during execution. Asserts on notification count, methods, and params content.
+
+```yaml
+assert_notifications:
+  tool: long_running_task
+  args:
+    input: "test data"
+  expect:
+    min_count: 3
+    methods: ["notifications/progress"]
+    contains_data: ["processing"]
+```
+
+Six expectation fields are available:
+
+| Field | What it checks |
+|-------|----------------|
+| `min_count` | At least N notifications arrived |
+| `max_count` | At most N notifications arrived |
+| `methods` | All listed notification methods appeared at least once |
+| `not_methods` | None of the listed methods appeared |
+| `contains_data` | At least one notification's params contains each substring |
+| `not_contains_data` | No notification's params contains any of these substrings |
+
+This is broader than `assert_logging` (which only captures `notifications/message`) and `capture_progress` (which only counts `notifications/progress`). Use `assert_notifications` when you need to test resource update notifications, custom notifications, or multiple notification types in one assertion.
+
+### 8. `trajectory:` (tool call sequence validation)
 
 Validates a sequence of tool calls without starting any server. The trace comes from inline YAML (`trace:` field) or an external JSONL audit log (`audit_log:` field).
 
@@ -639,7 +671,7 @@ In `execute.go`, `runAssertion()` checks block types in priority order using nil
 
 ```
 trajectory → assert_resources → assert_prompts → assert_completion
-→ assert_sampling → assert_logging → assert (default)
+→ assert_sampling → assert_logging → assert_notifications → assert (default)
 ```
 
 Each handler follows the same pattern: validate inputs, create MCP client, initialize, run setup, execute the protocol-specific call, check expectations, return result.
@@ -717,7 +749,7 @@ The checker is pure: it takes a string and returns an error. No I/O, no state. T
 
 ### Adding a new block type
 
-To add a new block type (like `assert_notifications:` for testing arbitrary server notifications):
+To add a new block type (like `assert_webhooks:` for testing webhook delivery):
 
 1. **Define the block struct** in `internal/assertion/types.go`:
    ```go
