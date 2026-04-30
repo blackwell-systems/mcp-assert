@@ -29,11 +29,13 @@ assert:
     contains: ["Hello, world!"]
 ```
 
-And the fixture file it reads:
+And the fixture directory it reads from:
 
 ```
-# evals/fixtures/hello.txt
-Hello, world!
+evals/
+├── read_file.yaml          ← the assertion above
+└── fixtures/
+    └── hello.txt           ← contains "Hello, world!"
 ```
 
 Run it:

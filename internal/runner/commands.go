@@ -1,3 +1,4 @@
+// Package runner
 // commands.go contains the top-level CLI commands: Run, Matrix, and CI.
 //
 // Each command follows the same pattern:
