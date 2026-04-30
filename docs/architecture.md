@@ -126,6 +126,40 @@ If `client_capabilities` is set (roots, sampling, or elicitation), the stdio pat
 
 The runner sends an `initialize` JSON-RPC request with the protocol version and client identity (`mcp-assert v1.0`). The server responds with its capabilities. This is the standard MCP handshake.
 
+Steps 4 and 5 are combined in `initializedClientFromConfig()` (execute.go), which is the shared entry point for all commands that need a connected client:
+
+```go
+// execute.go — shared client lifecycle
+func initializedClientFromConfig(
+    server assertion.ServerConfig,
+    fixture string,
+    timeout time.Duration,
+    dockerImage string,
+) (context.Context, context.CancelFunc, client.MCPClient, error) {
+    ctx, cancel := context.WithTimeout(context.Background(), timeout)
+
+    mcpClient, err := createMCPClient(server, fixture, dockerImage)
+    if err != nil {
+        cancel()
+        return nil, nil, nil, fmt.Errorf("failed to start MCP server: %w", err)
+    }
+
+    initReq := mcp.InitializeRequest{}
+    initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
+    initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
+
+    if _, err := mcpClient.Initialize(ctx, initReq); err != nil {
+        _ = mcpClient.Close()
+        cancel()
+        return nil, nil, nil, fmt.Errorf("MCP initialize failed: %w", err)
+    }
+
+    return ctx, cancel, mcpClient, nil
+}
+```
+
+On error at any step, all resources are cleaned up before returning. On success, the caller is responsible for calling `cancel()` and `mcpClient.Close()` (typically via `defer`).
+
 ### Step 6: Route to the correct handler
 
 `runAssertion()` (in `internal/runner/execute.go`) inspects which block is present on the assertion and dispatches accordingly:
@@ -152,9 +186,40 @@ If the assertion's `expect` block contains `file_unchanged` entries, the runner 
 
 The runner sends the `tools/call` JSON-RPC request with the tool name and arguments (after template substitution). It captures the response text and the `isError` flag.
 
+```go
+// execute.go — the core tool call + check sequence (simplified)
+assertArgs := substituteAll(a.Assert.Args, fixture, captured)
+
+req := mcp.CallToolRequest{}
+req.Params.Name = a.Assert.Tool
+req.Params.Arguments = assertArgs
+
+result, err := mcpClient.CallTool(ctx, req)
+if err != nil {
+    return failResult(a.Name, start, fmt.Sprintf("tool call %s failed: %v", a.Assert.Tool, err))
+}
+
+resultText := extractText(result)  // joins all TextContent blocks into a single string
+isError := result.IsError
+```
+
 ### Step 10: Check expectations
 
 `assertion.Check()` (in `internal/assertion/checker.go`) evaluates every expectation in the `expect` block against the response. Expectations are checked in a fixed order (see "Key Abstractions" below). The first failure short-circuits: only the first failing expectation is reported, to keep error messages actionable.
+
+```go
+// checker.go — the checker is pure: string in, error out
+func Check(expect Expect, response string, isError bool) error {
+    for _, entry := range checkRegistry {
+        if err := entry.fn(expect, response, isError); err != nil {
+            return err  // short-circuit on first failure
+        }
+    }
+    return nil
+}
+```
+
+The `checkRegistry` is an ordered slice of check functions, not a map, so evaluation order is deterministic and documented. Each check function receives the full `Expect` struct but only inspects its own field (e.g., `checkContains` only looks at `expect.Contains`). If the field is nil or empty, the check is a no-op.
 
 If `capture_progress: true` was set, the runner also checks `min_progress` via `assertion.CheckProgress()`, verifying that enough `notifications/progress` messages arrived during the tool call.
 
