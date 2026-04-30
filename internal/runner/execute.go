@@ -241,7 +241,13 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 	resultText := extractText(result)
 	isError := result.IsError
 
-	if err := assertion.CheckWithSnapshots(a.Assert.Expect, resultText, isError, snapshots); err != nil {
+	// Substitute {{fixture}} in file-based expectation paths.
+	expect := a.Assert.Expect
+	expect.FileContains = substituteMapKeys(expect.FileContains, fixture)
+	expect.FileNotContains = substituteMapKeys(expect.FileNotContains, fixture)
+	expect.FileNotExists = substituteSlice(expect.FileNotExists, fixture)
+
+	if err := assertion.CheckWithSnapshots(expect, resultText, isError, snapshots); err != nil {
 		detail := err.Error()
 		if isError && resultText != "" {
 			detail += "\n      server response: " + resultText

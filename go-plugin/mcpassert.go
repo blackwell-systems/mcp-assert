@@ -76,10 +76,28 @@ func Suite(t *testing.T, suiteDir string, opts ...Options) {
 		t.Fatalf("reading suite directory %s: %v", suiteDir, err)
 	}
 
-	var files []string
+	type yamlFile struct {
+		name string
+		path string
+	}
+	var files []yamlFile
 	for _, e := range entries {
-		if !e.IsDir() && (strings.HasSuffix(e.Name(), ".yaml") || strings.HasSuffix(e.Name(), ".yml")) {
-			files = append(files, e.Name())
+		if e.IsDir() {
+			// Recurse one level into subdirectories, matching LoadSuite behavior.
+			subDir := filepath.Join(suiteDir, e.Name())
+			subEntries, err := os.ReadDir(subDir)
+			if err != nil {
+				continue
+			}
+			for _, se := range subEntries {
+				if !se.IsDir() && (strings.HasSuffix(se.Name(), ".yaml") || strings.HasSuffix(se.Name(), ".yml")) {
+					name := e.Name() + "/" + strings.TrimSuffix(strings.TrimSuffix(se.Name(), ".yaml"), ".yml")
+					files = append(files, yamlFile{name: name, path: filepath.Join(subDir, se.Name())})
+				}
+			}
+		} else if strings.HasSuffix(e.Name(), ".yaml") || strings.HasSuffix(e.Name(), ".yml") {
+			name := strings.TrimSuffix(strings.TrimSuffix(e.Name(), ".yaml"), ".yml")
+			files = append(files, yamlFile{name: name, path: filepath.Join(suiteDir, e.Name())})
 		}
 	}
 
@@ -88,11 +106,8 @@ func Suite(t *testing.T, suiteDir string, opts ...Options) {
 	}
 
 	for _, file := range files {
-		name := strings.TrimSuffix(strings.TrimSuffix(file, ".yaml"), ".yml")
-		yamlPath := filepath.Join(suiteDir, file)
-
-		t.Run(name, func(t *testing.T) {
-			Run(t, yamlPath, opts...)
+		t.Run(file.name, func(t *testing.T) {
+			Run(t, file.path, opts...)
 		})
 	}
 }

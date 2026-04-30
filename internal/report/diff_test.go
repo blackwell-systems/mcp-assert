@@ -111,9 +111,9 @@ func TestFormatStatusChange_PassToFail(t *testing.T) {
 	if !strings.Contains(result, "->") {
 		t.Errorf("expected '->' in status change output, got %q", result)
 	}
-	// Should contain "status changed:".
-	if !strings.Contains(result, "status changed:") {
-		t.Errorf("expected 'status changed:' prefix, got %q", result)
+	// Should contain the assertion name.
+	if !strings.Contains(result, "my-test:") {
+		t.Errorf("expected assertion name 'my-test:' in output, got %q", result)
 	}
 }
 

@@ -5,6 +5,22 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Intercept process leak**: server process is now killed on timeout, preventing orphaned processes and goroutine leaks.
+- **Intercept scanner buffer**: increased from 64KB to 1MB to handle large JSON-RPC messages (embedded file content, base64 blobs).
+- **Intercept data race**: trace slice is now protected by a mutex for concurrent access between proxy goroutine and main goroutine.
+- **SSE client leak**: SSE client is now closed when `Start()` fails, preventing connection/goroutine leaks.
+- **JSONPath evaluation order**: map keys are sorted before iteration, producing deterministic error messages across runs.
+- **file_contains path substitution**: `{{fixture}}` in `file_contains`, `file_not_contains`, and `file_not_exists` paths is now substituted before checking.
+- **Snapshot nil dereference**: `Snapshot` command now returns early on `SnapshotCore` error instead of dereferencing a nil result.
+- **FormatStatusChange**: watch mode status change output now includes the assertion name.
+- **Go plugin subdirectory recursion**: `mcpassert.Suite()` now recurses one level into subdirectories, matching CLI `LoadSuite` behavior.
+
+### Docs
+
+- Architecture doc expanded with 7 new sections: error model, template engine, audit command flow, snapshot testing flow, security model, performance characteristics, and wire format examples.
+
 ## [0.7.3] - 2026-04-30
 
 ### Fixed

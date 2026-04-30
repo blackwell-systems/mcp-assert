@@ -119,3 +119,27 @@ func extractJSONPath(jsonText, path string) (string, error) {
 		return string(data), nil
 	}
 }
+
+// substituteMapKeys replaces {{fixture}} in map keys (used for file_contains paths).
+func substituteMapKeys(m map[string]string, fixture string) map[string]string {
+	if len(m) == 0 || fixture == "" {
+		return m
+	}
+	out := make(map[string]string, len(m))
+	for k, v := range m {
+		out[strings.ReplaceAll(k, "{{fixture}}", fixture)] = v
+	}
+	return out
+}
+
+// substituteSlice replaces {{fixture}} in slice elements (used for file_not_exists paths).
+func substituteSlice(s []string, fixture string) []string {
+	if len(s) == 0 || fixture == "" {
+		return s
+	}
+	out := make([]string, len(s))
+	for i, v := range s {
+		out[i] = strings.ReplaceAll(v, "{{fixture}}", fixture)
+	}
+	return out
+}

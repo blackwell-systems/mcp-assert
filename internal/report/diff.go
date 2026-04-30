@@ -53,7 +53,7 @@ func FormatStatusChange(name string, prevStatus, currStatus assertion.Status, de
 	if detail != "" {
 		suffix = ": " + detail
 	}
-	return fmt.Sprintf("  status changed: %s -> %s%s", prev, curr, suffix)
+	return fmt.Sprintf("  %s: %s -> %s%s", name, prev, curr, suffix)
 }
 
 // splitLines splits a string into lines. It handles trailing newlines gracefully

@@ -151,6 +151,9 @@ func Snapshot(args []string) error {
 		Update:   *update,
 		Timeout:  *timeout,
 	})
+	if err != nil {
+		return err
+	}
 
 	if *update {
 		report.PrintSnapshotSummary(1, result.Matched, result.Changed, result.New)
@@ -158,7 +161,7 @@ func Snapshot(args []string) error {
 		report.PrintSnapshotSummary(0, result.Matched, result.Changed, result.New)
 	}
 
-	return err
+	return nil
 }
 
 // runAndCapture executes a single assertion and returns the raw response text.

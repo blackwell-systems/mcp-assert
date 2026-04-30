@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
@@ -52,16 +53,23 @@ func Intercept(args []string) error {
 	trajectory := suite.Assertions[0].Trajectory
 
 	// Run the proxy loop, capturing tool calls.
+	// The mutex protects trace from concurrent access: onToolCall appends
+	// from the proxy goroutine while the main goroutine reads after completion.
+	var mu sync.Mutex
 	var trace []assertion.TraceEntry
 	onToolCall := func(entry assertion.TraceEntry) {
+		mu.Lock()
 		trace = append(trace, entry)
+		mu.Unlock()
 	}
 
-	// Apply timeout if set. When the timeout fires, the server process is
-	// killed and proxyStdio returns, allowing trajectory validation to proceed.
+	// proxyStdio returns the exec.Cmd so we can kill the server on timeout.
 	done := make(chan error, 1)
+	var cmd *exec.Cmd
 	go func() {
-		done <- proxyStdio(serverCmd, serverArgs, nil, onToolCall)
+		var err error
+		cmd, err = proxyStdio(serverCmd, serverArgs, nil, onToolCall)
+		done <- err
 	}()
 	if *timeout > 0 {
 		timer := time.NewTimer(*timeout)
@@ -73,12 +81,24 @@ func Intercept(args []string) error {
 			}
 		case <-timer.C:
 			fmt.Fprintf(os.Stderr, "intercept timed out after %s\n", *timeout)
+			// Kill the server process to stop the proxy goroutine.
+			if cmd != nil && cmd.Process != nil {
+				_ = cmd.Process.Kill()
+			}
+			<-done // wait for goroutine to finish
 		}
 	} else {
 		if err := <-done; err != nil {
 			fmt.Fprintf(os.Stderr, "server exited: %v\n", err)
 		}
 	}
+
+	// Safe to read trace now: proxy goroutine has exited.
+	mu.Lock()
+	traceCopy := make([]assertion.TraceEntry, len(trace))
+	copy(traceCopy, trace)
+	mu.Unlock()
+	trace = traceCopy
 
 	// Print captured trace summary.
 	fmt.Printf("\nCaptured %d tool call(s):\n", len(trace))
@@ -111,7 +131,7 @@ func proxyStdio(
 	serverArgs []string,
 	serverEnv []string,
 	onToolCall func(entry assertion.TraceEntry),
-) error {
+) (*exec.Cmd, error) {
 	cmd := exec.Command(serverCmd, serverArgs...)
 	if len(serverEnv) > 0 {
 		cmd.Env = append(os.Environ(), serverEnv...)
@@ -119,16 +139,16 @@ func proxyStdio(
 
 	serverIn, err := cmd.StdinPipe()
 	if err != nil {
-		return fmt.Errorf("creating server stdin pipe: %w", err)
+		return cmd, fmt.Errorf("creating server stdin pipe: %w", err)
 	}
 	serverOut, err := cmd.StdoutPipe()
 	if err != nil {
-		return fmt.Errorf("creating server stdout pipe: %w", err)
+		return cmd, fmt.Errorf("creating server stdout pipe: %w", err)
 	}
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("starting server %q: %w", serverCmd, err)
+		return cmd, fmt.Errorf("starting server %q: %w", serverCmd, err)
 	}
 
 	// Channel to signal goroutine completion.
@@ -138,6 +158,9 @@ func proxyStdio(
 	// forward each line to the server's stdin.
 	go func() {
 		scanner := bufio.NewScanner(os.Stdin)
+		// Increase buffer from default 64KB to 1MB to handle large JSON-RPC
+		// messages (embedded file content, base64 blobs, etc.).
+		scanner.Buffer(make([]byte, 1024*1024), 1024*1024)
 		for scanner.Scan() {
 			line := scanner.Bytes()
 			if entry := extractToolCall(line); entry != nil {
@@ -162,7 +185,7 @@ func proxyStdio(
 	<-done
 	<-done
 
-	return cmd.Wait()
+	return cmd, cmd.Wait()
 }
 
 // extractToolCall parses a single JSON-RPC line and returns a TraceEntry if

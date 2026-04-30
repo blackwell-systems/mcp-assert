@@ -144,6 +144,7 @@ func createMCPClient(server assertion.ServerConfig, fixture string, dockerImage 
 			return nil, fmt.Errorf("failed to create SSE client: %w", err)
 		}
 		if err := sseClient.Start(context.Background()); err != nil {
+			_ = sseClient.Close()
 			return nil, fmt.Errorf("failed to start SSE transport: %w", err)
 		}
 		return sseClient, nil

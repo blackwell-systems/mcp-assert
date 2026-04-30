@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -169,7 +170,14 @@ func checkJSONPath(expect Expect, response string, _ bool) error {
 		if err := json.Unmarshal([]byte(response), &parsed); err != nil {
 			return fmt.Errorf("json_path: result is not valid JSON: %w", err)
 		}
-		for path, expected := range expect.JSONPath {
+		// Sort paths for deterministic evaluation order and error messages.
+		jsonPaths := make([]string, 0, len(expect.JSONPath))
+		for p := range expect.JSONPath {
+			jsonPaths = append(jsonPaths, p)
+		}
+		sort.Strings(jsonPaths)
+		for _, path := range jsonPaths {
+			expected := expect.JSONPath[path]
 			actual, err := jsonPathLookup(parsed, path)
 			if err != nil {
 				return fmt.Errorf("json_path %q: %w", path, err)
