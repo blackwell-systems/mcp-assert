@@ -119,6 +119,21 @@ Source: `vitest-plugin/` directory in this repo. Published to npm as `vitest-mcp
 
 **Maintenance surface:** The plugin is a thin bridge (~150 lines across 5 TypeScript files). It calls the mcp-assert Go binary with `--json` and maps the JSON output to Vitest test outcomes. Same architecture as the pytest plugin. Breakage scenarios: (1) the `--json` output format changes in the Go binary, (2) the Go binary isn't found via the 3-tier resolution (explicit, PATH, npm package). The plugin has no runtime dependencies beyond vitest as a peer dependency.
 
+### Go Test Plugin
+```bash
+go get github.com/blackwell-systems/mcp-assert/go-plugin
+```
+
+```go
+func TestMCPServer(t *testing.T) {
+    mcpassert.Suite(t, "evals/")
+}
+```
+
+Each YAML file becomes a `t.Run` subtest. Same bridge architecture: shells out to the mcp-assert binary, parses JSON, maps to `t.Error`/`t.Skip`/pass.
+
+Source: `go-plugin/` directory in this repo. Published as a Go module at `github.com/blackwell-systems/mcp-assert/go-plugin`.
+
 ### Jest Plugin
 ```bash
 npm install -D jest-mcp-assert @blackwell-systems/mcp-assert
