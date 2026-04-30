@@ -82,7 +82,7 @@ func passResult(name string, start time.Time) assertion.Result {
 	return assertion.Result{
 		Name:     name,
 		Status:   assertion.StatusPass,
-		Duration: time.Since(start),
+		Duration: assertion.DurationMS(time.Since(start)),
 	}
 }
 
@@ -92,7 +92,7 @@ func failResult(name string, start time.Time, detail string) assertion.Result {
 		Name:     name,
 		Status:   assertion.StatusFail,
 		Detail:   detail,
-		Duration: time.Since(start),
+		Duration: assertion.DurationMS(time.Since(start)),
 	}
 }
 
@@ -102,7 +102,7 @@ func skipResult(name string, start time.Time, detail string) assertion.Result {
 		Name:     name,
 		Status:   assertion.StatusSkip,
 		Detail:   detail,
-		Duration: time.Since(start),
+		Duration: assertion.DurationMS(time.Since(start)),
 	}
 }
 

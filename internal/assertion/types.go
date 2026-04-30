@@ -9,7 +9,11 @@
 //   - sampling*.go   — Sampling assertion block type
 package assertion
 
-import "time"
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+)
 
 // Suite is a collection of assertion files loaded from a directory.
 // The loader recursively discovers all .yaml files under Dir and parses
@@ -241,9 +245,37 @@ type Result struct {
 	Name     string        `json:"name"`               // assertion name from the YAML file
 	Status   Status        `json:"status"`             // PASS, FAIL, or SKIP
 	Detail   string        `json:"detail,omitempty"`   // failure message or skip reason; empty on PASS
-	Duration time.Duration `json:"duration_ms"`        // wall time for this assertion (connect + call + check)
+	Duration DurationMS    `json:"duration_ms"`        // wall time for this assertion in milliseconds
 	Language string        `json:"language,omitempty"` // language server identifier (populated in matrix mode)
 	Trial    int           `json:"trial,omitempty"`    // 1-indexed trial number (populated when --trials > 1)
+}
+
+// DurationMS wraps time.Duration and serializes to JSON as an integer
+// number of milliseconds, matching the "duration_ms" field name.
+type DurationMS time.Duration
+
+func (d DurationMS) MarshalJSON() ([]byte, error) {
+	ms := time.Duration(d).Milliseconds()
+	return []byte(fmt.Sprintf("%d", ms)), nil
+}
+
+// Seconds returns the duration as a floating-point number of seconds.
+func (d DurationMS) Seconds() float64 {
+	return time.Duration(d).Seconds()
+}
+
+// Milliseconds returns the duration as an integer number of milliseconds.
+func (d DurationMS) Milliseconds() int64 {
+	return time.Duration(d).Milliseconds()
+}
+
+func (d *DurationMS) UnmarshalJSON(data []byte) error {
+	var ms int64
+	if err := json.Unmarshal(data, &ms); err != nil {
+		return err
+	}
+	*d = DurationMS(time.Duration(ms) * time.Millisecond)
+	return nil
 }
 
 // Status is the outcome of an assertion: PASS (all checks succeeded),

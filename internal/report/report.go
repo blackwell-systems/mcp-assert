@@ -7,6 +7,7 @@ package report
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
@@ -92,10 +93,12 @@ func PrintMatrix(results []assertion.Result) {
 	for l := range langSet {
 		langs = append(langs, l)
 	}
+	sort.Strings(langs)
 	var names []string
 	for n := range nameSet {
 		names = append(names, n)
 	}
+	sort.Strings(names)
 
 	// Print header.
 	header := fmt.Sprintf("%-20s", "")

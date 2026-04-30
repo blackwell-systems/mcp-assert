@@ -26,7 +26,7 @@ func runLoggingAssertion(a assertion.Assertion, fixture string, timeout time.Dur
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
 			Detail:   fmt.Sprintf("failed to start MCP server: %v", err),
-			Duration: time.Since(start),
+			Duration: assertion.DurationMS(time.Since(start)),
 		}
 	}
 	defer mcpClient.Close()
@@ -39,7 +39,7 @@ func runLoggingAssertion(a assertion.Assertion, fixture string, timeout time.Dur
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
 			Detail:   fmt.Sprintf("MCP initialize failed: %v", err),
-			Duration: time.Since(start),
+			Duration: assertion.DurationMS(time.Since(start)),
 		}
 	}
 
@@ -74,7 +74,7 @@ func runLoggingAssertion(a assertion.Assertion, fixture string, timeout time.Dur
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
 			Detail:   fmt.Sprintf("logging/setLevel failed: %v", err),
-			Duration: time.Since(start),
+			Duration: assertion.DurationMS(time.Since(start)),
 		}
 	}
 
@@ -90,7 +90,7 @@ func runLoggingAssertion(a assertion.Assertion, fixture string, timeout time.Dur
 				Name:     a.Name,
 				Status:   assertion.StatusFail,
 				Detail:   fmt.Sprintf("setup step %s failed: %v", step.Tool, err),
-				Duration: time.Since(start),
+				Duration: assertion.DurationMS(time.Since(start)),
 			}
 		}
 	}
@@ -105,7 +105,7 @@ func runLoggingAssertion(a assertion.Assertion, fixture string, timeout time.Dur
 				Name:     a.Name,
 				Status:   assertion.StatusFail,
 				Detail:   fmt.Sprintf("tool call %s failed: %v", lb.Tool, err),
-				Duration: time.Since(start),
+				Duration: assertion.DurationMS(time.Since(start)),
 			}
 		}
 	}
@@ -124,13 +124,13 @@ func runLoggingAssertion(a assertion.Assertion, fixture string, timeout time.Dur
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
 			Detail:   err.Error(),
-			Duration: time.Since(start),
+			Duration: assertion.DurationMS(time.Since(start)),
 		}
 	}
 
 	return assertion.Result{
 		Name:     a.Name,
 		Status:   assertion.StatusPass,
-		Duration: time.Since(start),
+		Duration: assertion.DurationMS(time.Since(start)),
 	}
 }

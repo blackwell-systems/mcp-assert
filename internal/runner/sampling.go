@@ -39,7 +39,7 @@ func runSamplingAssertion(a assertion.Assertion, fixture string, timeout time.Du
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
 			Detail:   fmt.Sprintf("failed to start MCP server: %v", err),
-			Duration: time.Since(start),
+			Duration: assertion.DurationMS(time.Since(start)),
 		}
 	}
 	defer mcpClient.Close()
@@ -52,7 +52,7 @@ func runSamplingAssertion(a assertion.Assertion, fixture string, timeout time.Du
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
 			Detail:   fmt.Sprintf("MCP initialize failed: %v", err),
-			Duration: time.Since(start),
+			Duration: assertion.DurationMS(time.Since(start)),
 		}
 	}
 
@@ -69,7 +69,7 @@ func runSamplingAssertion(a assertion.Assertion, fixture string, timeout time.Du
 				Name:     a.Name,
 				Status:   assertion.StatusFail,
 				Detail:   fmt.Sprintf("setup step %s failed: %v", step.Tool, err),
-				Duration: time.Since(start),
+				Duration: assertion.DurationMS(time.Since(start)),
 			}
 		}
 
@@ -82,7 +82,7 @@ func runSamplingAssertion(a assertion.Assertion, fixture string, timeout time.Du
 						Name:     a.Name,
 						Status:   assertion.StatusFail,
 						Detail:   fmt.Sprintf("setup step %s: capture %q from %q failed: %v", step.Tool, varName, jsonPath, err),
-						Duration: time.Since(start),
+						Duration: assertion.DurationMS(time.Since(start)),
 					}
 				}
 				captured[varName] = val
@@ -100,7 +100,7 @@ func runSamplingAssertion(a assertion.Assertion, fixture string, timeout time.Du
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
 			Detail:   fmt.Sprintf("tool call %s failed: %v", sb.Tool, err),
-			Duration: time.Since(start),
+			Duration: assertion.DurationMS(time.Since(start)),
 		}
 	}
 
@@ -114,13 +114,13 @@ func runSamplingAssertion(a assertion.Assertion, fixture string, timeout time.Du
 			Name:     a.Name,
 			Status:   assertion.StatusFail,
 			Detail:   detail,
-			Duration: time.Since(start),
+			Duration: assertion.DurationMS(time.Since(start)),
 		}
 	}
 
 	return assertion.Result{
 		Name:     a.Name,
 		Status:   assertion.StatusPass,
-		Duration: time.Since(start),
+		Duration: assertion.DurationMS(time.Since(start)),
 	}
 }

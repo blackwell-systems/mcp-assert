@@ -4,7 +4,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/blackwell-systems/mcp-assert/internal/assertion"
 )
@@ -54,7 +53,7 @@ type junitSkipped struct {
 
 // WriteJUnit writes JUnit XML to the given path.
 func WriteJUnit(results []assertion.Result, path string) error {
-	var totalTime time.Duration
+	var totalTime assertion.DurationMS
 	var failures, skipped int
 	var cases []junitTestCase
 

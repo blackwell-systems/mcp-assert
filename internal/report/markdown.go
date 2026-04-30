@@ -93,10 +93,11 @@ func WriteMarkdownSummary(results []assertion.Result, path string) error {
 	if err != nil {
 		return fmt.Errorf("writing markdown summary: %w", err)
 	}
-	defer f.Close()
-
-	_, err = f.WriteString(b.String())
-	return err
+	if _, err = f.WriteString(b.String()); err != nil {
+		_ = f.Close()
+		return fmt.Errorf("writing markdown summary: %w", err)
+	}
+	return f.Close()
 }
 
 func statusIcon(s assertion.Status) string {

@@ -7,3 +7,4 @@ gate-cache.json
 # vitest-plugin build artifacts
 vitest-plugin/node_modules/
 vitest-plugin/dist/
+.idea/

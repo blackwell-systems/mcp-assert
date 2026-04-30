@@ -12,6 +12,9 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **Intercept timeout**: `--timeout` flag on the `intercept` command now takes effect. Previously the return value of `fs.Duration()` was discarded.
 - **copyFile Close() error**: fixture copy now checks the return value of `Close()`, catching disk-full errors that were previously silently dropped.
 - **Baseline file ordering**: baseline JSON entries are now sorted by name, producing deterministic output across runs.
+- **duration_ms JSON contract**: `Result.Duration` now serializes as integer milliseconds (was nanoseconds, mislabeled as `duration_ms`). Custom `DurationMS` type with correct `MarshalJSON`/`UnmarshalJSON`.
+- **Matrix output ordering**: `PrintMatrix` now sorts languages and assertion names, producing deterministic output across runs.
+- **Markdown Close() error**: `WriteMarkdownSummary` now checks `f.Close()` return value.
 
 ### Changed
 

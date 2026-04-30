@@ -30,8 +30,8 @@ func captureStdout(fn func()) string {
 
 func TestPrintResults_AllPass(t *testing.T) {
 	results := []assertion.Result{
-		{Name: "hover test", Status: assertion.StatusPass, Duration: 150 * time.Millisecond},
-		{Name: "definition test", Status: assertion.StatusPass, Duration: 200 * time.Millisecond},
+		{Name: "hover test", Status: assertion.StatusPass, Duration: assertion.DurationMS(150 * time.Millisecond)},
+		{Name: "definition test", Status: assertion.StatusPass, Duration: assertion.DurationMS(200 * time.Millisecond)},
 	}
 
 	out := captureStdout(func() { PrintResults(results) })
@@ -50,8 +50,8 @@ func TestPrintResults_AllPass(t *testing.T) {
 
 func TestPrintResults_WithFailure(t *testing.T) {
 	results := []assertion.Result{
-		{Name: "good", Status: assertion.StatusPass, Duration: 100 * time.Millisecond},
-		{Name: "bad", Status: assertion.StatusFail, Detail: "expected foo", Duration: 50 * time.Millisecond},
+		{Name: "good", Status: assertion.StatusPass, Duration: assertion.DurationMS(100 * time.Millisecond)},
+		{Name: "bad", Status: assertion.StatusFail, Detail: "expected foo", Duration: assertion.DurationMS(50 * time.Millisecond)},
 	}
 
 	out := captureStdout(func() { PrintResults(results) })
@@ -72,7 +72,7 @@ func TestPrintResults_WithFailure(t *testing.T) {
 
 func TestPrintResults_WithLanguage(t *testing.T) {
 	results := []assertion.Result{
-		{Name: "hover", Status: assertion.StatusPass, Duration: 100 * time.Millisecond, Language: "go"},
+		{Name: "hover", Status: assertion.StatusPass, Duration: assertion.DurationMS(100 * time.Millisecond), Language: "go"},
 	}
 
 	out := captureStdout(func() { PrintResults(results) })
@@ -125,8 +125,8 @@ func TestPrintResults_Skip(t *testing.T) {
 
 func TestWriteJUnit_AllPass(t *testing.T) {
 	results := []assertion.Result{
-		{Name: "hover", Status: assertion.StatusPass, Duration: 150 * time.Millisecond},
-		{Name: "definition", Status: assertion.StatusPass, Duration: 200 * time.Millisecond},
+		{Name: "hover", Status: assertion.StatusPass, Duration: assertion.DurationMS(150 * time.Millisecond)},
+		{Name: "definition", Status: assertion.StatusPass, Duration: assertion.DurationMS(200 * time.Millisecond)},
 	}
 	path := filepath.Join(t.TempDir(), "results.xml")
 
@@ -165,8 +165,8 @@ func TestWriteJUnit_AllPass(t *testing.T) {
 
 func TestWriteJUnit_WithFailure(t *testing.T) {
 	results := []assertion.Result{
-		{Name: "good", Status: assertion.StatusPass, Duration: 100 * time.Millisecond},
-		{Name: "bad", Status: assertion.StatusFail, Detail: "expected foo", Duration: 50 * time.Millisecond},
+		{Name: "good", Status: assertion.StatusPass, Duration: assertion.DurationMS(100 * time.Millisecond)},
+		{Name: "bad", Status: assertion.StatusFail, Detail: "expected foo", Duration: assertion.DurationMS(50 * time.Millisecond)},
 	}
 	path := filepath.Join(t.TempDir(), "results.xml")
 
@@ -189,7 +189,7 @@ func TestWriteJUnit_WithFailure(t *testing.T) {
 
 func TestWriteJUnit_WithLanguage(t *testing.T) {
 	results := []assertion.Result{
-		{Name: "hover", Status: assertion.StatusPass, Duration: 100 * time.Millisecond, Language: "go"},
+		{Name: "hover", Status: assertion.StatusPass, Duration: assertion.DurationMS(100 * time.Millisecond), Language: "go"},
 	}
 	path := filepath.Join(t.TempDir(), "results.xml")
 
@@ -205,8 +205,8 @@ func TestWriteJUnit_WithLanguage(t *testing.T) {
 
 func TestWriteMarkdownSummary_AllPass(t *testing.T) {
 	results := []assertion.Result{
-		{Name: "hover", Status: assertion.StatusPass, Duration: 150 * time.Millisecond},
-		{Name: "definition", Status: assertion.StatusPass, Duration: 200 * time.Millisecond},
+		{Name: "hover", Status: assertion.StatusPass, Duration: assertion.DurationMS(150 * time.Millisecond)},
+		{Name: "definition", Status: assertion.StatusPass, Duration: assertion.DurationMS(200 * time.Millisecond)},
 	}
 	path := filepath.Join(t.TempDir(), "summary.md")
 
@@ -230,8 +230,8 @@ func TestWriteMarkdownSummary_AllPass(t *testing.T) {
 
 func TestWriteMarkdownSummary_WithFailure(t *testing.T) {
 	results := []assertion.Result{
-		{Name: "good", Status: assertion.StatusPass, Duration: 100 * time.Millisecond},
-		{Name: "bad", Status: assertion.StatusFail, Detail: "expected foo", Duration: 50 * time.Millisecond},
+		{Name: "good", Status: assertion.StatusPass, Duration: assertion.DurationMS(100 * time.Millisecond)},
+		{Name: "bad", Status: assertion.StatusFail, Detail: "expected foo", Duration: assertion.DurationMS(50 * time.Millisecond)},
 	}
 	path := filepath.Join(t.TempDir(), "summary.md")
 
@@ -579,10 +579,10 @@ func TestWriteToolCoverageJSON_Empty(t *testing.T) {
 
 func TestWriteJUnit_WithTrials(t *testing.T) {
 	results := []assertion.Result{
-		{Name: "hover", Status: assertion.StatusPass, Duration: 100 * time.Millisecond, Trial: 1},
-		{Name: "hover", Status: assertion.StatusPass, Duration: 110 * time.Millisecond, Trial: 2},
-		{Name: "refs", Status: assertion.StatusPass, Duration: 200 * time.Millisecond, Trial: 1},
-		{Name: "refs", Status: assertion.StatusFail, Detail: "timeout", Duration: 300 * time.Millisecond, Trial: 2},
+		{Name: "hover", Status: assertion.StatusPass, Duration: assertion.DurationMS(100 * time.Millisecond), Trial: 1},
+		{Name: "hover", Status: assertion.StatusPass, Duration: assertion.DurationMS(110 * time.Millisecond), Trial: 2},
+		{Name: "refs", Status: assertion.StatusPass, Duration: assertion.DurationMS(200 * time.Millisecond), Trial: 1},
+		{Name: "refs", Status: assertion.StatusFail, Detail: "timeout", Duration: assertion.DurationMS(300 * time.Millisecond), Trial: 2},
 	}
 	path := filepath.Join(t.TempDir(), "results.xml")
 
@@ -625,7 +625,7 @@ func TestWriteJUnit_WithTrials(t *testing.T) {
 
 func TestWriteJUnit_NoTrials_NoProperties(t *testing.T) {
 	results := []assertion.Result{
-		{Name: "hover", Status: assertion.StatusPass, Duration: 100 * time.Millisecond},
+		{Name: "hover", Status: assertion.StatusPass, Duration: assertion.DurationMS(100 * time.Millisecond)},
 	}
 	path := filepath.Join(t.TempDir(), "results.xml")
 
@@ -641,10 +641,10 @@ func TestWriteJUnit_NoTrials_NoProperties(t *testing.T) {
 
 func TestWriteMarkdownSummary_WithTrials(t *testing.T) {
 	results := []assertion.Result{
-		{Name: "hover", Status: assertion.StatusPass, Duration: 100 * time.Millisecond, Trial: 1},
-		{Name: "hover", Status: assertion.StatusPass, Duration: 110 * time.Millisecond, Trial: 2},
-		{Name: "refs", Status: assertion.StatusPass, Duration: 200 * time.Millisecond, Trial: 1},
-		{Name: "refs", Status: assertion.StatusFail, Detail: "timeout", Duration: 300 * time.Millisecond, Trial: 2},
+		{Name: "hover", Status: assertion.StatusPass, Duration: assertion.DurationMS(100 * time.Millisecond), Trial: 1},
+		{Name: "hover", Status: assertion.StatusPass, Duration: assertion.DurationMS(110 * time.Millisecond), Trial: 2},
+		{Name: "refs", Status: assertion.StatusPass, Duration: assertion.DurationMS(200 * time.Millisecond), Trial: 1},
+		{Name: "refs", Status: assertion.StatusFail, Detail: "timeout", Duration: assertion.DurationMS(300 * time.Millisecond), Trial: 2},
 	}
 	path := filepath.Join(t.TempDir(), "summary.md")
 
@@ -674,7 +674,7 @@ func TestWriteMarkdownSummary_WithTrials(t *testing.T) {
 
 func TestWriteMarkdownSummary_NoTrials_NoReliability(t *testing.T) {
 	results := []assertion.Result{
-		{Name: "hover", Status: assertion.StatusPass, Duration: 100 * time.Millisecond},
+		{Name: "hover", Status: assertion.StatusPass, Duration: assertion.DurationMS(100 * time.Millisecond)},
 	}
 	path := filepath.Join(t.TempDir(), "summary.md")
 
