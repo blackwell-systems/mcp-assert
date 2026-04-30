@@ -5,6 +5,8 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-04-30
+
 ### Fixed
 
 - **Per-assertion timeout**: YAML `timeout` field (e.g., `timeout: 60s`) now correctly overrides the CLI `--timeout` flag. Previously the field was parsed but silently ignored.
