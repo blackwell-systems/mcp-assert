@@ -195,6 +195,11 @@ func runAssertion(a assertion.Assertion, fixture string, timeout time.Duration, 
 		return runLoggingAssertion(a, fixture, timeout, dockerImage, start)
 	}
 
+	// Notification assertions capture arbitrary notifications during a tool call.
+	if a.AssertNotifications != nil {
+		return runNotificationAssertion(a, fixture, timeout, dockerImage, start)
+	}
+
 	ctx, cancel, mcpClient, err := initializedClient(a, fixture, timeout, dockerImage)
 	if err != nil {
 		return failResult(a.Name, start, err.Error())

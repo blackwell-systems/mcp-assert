@@ -5,6 +5,10 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- **`assert_notifications:` block type**: test arbitrary server notifications during a tool call. Capture all notifications emitted by the server, assert on count (`min_count`, `max_count`), methods (`methods`, `not_methods`), and params content (`contains_data`, `not_contains_data`). Covers progress updates, resource changes, custom notifications, and any other notification type.
+
 ### Fixed
 
 - **Intercept process leak**: server process is now killed on timeout, preventing orphaned processes and goroutine leaks.

@@ -41,6 +41,7 @@ type Assertion struct {
 	AssertCompletion *CompletionAssertBlock `yaml:"assert_completion,omitempty"` // completion assertion (test autocomplete)
 	AssertSampling   *SamplingAssertBlock   `yaml:"assert_sampling,omitempty"`   // sampling assertion (test server-initiated LLM requests)
 	AssertLogging    *LoggingAssertBlock    `yaml:"assert_logging,omitempty"`    // logging assertion (test log message notifications)
+	AssertNotifications *NotificationAssertBlock `yaml:"assert_notifications,omitempty"` // notification assertion (test arbitrary server notifications)
 
 	// Execution control.
 	Timeout       string `yaml:"timeout"`                    // per-assertion timeout (e.g., "30s", "1m"); overrides CLI --timeout
