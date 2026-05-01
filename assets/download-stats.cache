@@ -1,7 +1,7 @@
-pip=5384
-pytest=1656
+pip=7036
+pytest=2327
 npm=942
 vitest=215
 jest=--
 gh=294
-docker=79
+docker=81
