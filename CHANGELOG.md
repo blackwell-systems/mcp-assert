@@ -7,6 +7,7 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ### Added
 
+- **phpunit-mcp-assert**: PHPUnit integration for running mcp-assert YAML assertions as PHPUnit tests. Published as `blackwell-systems/phpunit-mcp-assert` on Packagist.
 - **bun-mcp-assert**: Bun test integration for running mcp-assert YAML assertions as Bun tests. Uses `Bun.spawnSync` and `Bun.which` for native Bun APIs. Same YAML files work across Bun, Jest, Vitest, pytest, and the CLI. Published as `bun-mcp-assert` on npm.
 - **`assert_notifications:` block type**: test arbitrary server notifications during a tool call. Capture all notifications emitted by the server, assert on count (`min_count`, `max_count`), methods (`methods`, `not_methods`), and params content (`contains_data`, `not_contains_data`). Covers progress updates, resource changes, custom notifications, and any other notification type.
 

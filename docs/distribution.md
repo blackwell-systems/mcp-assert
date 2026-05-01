@@ -173,6 +173,22 @@ Same bridge architecture. Uses native Bun APIs (`Bun.spawnSync`, `Bun.which`). S
 
 Source: `bun-plugin/` directory in this repo. Published to npm as `bun-mcp-assert`.
 
+### PHPUnit Plugin
+```bash
+composer require --dev blackwell-systems/phpunit-mcp-assert
+```
+
+```php
+use BlackwellSystems\McpAssert\McpAssertRunner;
+
+public function testEchoTool(): void
+{
+    McpAssertRunner::assertYaml('evals/echo.yaml');
+}
+```
+
+Same bridge architecture. Published to Packagist as `blackwell-systems/phpunit-mcp-assert`. Separate repo required (Packagist reads `composer.json` from repo root).
+
 ### "Works with mcp-assert" Badge
 Static and dynamic (CI-verified) badge for MCP server READMEs. Every badge is a backlink. See the [Badge guide](badge.md).
 

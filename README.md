@@ -132,7 +132,7 @@ mcp-assert run --suite evals/ --fixture evals/fixtures
 
 See the [Getting Started guide](https://blackwell-systems.github.io/mcp-assert/getting-started/) for a full walkthrough.
 
-### Already using Vitest, Jest, Bun, or pytest?
+### Already using Vitest, Jest, Bun, PHPUnit, or pytest?
 
 ```bash
 # Vitest
@@ -152,7 +152,7 @@ pytest --mcp-suite evals/
 ```
 
 > [!IMPORTANT]
-> Same YAML files work across the CLI, Vitest, Jest, Bun, pytest, and Go test. No migration needed. Write once, run anywhere.
+> Same YAML files work across the CLI, Vitest, Jest, Bun, PHPUnit, pytest, and Go test. No migration needed. Write once, run anywhere.
 
 ## Everything you can do
 
@@ -272,7 +272,7 @@ Same YAML files work across Vitest, pytest, and the CLI. See `vitest-plugin/READ
 Full documentation is available at [blackwell-systems.github.io/mcp-assert](https://blackwell-systems.github.io/mcp-assert):
 
 - [Getting Started](https://blackwell-systems.github.io/mcp-assert/getting-started/): install, scaffold, first run
-- [Writing Assertions](https://blackwell-systems.github.io/mcp-assert/writing-assertions/): YAML format, all 18 assertion types + 4 trajectory types, 8 block types, 5 test framework plugins (pytest, Vitest, Jest, Bun, Go test), setup steps, capture, fixtures
+- [Writing Assertions](https://blackwell-systems.github.io/mcp-assert/writing-assertions/): YAML format, all 18 assertion types + 4 trajectory types, 8 block types, 6 test framework plugins (pytest, Vitest, Jest, Bun, PHPUnit, Go test), setup steps, capture, fixtures
 - [CLI Reference](https://blackwell-systems.github.io/mcp-assert/cli/): full command reference with flags and examples
 - [Examples](https://blackwell-systems.github.io/mcp-assert/examples/): 61 example suites across 7 languages (570 assertions)
 - [CI Integration](https://blackwell-systems.github.io/mcp-assert/ci-integration/): GitHub Action, JUnit XML, regression detection

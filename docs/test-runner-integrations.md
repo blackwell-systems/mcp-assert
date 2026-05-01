@@ -1,6 +1,6 @@
 # Test Runner Integrations
 
-mcp-assert assertions are defined in YAML. The CLI runs them directly, but you can also run them through your existing test framework. The same YAML files work across all five integrations: CLI, pytest, Vitest, Jest, Bun, and Go test.
+mcp-assert assertions are defined in YAML. The CLI runs them directly, but you can also run them through your existing test framework. The same YAML files work across all six integrations: CLI, pytest, Vitest, Jest, Bun, PHPUnit, and Go test.
 
 All integrations follow the same architecture: a thin bridge that shells out to the `mcp-assert` binary with `--json` output and maps the result to the test framework's pass/fail/skip semantics. No MCP protocol logic is reimplemented; the Go binary handles everything.
 
@@ -10,9 +10,10 @@ All integrations follow the same architecture: a thin bridge that shells out to 
 | [vitest-mcp-assert](https://www.npmjs.com/package/vitest-mcp-assert) | TypeScript | npm | `npm i -D vitest-mcp-assert` |
 | [jest-mcp-assert](https://www.npmjs.com/package/jest-mcp-assert) | TypeScript | npm | `npm i -D jest-mcp-assert` |
 | [bun-mcp-assert](https://www.npmjs.com/package/bun-mcp-assert) | TypeScript | npm | `bun add -d bun-mcp-assert` |
+| [phpunit-mcp-assert](https://packagist.org/packages/blackwell-systems/phpunit-mcp-assert) | PHP | Packagist | `composer require --dev blackwell-systems/phpunit-mcp-assert` |
 | [mcpassert](https://github.com/blackwell-systems/mcp-assert/tree/main/go-plugin) | Go | Go module | `go get github.com/blackwell-systems/mcp-assert/go-plugin` |
 
-All five use the same YAML assertion files. Write once, run in any framework.
+All six use the same YAML assertion files. Write once, run in any framework.
 
 ## Vitest (TypeScript)
 
@@ -181,6 +182,31 @@ test("echo tool", () => { runMcpAssert("evals/echo.yaml") })
 ```
 
 Uses native Bun APIs (`Bun.spawnSync`, `Bun.which`). Ships as TypeScript source with no build step. See `bun-plugin/README.md` for all options.
+
+## PHPUnit (PHP)
+
+### Install
+
+```bash
+composer require --dev blackwell-systems/phpunit-mcp-assert
+```
+
+### Usage
+
+```php
+use BlackwellSystems\McpAssert\McpAssertRunner;
+use PHPUnit\Framework\TestCase;
+
+class McpServerTest extends TestCase
+{
+    public function testEchoTool(): void
+    {
+        McpAssertRunner::assertYaml('evals/echo.yaml');
+    }
+}
+```
+
+For data-provider patterns and suite-level execution, see `phpunit-plugin/README.md`.
 
 ## Go test
 
