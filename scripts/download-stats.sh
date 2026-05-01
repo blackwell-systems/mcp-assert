@@ -141,7 +141,7 @@ date_str=$(date +"%Y-%m-%d")
 
 # ── Generate SVG ─────────────────────────────────────────────────────
 cat > "$OUT" << SVGEOF
-<svg xmlns="http://www.w3.org/2000/svg" width="320" height="292" viewBox="0 0 320 270">
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="292" viewBox="0 0 320 292">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#1a1a2e"/>
@@ -155,7 +155,7 @@ cat > "$OUT" << SVGEOF
 
   <!-- Card background -->
   <rect width="320" height="292" rx="12" fill="url(#bg)"/>
-  <rect x="1" y="1" width="318" height="268" rx="11" fill="none" stroke="#334155" stroke-width="1"/>
+  <rect x="1" y="1" width="318" height="290" rx="11" fill="none" stroke="#334155" stroke-width="1"/>
 
   <!-- Title -->
   <text x="24" y="36" fill="#e2e8f0" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600">mcp-assert downloads</text>
