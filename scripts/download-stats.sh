@@ -186,5 +186,22 @@ cat > "$OUT" << SVGEOF
 </svg>
 SVGEOF
 
+# Generate downloads badge JSON for shields.io endpoint badge.
+BADGE_OUT="$(dirname "$OUT")/downloads-badge.json"
+if [[ "$cumulative" != "?" ]]; then
+  badge_label="downloads"
+  badge_msg="${cumulative_fmt}"
+  badge_color="brightgreen"
+  if (( cumulative < 1000 )); then badge_color="green"; fi
+  cat > "$BADGE_OUT" << BADGEEOF
+{
+  "schemaVersion": 1,
+  "label": "${badge_label}",
+  "message": "${badge_msg}",
+  "color": "${badge_color}"
+}
+BADGEEOF
+fi
+
 echo "Generated ${OUT}"
 echo "  pip: ${pypi_total}  pytest: ${pytest_total}  npm: ${npm_total}  vitest: ${vitest_total}  jest: ${jest_total}  gh: ${gh_total}  docker: ${docker_total}  total: ${cumulative}"
