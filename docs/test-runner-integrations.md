@@ -4,6 +4,16 @@ mcp-assert assertions are defined in YAML. The CLI runs them directly, but you c
 
 All integrations follow the same architecture: a thin bridge that shells out to the `mcp-assert` binary with `--json` output and maps the result to the test framework's pass/fail/skip semantics. No MCP protocol logic is reimplemented; the Go binary handles everything.
 
+| Plugin | Language | Registry | Install |
+|--------|----------|----------|---------|
+| [pytest-mcp-assert](https://pypi.org/project/pytest-mcp-assert/) | Python | PyPI | `pip install pytest-mcp-assert` |
+| [vitest-mcp-assert](https://www.npmjs.com/package/vitest-mcp-assert) | TypeScript | npm | `npm i -D vitest-mcp-assert` |
+| [jest-mcp-assert](https://www.npmjs.com/package/jest-mcp-assert) | TypeScript | npm | `npm i -D jest-mcp-assert` |
+| [bun-mcp-assert](https://www.npmjs.com/package/bun-mcp-assert) | TypeScript | npm | `bun add -d bun-mcp-assert` |
+| [mcpassert](https://github.com/blackwell-systems/mcp-assert/tree/main/go-plugin) | Go | Go module | `go get github.com/blackwell-systems/mcp-assert/go-plugin` |
+
+All five use the same YAML assertion files. Write once, run in any framework.
+
 ## Vitest (TypeScript)
 
 ### Install
