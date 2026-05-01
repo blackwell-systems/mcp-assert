@@ -224,7 +224,7 @@ A single `git tag` triggers the entire pipeline. Every channel is automated.
    | `vitest-plugin-publish` | Builds and publishes the `vitest-mcp-assert` plugin to npm | npm (vitest plugin) |
    | `winget` | Submits manifest PR to microsoft/winget-pkgs via winget-releaser | Winget |
 
-4. **Verify** (after CI completes, ~5 minutes):
+4. **Verify** (after CI completes, ~5-10 minutes):
    ```bash
    # GitHub Release exists
    gh release view v0.5.0
@@ -232,11 +232,19 @@ A single `git tag` triggers the entire pipeline. Every channel is automated.
    # Homebrew updated
    brew update && brew info blackwell-systems/tap/mcp-assert
 
-   # npm updated
+   # npm packages updated
    npm view @blackwell-systems/mcp-assert version
+   npm view vitest-mcp-assert version
+   npm view jest-mcp-assert version
+   npm view bun-mcp-assert version
 
    # PyPI updated
    pip index versions mcp-assert
+   pip index versions pytest-mcp-assert
+
+   # Docker images
+   docker pull blackwellsystems/mcp-assert:latest --quiet && echo "Docker Hub OK"
+   docker pull ghcr.io/blackwell-systems/mcp-assert:latest --quiet && echo "GHCR OK"
    ```
 
 ### What is NOT automatic
@@ -247,6 +255,8 @@ A single `git tag` triggers the entire pipeline. Every channel is automated.
 | `install.sh` / `install.ps1` | These fetch `latest` from GitHub Releases. No update needed unless the script logic changes. |
 | Badges | Static SVGs in `assets/`. Update manually if the badge design changes. |
 | Awesome MCP DevTools listing | Manual PR to the upstream repo. |
+| Go plugin (`mcpassert`) | Go modules are published automatically when the tag is pushed. No workflow job needed. |
+| Download stats badge | Auto-updated hourly by the `stats.yml` workflow. No manual action. |
 
 ### Secrets required
 
@@ -270,7 +280,7 @@ git push origin :refs/tags/v0.5.0
 # Fix the bug, then tag v0.5.1
 ```
 
-npm and PyPI don't support deletion (npm has a 72-hour unpublish window). Publish a patch version instead.
+npm, PyPI, and Docker Hub don't support deletion (npm has a 72-hour unpublish window). Publish a patch version instead. The Snap Store token has not been configured, so the `snap` job will fail silently until `SNAP_TOKEN` is set.
 
 ## The scan-and-contribute flywheel
 
