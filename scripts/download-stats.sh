@@ -191,8 +191,7 @@ BADGE_OUT="$(dirname "$OUT")/downloads-badge.json"
 if [[ "$cumulative" != "?" ]]; then
   badge_label="downloads"
   badge_msg="${cumulative_fmt}"
-  badge_color="brightgreen"
-  if (( cumulative < 1000 )); then badge_color="green"; fi
+  badge_color="ff69b4"
   cat > "$BADGE_OUT" << BADGEEOF
 {
   "schemaVersion": 1,
