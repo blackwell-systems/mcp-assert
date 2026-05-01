@@ -73,7 +73,7 @@ Multi-arch images (linux/amd64, linux/arm64) published to both Docker Hub and GH
 - `blackwellsystems/mcp-assert:latest` / `blackwellsystems/mcp-assert:<version>`
 - `ghcr.io/blackwell-systems/mcp-assert:latest` / `ghcr.io/blackwell-systems/mcp-assert:<version>`
 
-Built via `docker/build-push-action@v6` in the `docker` job of `release.yml`. Uses a two-stage Dockerfile: Go build on `golang:1.23-alpine`, final image on `alpine:3.21` with just the binary and CA certificates.
+Built via `docker/build-push-action@v6` in the `docker` job of `release.yml`. Uses a two-stage Dockerfile: Go build on `golang:1.25-alpine`, final image on `alpine:3.21` with just the binary and CA certificates.
 
 ### Winget (Windows)
 ```powershell
@@ -113,7 +113,7 @@ import { runMcpAssert } from 'vitest-mcp-assert'
 test('echo tool', () => runMcpAssert('evals/echo.yaml'))
 ```
 
-Each YAML assertion becomes a Vitest test with the same pass/fail semantics. Same YAML files work across pytest, Vitest, and the CLI.
+Each YAML assertion becomes a Vitest test with the same pass/fail semantics. Same YAML files work across all five test framework plugins and the CLI.
 
 Source: `vitest-plugin/` directory in this repo. Published to npm as `vitest-mcp-assert`.
 
@@ -152,7 +152,7 @@ import { runMcpAssert } from 'jest-mcp-assert'
 test('echo tool', () => { runMcpAssert('evals/echo.yaml') })
 ```
 
-Same YAML files work across Jest, Vitest, pytest, and the CLI.
+Same YAML files work across all five test framework plugins and the CLI.
 
 Source: `jest-plugin/` directory in this repo. Published to npm as `jest-mcp-assert`.
 
@@ -369,7 +369,7 @@ Scan server -> Find bugs -> File issue -> Link mcp-assert -> Maintainers discove
 | r/MCP | Posted 2026-04-24 | Launch post: feature overview, scorecard, install methods |
 | r/ClaudeCode | Posted 2026-04-24 | Adapted for Claude Code/Desktop users |
 | LinkedIn | Posted 2026-04-24 | Launch announcement to professional network |
-| Blog post: dogfooding | Material in `docs/dogfooding-github-mcp.md` | "We tested the most popular MCP server and found 4 DX issues in our own tool" |
+| Blog post: dogfooding | Planned | "We tested the most popular MCP server and found 4 DX issues in our own tool" |
 | MCP community Discord/forums | Not started | Post when awesome-mcp-devtools listing is merged |
 | Hacker News | Not started | Ready to post |
 
