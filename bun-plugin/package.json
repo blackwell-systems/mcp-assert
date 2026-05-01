@@ -1,0 +1,21 @@
+{
+  "name": "bun-mcp-assert",
+  "version": "0.7.3",
+  "description": "Bun test integration for mcp-assert: run MCP server assertion YAML files as Bun tests",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "files": ["src"],
+  "scripts": {},
+  "keywords": ["bun", "mcp", "testing", "assertions", "model-context-protocol"],
+  "author": "Blackwell Systems <dayna@blackwell-systems.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blackwell-systems/mcp-assert",
+    "directory": "bun-plugin"
+  },
+  "homepage": "https://github.com/blackwell-systems/mcp-assert",
+  "peerDependencies": {
+    "bun-types": ">=1.0.0"
+  }
+}

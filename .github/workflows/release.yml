@@ -180,6 +180,28 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+  bun-plugin-publish:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Update version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          cd bun-plugin
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
+
+      - name: Publish bun plugin
+        run: cd bun-plugin && npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
   vitest-plugin-publish:
     needs: release
     runs-on: ubuntu-latest
