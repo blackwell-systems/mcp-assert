@@ -12,7 +12,7 @@ mcp-assert coverage --suite <dir> --server <cmd> [flags]
 mcp-assert generate --server <cmd> --output <dir> [flags]
 mcp-assert snapshot --suite <dir> --server <cmd> [flags]
 mcp-assert watch    --suite <dir> [flags]
-mcp-assert intercept --server <cmd> [--trajectory <path>] [--timeout <duration>]
+mcp-assert intercept --server <cmd> --trajectory <path> [--timeout <duration>]
 mcp-assert version
 ```
 
@@ -210,14 +210,14 @@ When an assertion's status changes between iterations (e.g., PASS to FAIL), watc
 Proxy stdio between an agent and an MCP server, capturing every tool call in real time.
 
 ```bash
-mcp-assert intercept --server <cmd> [--trajectory <path>] [--timeout <duration>]
+mcp-assert intercept --server <cmd> --trajectory <path> [--timeout <duration>]
 ```
 
 | Flag | Description |
 |------|-------------|
 | `--server <cmd>` | MCP server command to proxy traffic to (required) |
-| `--trajectory <path>` | YAML file containing trajectory assertions to validate on disconnect |
-| `--timeout <duration>` | Timeout for the proxy session (default: `30s`) |
+| `--trajectory <path>` | YAML file containing trajectory assertions to validate on disconnect (required) |
+| `--timeout <duration>` | Timeout for the proxy session (default: no timeout) |
 
 Sits between your agent (on stdin/stdout) and the MCP server, forwarding all JSON-RPC messages transparently while recording every `tools/call` invocation. When the agent disconnects, intercept validates the captured call sequence against any trajectory assertions in the `--trajectory` file and reports the results. Use this as an alternative to `trace:` or `audit_log:` when you want to validate a real agent session without modifying the agent itself.
 
@@ -230,7 +230,7 @@ mcp-assert version
 ```
 
 ```
-mcp-assert v0.1.3
+mcp-assert v0.7.3
 ```
 
 ## Server Override
@@ -340,6 +340,44 @@ trajectory:
 Replace `trace:` with `audit_log: path/to/agent.jsonl` to validate real agent behavior from a recorded JSONL log.
 
 See [Writing Assertions](writing-assertions.md#trajectory-assertions) for the full format and all four assertion types.
+
+## Notification Assertions
+
+`assert_notifications:` is a YAML-level feature that captures all server notifications during a tool call and asserts on them:
+
+```yaml
+assert_notifications:
+  tool: long_running_task
+  args:
+    input: "test"
+  expect:
+    min_count: 3
+    methods: ["notifications/progress"]
+    contains_data: ["processing"]
+```
+
+Six expectation fields: `min_count`, `max_count`, `methods`, `not_methods`, `contains_data`, `not_contains_data`. See [Writing Assertions](writing-assertions.md) for full details.
+
+## Conditional Skipping
+
+Skip assertions when an environment variable is not set:
+
+```yaml
+name: search with API key
+skip_unless_env: SEARCH_API_KEY
+server:
+  command: my-server
+  env:
+    API_KEY: "${SEARCH_API_KEY}"
+assert:
+  tool: search
+  args:
+    query: "test"
+  expect:
+    not_error: true
+```
+
+When `SEARCH_API_KEY` is not set, the assertion is skipped with a clear message. When set, it runs normally. This enables auth-gated assertions to coexist with no-auth assertions in the same suite.
 
 ## Progress Capture
 
