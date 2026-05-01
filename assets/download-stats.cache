@@ -1,7 +1,7 @@
 pip=7036
 pytest=2327
-npm=942
-vitest=215
-jest=--
-gh=294
-docker=81
+npm=1190
+vitest=428
+jest=194
+gh=313
+docker=82
