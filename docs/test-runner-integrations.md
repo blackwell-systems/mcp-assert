@@ -1,8 +1,8 @@
 # Test Runner Integrations
 
-mcp-assert assertions are defined in YAML. The CLI runs them directly, but you can also run them through your existing test framework. The same YAML files work across all three: CLI, pytest, and Vitest.
+mcp-assert assertions are defined in YAML. The CLI runs them directly, but you can also run them through your existing test framework. The same YAML files work across all five integrations: CLI, pytest, Vitest, Jest, Bun, and Go test.
 
-Both integrations follow the same architecture: a thin bridge that shells out to the `mcp-assert` binary with `--json` output and maps the result to the test framework's pass/fail/skip semantics. No MCP protocol logic is reimplemented; the Go binary handles everything.
+All integrations follow the same architecture: a thin bridge that shells out to the `mcp-assert` binary with `--json` output and maps the result to the test framework's pass/fail/skip semantics. No MCP protocol logic is reimplemented; the Go binary handles everything.
 
 ## Vitest (TypeScript)
 
@@ -120,3 +120,82 @@ assert:
       - "test"
 timeout: 30s
 ```
+
+## Jest (JavaScript/TypeScript)
+
+### Install
+
+```bash
+npm install -D jest-mcp-assert @blackwell-systems/mcp-assert
+```
+
+### Usage
+
+Auto-discover all YAML files:
+
+```ts
+import { describeMcpSuite } from 'jest-mcp-assert'
+describeMcpSuite('mcp server', 'evals/')
+```
+
+Or run individual assertions:
+
+```ts
+import { runMcpAssert } from 'jest-mcp-assert'
+test('echo tool', () => { runMcpAssert('evals/echo.yaml') })
+```
+
+Same YAML files as pytest and Vitest. See `jest-plugin/README.md` for all options.
+
+## Bun
+
+### Install
+
+```bash
+bun add -d bun-mcp-assert @blackwell-systems/mcp-assert
+```
+
+### Usage
+
+```ts
+import { describeMcpSuite } from "bun-mcp-assert"
+describeMcpSuite("mcp server", "evals/")
+```
+
+Or individually:
+
+```ts
+import { test } from "bun:test"
+import { runMcpAssert } from "bun-mcp-assert"
+test("echo tool", () => { runMcpAssert("evals/echo.yaml") })
+```
+
+Uses native Bun APIs (`Bun.spawnSync`, `Bun.which`). Ships as TypeScript source with no build step. See `bun-plugin/README.md` for all options.
+
+## Go test
+
+### Install
+
+```bash
+go get github.com/blackwell-systems/mcp-assert/go-plugin
+```
+
+### Usage
+
+Run a single assertion:
+
+```go
+func TestEchoTool(t *testing.T) {
+    mcpassert.Run(t, "evals/echo.yaml")
+}
+```
+
+Auto-discover all YAML files in a directory:
+
+```go
+func TestMCPServer(t *testing.T) {
+    mcpassert.Suite(t, "evals/")
+}
+```
+
+Each YAML file becomes a `t.Run` subtest. See `go-plugin/README.md` for all options.

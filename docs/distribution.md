@@ -158,6 +158,21 @@ Source: `jest-plugin/` directory in this repo. Published to npm as `jest-mcp-ass
 
 **Maintenance surface:** Same thin bridge architecture as the vitest and pytest plugins (~100 lines). Calls the mcp-assert Go binary with `--json` and maps the JSON output to Jest test outcomes. Uses CommonJS module format (Jest's default).
 
+### Bun Plugin
+```bash
+bun add -d bun-mcp-assert @blackwell-systems/mcp-assert
+```
+
+```ts
+// mcp.test.ts
+import { describeMcpSuite } from "bun-mcp-assert"
+describeMcpSuite("mcp server", "evals/")
+```
+
+Same bridge architecture. Uses native Bun APIs (`Bun.spawnSync`, `Bun.which`). Ships as TypeScript source (no build step; Bun runs it directly).
+
+Source: `bun-plugin/` directory in this repo. Published to npm as `bun-mcp-assert`.
+
 ### "Works with mcp-assert" Badge
 Static and dynamic (CI-verified) badge for MCP server READMEs. Every badge is a backlink. See the [Badge guide](badge.md).
 
@@ -205,6 +220,7 @@ A single `git tag` triggers the entire pipeline. Every channel is automated.
    | `pytest-plugin-publish` | Builds and publishes the `pytest-mcp-assert` plugin to PyPI with twine | PyPI (pytest plugin) |
    | `snap` | Builds snap package with snapcore/action-build, publishes to Snap Store | Snap Store |
    | `jest-plugin-publish` | Builds and publishes the `jest-mcp-assert` plugin to npm | npm (jest plugin) |
+   | `bun-plugin-publish` | Publishes the `bun-mcp-assert` plugin to npm | npm (bun plugin) |
    | `vitest-plugin-publish` | Builds and publishes the `vitest-mcp-assert` plugin to npm | npm (vitest plugin) |
    | `winget` | Submits manifest PR to microsoft/winget-pkgs via winget-releaser | Winget |
 
