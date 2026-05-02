@@ -7,9 +7,11 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ### Added
 
+- **`mcp-assert fuzz` command**: zero-setup adversarial input testing. Connects to a server, discovers tools, generates category-based adversarial inputs from each tool's JSON Schema, and reports crashes, hangs, and protocol errors. Input categories: empty/null args, missing required fields, wrong types, boundary values (empty strings, MAX_INT, 10KB payloads), injection payloads (SQL, shell, path traversal), deeply nested objects, and seeded random mutations. Reproducible via `--seed`. Supports `--json`, `--junit`, and `--markdown` output for CI integration. Auto-detects `$GITHUB_STEP_SUMMARY` for GitHub Actions. Found a bug in the MCP TypeScript SDK (12k stars) on first run: null arguments crash every server built on it ([modelcontextprotocol/typescript-sdk#2012](https://github.com/modelcontextprotocol/typescript-sdk/issues/2012)).
 - **phpunit-mcp-assert**: PHPUnit integration for running mcp-assert YAML assertions as PHPUnit tests. Published as `blackwell-systems/phpunit-mcp-assert` on Packagist.
 - **bun-mcp-assert**: Bun test integration for running mcp-assert YAML assertions as Bun tests. Uses `Bun.spawnSync` and `Bun.which` for native Bun APIs. Same YAML files work across Bun, Jest, Vitest, pytest, and the CLI. Published as `bun-mcp-assert` on npm.
 - **`assert_notifications:` block type**: test arbitrary server notifications during a tool call. Capture all notifications emitted by the server, assert on count (`min_count`, `max_count`), methods (`methods`, `not_methods`), and params content (`contains_data`, `not_contains_data`). Covers progress updates, resource changes, custom notifications, and any other notification type.
+- **Dynamic download stats SVG**: channels with zero downloads are now hidden from the stats card. SVG height adjusts dynamically based on visible rows.
 
 ### Fixed
 
