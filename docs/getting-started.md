@@ -2,6 +2,7 @@
 
 > **Which path should I use?**
 > - Just want to see what happens? Use `audit --server "my-server"` (zero-config, no YAML, instant results)
+> - Want to stress-test with bad inputs? Use `fuzz --server "my-server"` (adversarial testing, no YAML)
 > - Have a running MCP server? Use `init evals --server "my-server"` (generates stubs + captures baselines)
 > - Want to start from a template? Use `init evals` (creates one commented YAML to customize)
 > - Know your server config already? Jump to [Write an assertion by hand](#write-an-assertion-by-hand) below
@@ -30,6 +31,31 @@ scoop install mcp-assert
 # curl | sh (macOS / Linux)
 curl -fsSL https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/install.sh | sh
 ```
+
+## Zero-setup testing (no YAML required)
+
+Before writing any YAML, you can test any server with two commands:
+
+```bash
+# Quick health check: calls each tool once with valid input
+mcp-assert audit --server "npx my-mcp-server"
+
+# Adversarial testing: throws bad inputs at every tool
+mcp-assert fuzz --server "npx my-mcp-server"
+```
+
+`audit` answers "does this server crash on normal input?" `fuzz` answers "does this server crash on bad input?" Both require zero setup, no YAML files, no configuration. They connect to the server, discover tools via `tools/list`, and test automatically.
+
+Fuzz generates category-based adversarial inputs from each tool's JSON Schema: empty strings, null values, wrong types, missing required fields, boundary numbers, injection payloads, and random mutations. Every run is reproducible via `--seed`:
+
+```bash
+# Reproduce a specific fuzz run
+mcp-assert fuzz --server "npx my-mcp-server" --seed 42 --runs 100
+```
+
+A tool **passes** if it responds (with content or `isError: true`). A tool **fails** if it crashes, hangs, or leaks internal errors (stack traces, panics). Rejecting bad input gracefully is correct behavior.
+
+When you're ready for deeper testing (expected outputs, multi-step flows, state verification), move on to YAML assertions:
 
 ## One-step suite generation (recommended)
 

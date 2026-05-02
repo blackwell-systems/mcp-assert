@@ -2,6 +2,8 @@
 
 Every assertion YAML file has four parts: **name**, **server**, **assert**, and optionally **setup**.
 
+> **Before writing YAML:** Consider running `mcp-assert audit` and `mcp-assert fuzz` first. Audit tests basic health with one call per tool; fuzz throws adversarial inputs to find crashes. Both require zero YAML. Write custom assertions when you need to test specific expected outputs, multi-step flows, or state verification that audit and fuzz can't cover.
+
 ## Assertion File Format
 
 ```yaml
