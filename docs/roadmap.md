@@ -11,7 +11,7 @@
 | **C# server suites** | Done (v0.6.0) | `modelcontextprotocol/csharp-sdk` QuickstartWeatherServer. 2 assertions, 100% tool coverage (2/2 tools). 7th language. |
 | **Reference suite registry** | Medium | Canonical protocol conformance assertions any MCP server can run. Independent of server-specific fixtures. "Does this server speak MCP correctly?" |
 | **Docker images** | Low | Per-runtime images (node, python, go) for running `mcp-assert audit/ci` without installing the binary. Useful for CI without install (`docker run ghcr.io/blackwell-systems/mcp-assert:node ci --suite evals/`) and as the backend for the hosted audit experiment. Not needed until hosted audit or Docker Hub pull metrics become a priority. |
-| **Fuzz testing** | High | `mcp-assert fuzz --server "npx my-server" --runs 100 --seed 42`. Generate random and adversarial inputs from each tool's JSON Schema (empty strings, wrong types, boundary values, missing required fields), call tools, report crashes. Zero YAML needed, same zero-setup philosophy as audit. Reproducible via seed. Covers a real gap: audit tests happy-path schema defaults, fuzz tests what happens when inputs are hostile. |
+| **~~Fuzz testing~~** | ~~High~~ | Shipped. See "Recently Shipped" below. |
 | **Schema linting** | Medium | `mcp-assert lint --server "..."`. Validate tool JSON Schemas follow best practices: descriptions on all properties, required fields marked, consistent naming. Reports warnings/errors. No YAML needed. Catches quality issues before runtime testing. |
 | **Nix flake** | Low | Nix users are quality-focused and vocal. |
 
@@ -124,6 +124,7 @@ Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-
 
 | Item | Version | Description |
 |------|---------|-------------|
+| **`mcp-assert fuzz` command** | 0.8.0 | Zero-setup adversarial testing. Category-based input generation from JSON Schema: empty/null args, wrong types, boundary values, injection payloads, missing required fields, random mutations. Reproducible via `--seed`. First test found a bug in the official MCP TypeScript SDK (12k stars): null arguments crash every server built on it. |
 | **getsentry/XcodeBuildMCP suite** | 0.6.0 | 10 assertions, 27 tools discovered, 100% clean. First macOS-specific server. Server #39. |
 | **`mcp-assert audit` command** | 0.6.0 | Zero-config quality audit. Connects, discovers tools, calls each with schema-generated inputs, reports quality score. Generates starter YAML for CI. Discovery on-ramp to the YAML workflow. |
 | **`skip_unless_env` field** | 0.6.0 | Conditional assertion skipping based on env vars. Live-backend and no-auth assertions coexist in same suite. |

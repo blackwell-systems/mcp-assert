@@ -159,6 +159,7 @@ pytest --mcp-suite evals/
 | Command | What it does | Setup required |
 |---------|-------------|----------------|
 | `audit --server "..."` | Scan any server, classify every tool as healthy/crashed/timed out | None |
+| `fuzz --server "..."` | Throw adversarial inputs at every tool, find crashes and hangs | None |
 | `init --server "..."` | Generate a complete test suite from tools/list + capture snapshots | None |
 | `run --suite evals/` | Run YAML assertions, report pass/fail | YAML files |
 | `ci --suite evals/` | Run with thresholds, baselines, JUnit XML, GitHub Step Summary | YAML files |
@@ -168,7 +169,7 @@ pytest --mcp-suite evals/
 | `matrix --languages go:gopls,ts:tsserver` | Same suite across multiple language servers | YAML files |
 | `intercept --server "..." --trajectory t.yaml` | Proxy between agent and server, capture live tool call trace | Trajectory YAML |
 
-Start with `audit` (zero setup), move to `init` (generates everything), then customize the YAML for your specific assertions.
+Start with `audit` (zero setup), then `fuzz` (adversarial testing), then `init` (generates everything), then customize the YAML for your specific assertions.
 
 ## Zero-Effort Coverage
 
