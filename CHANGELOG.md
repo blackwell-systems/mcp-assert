@@ -8,7 +8,8 @@ The format is based on Keep a Changelog, Semantic Versioning.
 ### Changed
 
 - **Shared server flags**: `--server`, `--transport`, `--headers`, `--timeout`, `--json` are now defined in one place (`serverFlags`) and shared across `audit` and `fuzz` commands. Prevents flag name/default/description drift.
-- **Shared connection logic**: `connectAndInitialize()` in `client.go` replaces the duplicated connect+handshake block in audit, fuzz, generate, snapshot, and audit-docker. Uses optional `connectOpts` for fixture and docker params.
+- **Shared connection logic**: `connectAndInitialize()` in `client.go` replaces the duplicated connect+handshake block in audit, fuzz, generate, snapshot, and audit-docker. Uses `connectOpts` struct for fixture, docker, and timeout params.
+- **connectAndInitialize API cleanup**: dropped variadic opts in favor of plain struct, added configurable timeout, explicit `_ = Close()` on error path.
 
 ### Docs
 
