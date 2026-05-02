@@ -65,6 +65,8 @@ mcp-assert fuzz --server "npx my-mcp-server" [--runs 50] [--seed 42]
 | `--tool <name>` | Fuzz only this tool (default: all tools) |
 | `--timeout <duration>` | Per-call timeout (default: `15s`) |
 | `--json` | Output results as JSON |
+| `--junit <path>` | Write JUnit XML report (each tool = test suite, each failure = test case) |
+| `--markdown <path>` | Write markdown summary (auto-detects `$GITHUB_STEP_SUMMARY`) |
 
 **What it tests:** Crash resistance under adversarial input. Unlike audit (which sends one valid input per tool), fuzz sends many inputs designed to trigger crashes: empty strings, null values, wrong types, boundary numbers, injection payloads, missing required fields, deeply nested objects, and random mutations.
 
