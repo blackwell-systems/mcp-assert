@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, Semantic Versioning.
 
+## [Unreleased]
+
+### Changed
+
+- **Shared server flags**: `--server`, `--transport`, `--headers`, `--timeout`, `--json` are now defined in one place (`serverFlags`) and shared across `audit` and `fuzz` commands. Prevents flag name/default/description drift.
+
+### Docs
+
+- **FEATURES.md**: synced against codebase. Added fuzz command, `assert_notifications` block type, 4 missing example suites, corrected test and assertion counts.
+
 ## [0.8.0] - 2026-05-02
 
 ### Added
