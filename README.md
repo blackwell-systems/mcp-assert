@@ -10,9 +10,9 @@
   <a href="https://github.com/blackwell-systems/mcp-assert"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/downloads-badge.json" alt="Downloads"></a>
 </p>
 
-**Stop using LLMs to test deterministic tools.** Use assertions instead.
+**Test your MCP server against the real protocol. No mocks. No imports. No language lock-in.**
 
-mcp-assert is an MCP client. It connects to your server over the real protocol (stdio, SSE, or HTTP), calls tools, and checks the responses against expectations you define in YAML. No mocks, no imports, no language lock-in.
+mcp-assert connects to your server exactly like Claude, Cursor, or any MCP client would: real stdio/SSE/HTTP transport, full initialize handshake, actual tool calls. It checks responses against expectations you define in YAML. If it passes mcp-assert, it works with every MCP client.
 
 > [!WARNING]
 > We scanned 58 MCP servers and found **25 real bugs** across 10 servers. The most common failure: tools crash instead of returning errors agents can recover from. See the [scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/).
@@ -24,9 +24,9 @@ Your YAML        ──→  mcp-assert  ──→  MCP Server
                         Pass / Fail
 ```
 
-### Acts like a real agent
+### Your server can't tell the difference
 
-mcp-assert connects to your server exactly like a real MCP agent: stdio, SSE, or HTTP transport, full initialize handshake, standard tool calls. **Your server can't tell the difference.** If it works with mcp-assert, it works with Claude, Cursor, Copilot, and every other MCP client.
+mcp-assert speaks the full MCP protocol: initialize handshake, `tools/list` discovery, `tools/call` with real arguments. It finds bugs that unit tests miss because it tests over the wire, not in-process.
 
 ### Adopted in production
 
