@@ -4,19 +4,20 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 
 ---
 
-## CLI Commands (10)
+## CLI Commands (11)
 
 | Command | Description | Key flags |
 |---------|-------------|-----------|
-| `audit` | Zero-config quality audit: connect, discover tools, call each with schema-generated inputs, report crash resistance. Generates starter YAML for the CI workflow. | `--server`, `--output`, `--include-writes`, `--json`, `--transport`, `--timeout` |
+| `audit` | Zero-config quality audit: connect, discover tools, call each with schema-generated inputs, report crash resistance. Generates starter YAML for the CI workflow. | `--server`, `--output`, `--include-writes`, `--json`, `--transport`, `--headers`, `--docker`, `--timeout` |
+| `fuzz` | Adversarial input testing: generate schema-aware bad inputs for every tool, find crashes, hangs, and protocol violations. Reproducible via `--seed`. | `--server`, `--transport`, `--headers`, `--runs`, `--seed`, `--tool`, `--timeout`, `--json`, `--junit`, `--markdown` |
 | `init` | Scaffold template or one-step suite generation from a live server | `[dir]`, `--server`, `--fixture`, `--timeout` |
-| `run` | Execute assertions against an MCP server | `--suite` (dir or file), `--server`, `--fixture`, `--trials`, `--docker`, `--json`, `--junit`, `--markdown`, `--badge`, `--baseline`, `--save-baseline`, `--fix` |
-| `ci` | Run with CI-specific exit codes and reporting | All `run` flags + `--threshold`, `--fail-on-regression`, `--fix` |
-| `matrix` | Run assertions across multiple language servers | `--suite`, `--languages`, `--fixture` |
+| `run` | Execute assertions against an MCP server | `--suite` (dir or file), `--server`, `--fixture`, `--trials`, `--docker`, `--json`, `--junit`, `--markdown`, `--badge`, `--baseline`, `--save-baseline`, `--fix`, `--timeout` |
+| `ci` | Run with CI-specific exit codes and reporting | `--suite`, `--server`, `--fixture`, `--docker`, `--threshold`, `--timeout`, `--junit`, `--markdown`, `--badge`, `--baseline`, `--save-baseline`, `--fail-on-regression`, `--fix` |
+| `matrix` | Run assertions across multiple language servers | `--suite`, `--languages`, `--fixture`, `--timeout` |
 | `coverage` | Report which server tools have assertions | `--suite`, `--server`, `--coverage-json` |
 | `generate` | Auto-generate stub assertions from a server's tools/list (destructive tools skipped by default) | `--server`, `--output`, `--fixture`, `--include-writes` |
 | `snapshot` | Capture/compare tool response snapshots | `--suite`, `--server`, `--fixture`, `--update`, `--docker` |
-| `watch` | Rerun assertions on YAML file change; shows unified diff when assertion status flips | Same as `run` + polling interval |
+| `watch` | Rerun assertions on YAML file change; shows unified diff when assertion status flips | `--suite`, `--fixture`, `--server`, `--interval`, `--timeout` |
 | `intercept` | Proxy stdio between agent and MCP server, capturing tool calls for live trajectory validation | `--server`, `--trajectory`, `--timeout` |
 
 ---
@@ -57,7 +58,7 @@ Used with `trajectory:` field to validate tool call sequences. Source is either 
 
 ---
 
-## Assertion Block Types (7)
+## Assertion Block Types (8)
 
 | Block | What it tests | Key fields |
 |-------|---------------|------------|
@@ -67,9 +68,10 @@ Used with `trajectory:` field to validate tool call sequences. Source is either 
 | `assert_completion:` | `completion/complete` for argument autocompletion | `ref: {type, name}`, `argument: {name, value}`, `expect` |
 | `assert_sampling:` | Tool call that triggers `sampling/createMessage` | `tool`, `args`, `mock_text`, `mock_model`, `expect` |
 | `assert_logging:` | `logging/setLevel` + `notifications/message` capture | `set_level`, `tool`, `args`, `expect: {min_messages, contains_level, contains_data}` |
+| `assert_notifications:` | Capture arbitrary server notifications during a tool call | `tool`, `args`, `expect: {min_count, max_count, methods, not_methods, contains_data, not_contains_data}` |
 | `trajectory:` | Tool call sequence validation (no server) | `trace:` or `audit_log:` source, `trajectory:` checks |
 
-Each YAML file uses exactly one block type. The `assert:` block is the default for testing tool calls. The other block types test specific MCP protocol areas.
+Each YAML file uses exactly one block type. The `assert:` block is the default for testing tool calls. The other block types test specific MCP protocol areas (prompts, resources, completions, sampling, logging, notifications, trajectory).
 
 ---
 
@@ -206,7 +208,7 @@ Behavior:
 
 ---
 
-## Example Suites (61 suites, 7 languages, 570 assertions)
+## Example Suites (65 suites, 8 languages, 606 assertions)
 
 | Suite | Server | Language | Transport | Assertions | Key patterns |
 |-------|--------|----------|-----------|------------|--------------|
@@ -237,6 +239,8 @@ Behavior:
 | `examples/excel-mcp/` | haris-musa/excel-mcp-server | Python | stdio | 15 | Workbook, sheets, data round-trip, formulas, charts, pivots, formatting, merge, validation |
 | `examples/antvis-chart/` | antvis/mcp-server-chart | TypeScript | stdio | 25 | 25 chart types tested. 9 bugs: unhandled exceptions on default input. |
 | `examples/notion-mcp/` | makenotion/notion-mcp-server | TypeScript | stdio | 22 | 100% tool coverage (22/22 tools). Clean scan. |
+| `examples/tavily-mcp/` | tavily-mcp | TypeScript | stdio | 5 | Search, extract, crawl, map, research |
+| `examples/tavily-mcp-auth/` | tavily-mcp | TypeScript | stdio | 3 | Search, extract with live API key via `skip_unless_env` |
 | `examples/terraform-mcp/` | hashicorp/terraform-mcp-server | Go | stdio | 5 | Provider, module, policy search (56% tool coverage) |
 | `examples/mongodb-mcp/` | mongodb/mongodb-mcp-server | TypeScript | stdio | 4 | Knowledge search, error handling. Clean scan. |
 | `examples/spring-mcp/` | jamesward/hello-spring-mcp-server | Kotlin | HTTP | 3 | First JVM server. 100% tool coverage (2/2 tools). |
@@ -246,6 +250,7 @@ Behavior:
 | `examples/grafana-mcp/` | grafana/mcp-grafana | Go | stdio | 54 | 1 bug (fixed). 100% tool coverage (50/50 tools). 10 live-backend assertions via `skip_unless_env`. |
 | `examples/arxiv-mcp/` | blazickjp/arxiv-mcp-server | Python | stdio | 5 | 1 bug: isError flag not set on error content. |
 | `examples/aws-docs-mcp/` | awslabs/aws-documentation-mcp-server | Python | stdio | 4 | Search, recommend, no-results handling (100% tool coverage) |
+| `examples/awslabs-docs/` | awslabs/aws-documentation-mcp-server | Python | stdio | 4 | read_documentation, read_sections, recommend, search_documentation |
 | `examples/exa-mcp/` | exa-labs/exa-mcp-server | JavaScript | stdio | 2 | Proper 401 with isError and API key guidance (100% tool coverage) |
 | `examples/git-mcp-idosal/` | onmyway133/git-mcp | TypeScript | stdio | 14 | Status, log, branches, diff, show, reflog, stash, tag, blame, grep, cherry-pick, remote, invalid repo rejection (39% tool coverage, 14/36 tools) |
 | `examples/perplexity-mcp/` | perplexityai/mcp-server | TypeScript | stdio | 4 | 100% tool coverage (4/4 tools). All tools return `isError:true` with 401 and API key guidance. |
@@ -257,11 +262,12 @@ Behavior:
 | `examples/chrome-devtools-mcp/` | chrome-devtools-mcp | TypeScript | stdio | 7 | 29 tools, all return `isError:true` properly. |
 | `examples/firefox-devtools-mcp/` | mozilla/firefox-devtools-mcp | TypeScript | stdio | 7 | 29 tools via WebDriver BiDi. Mozilla-backed. |
 | `examples/context7-mcp/` | @upstash/context7-mcp | TypeScript | stdio | 2 | Library resolution and documentation search. Upstash-backed. |
-| `examples/csharp-weather/` | modelcontextprotocol/csharp-sdk QuickstartWeatherServer | C# | stdio | 2 | First C# server (7th language). |
+| `examples/csharp-weather/` | modelcontextprotocol/csharp-sdk QuickstartWeatherServer | C# | stdio | 2 | First C# server (8th language). |
 | `examples/duckduckgo-mcp/` | duckduckgo-mcp-server | Python | stdio | 2 | Search and fetch_content. Zero auth. |
 | `examples/excalidraw-architect-mcp/` | excalidraw-architect-mcp | Python | stdio | 4 | Architecture diagrams, mermaid conversion. Zero auth. |
 | `examples/kubernetes-mcp/` | mcp-server-kubernetes | Python | stdio | 2 | kubectl get, describe error handling. |
 | `examples/lighthouse-mcp/` | lighthouse-mcp-server | TypeScript | stdio | 2 | Tencent Cloud Lighthouse. 57 tools. |
+| `examples/linear-mcp/` | mcp-server-linear | TypeScript | stdio | 24 | Auth, issues, comments, projects, milestones, teams, users, search, bulk operations |
 | `examples/markitdown-mcp/` | markitdown-mcp | Python | stdio | 1 | Microsoft MarkItDown document-to-markdown converter. |
 | `examples/mcp-devtools/` | sammcj/mcp-devtools | Go | stdio | 5 | 4 bugs: internal error instead of isError. |
 | `examples/mcp-math/` | mcp-server-math | Python | stdio | 4 | 16 math tools. Zero auth. |
@@ -305,7 +311,7 @@ See the [Badge guide](https://blackwell-systems.github.io/mcp-assert/badge/) for
 
 | Job | What | Depends on |
 |-----|------|------------|
-| `build-and-test` | Build, vet, 261 unit tests with `-race`, 20 trajectory assertions | - |
+| `build-and-test` | Build, vet, 232 unit tests with `-race`, 20 trajectory assertions | - |
 | `e2e-filesystem` | 14 assertions against filesystem server | build-and-test |
 | `e2e-memory` | 9 assertions against memory server | build-and-test |
 | `e2e-sqlite` | 9 assertions against SQLite server (Python/uv) | build-and-test |
@@ -319,10 +325,11 @@ All e2e jobs upload JUnit XML artifacts.
 
 | Package | Tests | What |
 |---------|-------|------|
-| `internal/assertion` | 57 | All 18 assertion types (including min_progress, contains_any, file_not_contains, file_not_exists), loader (YAML parsing, subdirs, errors), snapshot comparison, CheckProgress, completion JSON, logging checker, trajectory checker |
-| `internal/report` | 42 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare, diff formatting, audit report formatting |
-| `internal/runner` | 162 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, transport selection (stdio/SSE/HTTP), URL validation, generate schema parsing, stub generation, filename sanitization, CLI error paths, client capabilities (handler unit tests, fixture substitution, capability path selection, bad-server error paths), prompt assertions (list/get/validation/fixture), progress capture, fix mode, fixture isolation, intercept, logging, sampling, completion, audit command |
-| Total | 261 | Race-detector clean |
+| `internal/assertion` | 57 | All 18 assertion types (including min_progress, contains_any, file_not_contains, file_not_exists), loader (YAML parsing, subdirs, errors), snapshot comparison, CheckProgress, completion JSON, logging checker, notification checker, trajectory checker |
+| `internal/fuzz` | 5 | Adversarial input generation from JSON Schema, category-based fuzzing, seed reproducibility |
+| `internal/report` | 42 | PrintResults, PrintMatrix, JUnit XML (with pass@k), markdown (with reliability), badge JSON, reliability metrics, baseline write/load, regression detection, coverage JSON, snapshot save/load/compare, diff formatting, audit report formatting, fuzz report formatting |
+| `internal/runner` | 128 | Recursive fixture substitution, capture/extractJSONPath, server override, bad binary, timeout, Docker flag, transport selection (stdio/SSE/HTTP), URL validation, generate schema parsing, stub generation, filename sanitization, CLI error paths, client capabilities (handler unit tests, fixture substitution, capability path selection, bad-server error paths), prompt assertions (list/get/validation/fixture), progress capture, fix mode, fixture isolation, intercept, logging, sampling, completion, notifications, audit command, fuzz command |
+| Total | 232 | Race-detector clean |
 
 ---
 
@@ -431,6 +438,16 @@ assert_logging:
     contains_level: ["debug"]
     contains_data: ["test"]
 
+# OR: test arbitrary server notifications during a tool call
+assert_notifications:
+  tool: long_running_task
+  args:
+    input: "test"
+  expect:
+    min_count: 3
+    methods: ["notifications/progress"]
+    contains_data: ["processing"]
+
 # OR: trajectory assertion (no server; uses trace: or audit_log:)
 trace:
   - tool: prepare_rename
@@ -464,12 +481,17 @@ internal/assertion/
   sampling_types.go         SamplingAssertBlock type
   logging_types.go          LoggingAssertBlock, LoggingExpect, LogMessage types
   logging_checker.go        Logging assertion checker
+  notification_types.go     NotificationAssertBlock, NotificationExpect, CapturedNotification types
+  notification_checker.go   Notification assertion checker
+internal/fuzz/
+  generator.go              Adversarial input generation from JSON Schema (type-aware, category-based)
 internal/runner/
   audit.go                  Zero-config audit: discover tools, call each, report quality score, generate YAML
   runner.go                 Package doc comment (actual logic in commands.go, client.go, execute.go)
   client.go                 MCP client creation, transport selection, client capabilities
   commands.go               CLI command dispatch
-  execute.go                Assertion routing (assert, resources, prompts, completion, sampling, logging, trajectory)
+  execute.go                Assertion routing (assert, resources, prompts, completion, sampling, logging, notifications, trajectory)
+  fuzz.go                   Fuzz command: adversarial input testing per tool, crash/timeout/protocol classification
   coverage.go               Coverage command, tools/list query, --coverage-json
   fix.go                    --fix mode: ScanNearbyPositions, FixSuggestion, YAML patch generation
   fixture.go                Per-assertion fixture isolation (temp directory copy)
@@ -477,6 +499,7 @@ internal/runner/
   init.go                   Scaffold assertion template and fixture directory; init --server one-step generation
   intercept.go              intercept command: stdio proxy, live tool call capture, trajectory validation
   logging.go                runLoggingAssertion: logging/setLevel + notifications/message
+  notifications.go          runNotificationAssertion: capture arbitrary server notifications during tool call
   sampling.go               runSamplingAssertion: sampling-triggered tool calls
   snapshot.go               Snapshot capture/compare command
   substitute.go             {{fixture}} and ${VAR} substitution
