@@ -139,9 +139,44 @@ cumulative_fmt=$(fmt "$cumulative" 2>/dev/null || echo "$cumulative")
 
 date_str=$(date +"%Y-%m-%d")
 
+# ── Build rows dynamically (hide channels with zero downloads) ──────
+# Each visible row is 22px tall, starting at y=74.
+has_downloads() {
+  local val="$1"
+  # Hide only channels with confirmed zero or never-fetched values.
+  # "?" means API failed (could have real downloads), so we show it.
+  [[ "$val" != "--" && "$val" != "0" ]]
+}
+
+rows=""
+row_count=0
+add_row() {
+  local label="$1" value="$2"
+  local y=$(( 74 + row_count * 22 ))
+  rows+="
+  <text x=\"24\" y=\"${y}\" fill=\"#94a3b8\" font-family=\"ui-monospace,monospace\" font-size=\"12\">${label}</text>
+  <text x=\"296\" y=\"${y}\" fill=\"#e2e8f0\" font-family=\"ui-monospace,monospace\" font-size=\"13\" font-weight=\"600\" text-anchor=\"end\">${value}</text>"
+  row_count=$((row_count + 1))
+}
+
+has_downloads "$pypi_total"     && add_row "pip (mcp-assert)"   "$pypi_fmt"
+has_downloads "$pytest_total"   && add_row "pip (pytest plugin)" "$pytest_fmt"
+has_downloads "$npm_total"      && add_row "npm (cli)"          "$npm_fmt"
+has_downloads "$vitest_total"   && add_row "npm (vitest plugin)" "$vitest_fmt"
+has_downloads "$jest_total"     && add_row "npm (jest plugin)"  "$jest_fmt"
+has_downloads "$gh_total"       && add_row "github releases"    "$gh_fmt"
+has_downloads "$packagist_total" && add_row "packagist (phpunit)" "$packagist_fmt"
+has_downloads "$docker_total"   && add_row "docker pulls"       "$docker_fmt"
+
+# Calculate SVG height: header(48) + rows(22 each) + divider gap(16) + total row(28) + bottom padding(20)
+svg_height=$(( 48 + row_count * 22 + 16 + 28 + 20 ))
+divider_y=$(( 48 + row_count * 22 + 8 ))
+total_y=$(( divider_y + 28 ))
+stroke_height=$(( svg_height - 2 ))
+
 # ── Generate SVG ─────────────────────────────────────────────────────
 cat > "$OUT" << SVGEOF
-<svg xmlns="http://www.w3.org/2000/svg" width="320" height="292" viewBox="0 0 320 292">
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="${svg_height}" viewBox="0 0 320 ${svg_height}">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#1a1a2e"/>
@@ -154,8 +189,8 @@ cat > "$OUT" << SVGEOF
   </defs>
 
   <!-- Card background -->
-  <rect width="320" height="292" rx="12" fill="url(#bg)"/>
-  <rect x="1" y="1" width="318" height="290" rx="11" fill="none" stroke="#334155" stroke-width="1"/>
+  <rect width="320" height="${svg_height}" rx="12" fill="url(#bg)"/>
+  <rect x="1" y="1" width="318" height="${stroke_height}" rx="11" fill="none" stroke="#334155" stroke-width="1"/>
 
   <!-- Title -->
   <text x="24" y="36" fill="#e2e8f0" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600">mcp-assert downloads</text>
@@ -164,37 +199,14 @@ cat > "$OUT" << SVGEOF
   <!-- Divider -->
   <line x1="24" y1="48" x2="296" y2="48" stroke="#334155" stroke-width="1"/>
 
-  <!-- Stats rows -->
-  <text x="24" y="74" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">pip (mcp-assert)</text>
-  <text x="296" y="74" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">${pypi_fmt}</text>
-
-  <text x="24" y="96" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">pip (pytest plugin)</text>
-  <text x="296" y="96" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">${pytest_fmt}</text>
-
-  <text x="24" y="118" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">npm (cli)</text>
-  <text x="296" y="118" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">${npm_fmt}</text>
-
-  <text x="24" y="140" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">npm (vitest plugin)</text>
-  <text x="296" y="140" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">${vitest_fmt}</text>
-
-  <text x="24" y="162" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">npm (jest plugin)</text>
-  <text x="296" y="162" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">${jest_fmt}</text>
-
-  <text x="24" y="184" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">github releases</text>
-  <text x="296" y="184" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">${gh_fmt}</text>
-
-  <text x="24" y="206" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">packagist (phpunit)</text>
-  <text x="296" y="206" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">${packagist_fmt}</text>
-
-  <text x="24" y="228" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">docker pulls</text>
-  <text x="296" y="228" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">${docker_fmt}</text>
+  <!-- Stats rows -->${rows}
 
   <!-- Divider -->
-  <line x1="24" y1="244" x2="296" y2="244" stroke="#334155" stroke-width="1"/>
+  <line x1="24" y1="${divider_y}" x2="296" y2="${divider_y}" stroke="#334155" stroke-width="1"/>
 
   <!-- Total -->
-  <text x="24" y="272" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700">${cumulative_fmt} total</text>
-  <text x="296" y="272" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">cumulative downloads</text>
+  <text x="24" y="${total_y}" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700">${cumulative_fmt} total</text>
+  <text x="296" y="${total_y}" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">cumulative downloads</text>
 </svg>
 SVGEOF
 
