@@ -11,9 +11,9 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Languages tested | 7 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift, C#) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
 | Total assertions | 603 (520 server + 63 agent-lsp + 20 trajectory) |
-| Upstream bugs found | 30 (12 servers affected) |
-| Upstream issues filed | 8 (1 unfiled: repo archived) |
-| Upstream fix PRs submitted | 8 (5 ours pending, 2 merged, 1 closed after maintainer fix) |
+| Upstream bugs found | 31 (12 servers affected + 1 SDK) |
+| Upstream issues filed | 9 (1 unfiled: repo archived) |
+| Upstream fix PRs submitted | 9 (6 ours pending, 2 merged, 1 closed after maintainer fix) |
 | Clean scans (no bugs) | 46 |
 | Internal bugs fixed | 6 |
 
@@ -318,6 +318,31 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **Impact:** Agents cannot distinguish between "the server crashed" and "I sent bad input." All tool execution failures look like server crashes.
 - **Fix PR:** [sammcj/mcp-devtools#258](https://github.com/sammcj/mcp-devtools/pull/258)
 - **Status:** Open
+
+### Bug #10: MCP TypeScript SDK: null arguments crash every server
+
+- **Severity:** Protocol-level crash (affects all TypeScript SDK servers)
+- **What:** `CallToolRequestParamsSchema` uses Zod's `.optional()` which accepts `undefined` but rejects `null`. Clients that serialize missing fields as `null` (Go, Java, C# JSON libraries) trigger a Zod validation error. The error propagates as `-32603` (InternalError) with raw Zod output instead of `-32602` (InvalidParams).
+- **Impact:** Every server built on `@modelcontextprotocol/sdk` (12k stars) crashes on null arguments. Affects the filesystem server (14 tools), memory server (9 tools), everything server (13 tools), puppeteer (7 tools), and all community TypeScript servers.
+- **Found by:** `mcp-assert fuzz` on first run against the everything server.
+- **Issue:** [modelcontextprotocol/typescript-sdk#2012](https://github.com/modelcontextprotocol/typescript-sdk/issues/2012)
+- **Fix PR:** [modelcontextprotocol/typescript-sdk#2013](https://github.com/modelcontextprotocol/typescript-sdk/pull/2013)
+- **Status:** Open
+
+## Fuzz Results
+
+Adversarial input testing via `mcp-assert fuzz`. Unlike audit (one valid call per tool), fuzz sends 10-50 adversarial inputs per tool: empty strings, null values, wrong types, boundary numbers, missing required fields, injection payloads, and random mutations.
+
+| Server | SDK | Tools | Runs | Passed | Failed | Server-specific findings |
+|--------|-----|-------|------|--------|--------|--------------------------|
+| `@modelcontextprotocol/server-everything` | TypeScript | 13 | 65 | 51 | 14 | 1 (gzip empty name crash) + SDK null args |
+| `@modelcontextprotocol/server-filesystem` | TypeScript | 14 | 140 | 126 | 14 | SDK null args only |
+| `@modelcontextprotocol/server-memory` | TypeScript | 9 | 135 | 126 | 9 | SDK null args only |
+| `@modelcontextprotocol/server-puppeteer` | TypeScript | 7 | 105 | 82 | 23 | 15 navigate crashes (invalid URLs), 2 fill hangs + SDK null args |
+| `mcp-server-sqlite` | Python | 6 | 90 | 90 | 0 | Clean |
+| `mcp-server-fetch` | Python | 1 | 15 | 15 | 0 | Clean |
+
+**Key finding:** The TypeScript SDK null args bug is systemic, affecting every TypeScript server. Python SDK servers handle adversarial input gracefully. Puppeteer has additional server-specific bugs (unvalidated URLs passed to CDP, missing timeouts on selector waits).
 
 ## Observations
 
