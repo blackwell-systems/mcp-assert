@@ -92,31 +92,18 @@ func Fuzz(args []string) error {
 	}
 	transportLower := strings.ToLower(sf.transport)
 
-	// Connect and initialize.
 	if !sf.jsonOut {
 		fmt.Fprintf(os.Stderr, "Connecting to server...\n")
 	}
-	mcpClient, err := createMCPClient(serverCfg, "", "")
+	mcpClient, initResult, err := connectAndInitialize(serverCfg)
 	if err != nil {
-		return fmt.Errorf("failed to start server: %w", err)
+		return err
 	}
 	defer mcpClient.Close()
 
+	// Discover tools.
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-
-	initReq := mcp.InitializeRequest{}
-	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
-	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
-	initResult, err := mcpClient.Initialize(ctx, initReq)
-	if err != nil {
-		if isTransportError(err) {
-			return fmt.Errorf("MCP initialize failed: %w\n\nhint: the server exited immediately. Check that any required environment variables (API keys, tokens) are set", err)
-		}
-		return fmt.Errorf("MCP initialize failed: %w", err)
-	}
-
-	// Discover tools.
 	toolsResult, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
 	if err != nil {
 		return fmt.Errorf("tools/list failed: %w", err)
