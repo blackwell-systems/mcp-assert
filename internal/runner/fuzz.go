@@ -76,6 +76,8 @@ func Fuzz(args []string) error {
 	toolFilter := fs.String("tool", "", "Fuzz only this tool (default: all tools)")
 	timeout := fs.Duration("timeout", 15*time.Second, "Per-call timeout")
 	jsonOut := fs.Bool("json", false, "Output results as JSON")
+	junitPath := fs.String("junit", "", "Write JUnit XML report to path")
+	markdownPath := fs.String("markdown", "", "Write markdown summary to path (auto-detects $GITHUB_STEP_SUMMARY)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -245,6 +247,25 @@ func Fuzz(args []string) error {
 		fmt.Fprintf(os.Stderr, "\n  Reproduce: mcp-assert fuzz --server %q --seed %d\n\n", *serverSpec, *seed)
 	}
 
+	// Write structured reports.
+	if *junitPath != "" || *markdownPath != "" || os.Getenv("GITHUB_STEP_SUMMARY") != "" {
+		reportTools := convertFuzzToolReports(toolResults)
+		if *junitPath != "" {
+			if err := report.WriteFuzzJUnit(reportTools, *junitPath); err != nil {
+				fmt.Fprintf(os.Stderr, "warning: JUnit: %v\n", err)
+			}
+		}
+		if *markdownPath != "" || os.Getenv("GITHUB_STEP_SUMMARY") != "" {
+			path := *markdownPath
+			if path == "" {
+				path = os.Getenv("GITHUB_STEP_SUMMARY")
+			}
+			if err := report.WriteFuzzMarkdown(reportTools, summary.ToolsTested, summary.TotalRuns, summary.TotalPassed, summary.TotalFailures, *seed, path); err != nil {
+				fmt.Fprintf(os.Stderr, "warning: markdown: %v\n", err)
+			}
+		}
+	}
+
 	if summary.TotalFailures > 0 {
 		return fmt.Errorf("%d failures across %d tools", summary.TotalFailures, summary.ToolsTested)
 	}
@@ -302,6 +323,20 @@ func fuzzSingleCall(mcpClient interface {
 		Status:     FuzzPassed,
 		DurationMS: duration.Milliseconds(),
 	}
+}
+
+func convertFuzzToolReports(tools []FuzzToolResult) []report.FuzzToolReport {
+	out := make([]report.FuzzToolReport, len(tools))
+	for i, t := range tools {
+		out[i] = report.FuzzToolReport{
+			Tool:       t.Tool,
+			Runs:       t.Runs,
+			Passed:     t.Passed,
+			Failures:   convertFuzzFailures(t.Failures),
+			DurationMS: t.DurationMS,
+		}
+	}
+	return out
 }
 
 func convertFuzzFailures(failures []FuzzInputResult) []report.FuzzFailure {
