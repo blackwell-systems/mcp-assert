@@ -13,6 +13,7 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ### Docs
 
+- **Source comments**: added package-level, function-level, and inline comments across 11 source files covering template substitution, sampling round-trips, notification capture, TTY detection, JUnit output, pass@k/pass^k semantics, and coverage reporting.
 - **FEATURES.md**: synced against codebase. Added fuzz command, `assert_notifications` block type, 4 missing example suites, corrected test and assertion counts.
 
 ## [0.8.0] - 2026-05-02
