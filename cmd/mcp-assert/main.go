@@ -35,6 +35,7 @@ func main() {
 		"generate":  runner.Generate,
 		"watch":     runner.Watch,
 		"audit":     runner.Audit,
+		"fuzz":      runner.Fuzz,
 		"intercept": runner.Intercept,
 	}
 
@@ -67,6 +68,7 @@ func printUsage() {
 
 Usage:
   mcp-assert audit    --server <cmd> [--output <dir>] [--docker <image>] [--include-writes]
+  mcp-assert fuzz     --server <cmd> [--runs 50] [--seed 42] [--tool <name>]
   mcp-assert init     [dir] [--server <cmd>] [--fixture <dir>]
   mcp-assert run      --suite <dir> [--server <cmd>] [--fixture <dir>] [--trials N] [--fix]
   mcp-assert matrix   --suite <dir> --languages <lang:server,...>
@@ -79,6 +81,7 @@ Usage:
 
 Commands:
   audit     Zero-config quality audit: connect, discover tools, test each one
+  fuzz      Adversarial input testing: throw bad inputs at every tool, find crashes
   init      Scaffold a template, or generate a complete suite with --server
   run       Run assertions against an MCP server
   matrix    Run assertions across multiple language servers

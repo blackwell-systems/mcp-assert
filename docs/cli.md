@@ -4,6 +4,7 @@
 
 ```
 mcp-assert audit    --server <cmd> [--output <dir>] [--docker <image>] [--include-writes]
+mcp-assert fuzz     --server <cmd> [--runs 50] [--seed 42] [--tool <name>]
 mcp-assert init     [dir] [--server <cmd>] [--fixture <dir>] [--timeout <duration>]
 mcp-assert run      --suite <path> [--fix] [flags]
 mcp-assert ci       --suite <path> [--fix] [flags]
@@ -45,6 +46,57 @@ mcp-assert audit --server "npx my-mcp-server" [--output evals/]
 - `--include-writes`: Calls destructive tools directly on the host, without isolation. Use only when you understand the side effects.
 
 **Generating YAML for CI:** Pass `--output <dir>` to generate one assertion YAML per tool. These stubs use `not_error: true` as the default expectation. Edit them to add expected content checks, setup steps, and multi-step flows, then run them in CI with `mcp-assert ci --suite <dir>`.
+
+### `mcp-assert fuzz`
+
+Adversarial input testing. Connects to a server, discovers tools, generates category-based adversarial inputs from each tool's JSON Schema, and reports which tools crash, hang, or return protocol errors under bad input. No YAML required.
+
+```bash
+mcp-assert fuzz --server "npx my-mcp-server" [--runs 50] [--seed 42]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--server <cmd>` | Server command (stdio) or URL (http/sse) (required) |
+| `--transport <type>` | Transport type: `stdio` (default), `http`, `sse` |
+| `--headers <pairs>` | Custom headers as `key=value` pairs, comma-separated |
+| `--runs <n>` | Number of fuzz inputs per tool (default: `50`) |
+| `--seed <n>` | Seed for reproducible runs (default: current timestamp) |
+| `--tool <name>` | Fuzz only this tool (default: all tools) |
+| `--timeout <duration>` | Per-call timeout (default: `15s`) |
+| `--json` | Output results as JSON |
+
+**What it tests:** Crash resistance under adversarial input. Unlike audit (which sends one valid input per tool), fuzz sends many inputs designed to trigger crashes: empty strings, null values, wrong types, boundary numbers, injection payloads, missing required fields, deeply nested objects, and random mutations.
+
+**Failure severity tiers:**
+
+| Status | Meaning |
+|--------|---------|
+| `CRASH` | Server process died, or returned an internal error (`-32603`) with stack trace/panic |
+| `HANG` | Tool did not respond within the timeout |
+| `PROTO` | Response contained leaked internals (stack traces, panic messages, NullPointerException) |
+
+**What passes:** Any response where the server stays alive and either returns content or returns `isError: true` with a user-facing message. A tool that rejects bad input with a clear error is healthy.
+
+**Reproducibility:** Every run prints its seed. Pass `--seed <n>` to reproduce exact results. Each tool gets a derived seed (`base_seed + tool_index`) so results are independent but deterministic.
+
+**Input generation categories:**
+
+- **Structural:** empty object `{}`, null args, omit each required field
+- **String:** empty, whitespace, 10KB, null bytes, unicode, path traversal, shell/SQL injection
+- **Number:** zero, negative, MAX_INT, MIN_INT, float precision edge cases
+- **Boolean:** null, 0, 1, string "true"/"false" (type coercion traps)
+- **Array:** empty, null, 1000 elements, mixed types, deeply nested
+- **Object:** empty, null, 20 levels deep, 100 keys
+- **Random mutations:** omit, null, or replace random properties with random values
+
+**Progression from audit to fuzz to assertions:**
+
+```bash
+mcp-assert audit --server "..."     # 1 call per tool, happy path
+mcp-assert fuzz  --server "..."     # 50 calls per tool, adversarial
+mcp-assert run   --suite evals/     # custom assertions per tool
+```
 
 ### `mcp-assert init`
 
