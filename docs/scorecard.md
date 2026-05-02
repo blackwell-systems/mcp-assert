@@ -6,13 +6,13 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 58 |
+| Servers scanned | 58 (12 fuzzed) |
 | Server suites | 65 total (63 server + 1 agent-lsp + 1 trajectory) |
 | Languages tested | 7 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift, C#) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
 | Total assertions | 603 (520 server + 63 agent-lsp + 20 trajectory) |
-| Upstream bugs found | 31 (12 servers affected + 1 SDK) |
-| Upstream issues filed | 9 (1 unfiled: repo archived) |
+| Upstream bugs found | 32 (13 servers affected + 1 SDK) |
+| Upstream issues filed | 10 (1 unfiled: repo archived) |
 | Upstream fix PRs submitted | 9 (6 ours pending, 2 merged, 1 closed after maintainer fix) |
 | Clean scans (no bugs) | 46 |
 | Internal bugs fixed | 6 |
@@ -132,7 +132,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
-| `grafana/mcp-grafana` | Go | stdio | 54 | 100% (50/50 tools) | 1 (fixed) | [grafana/mcp-grafana#793](https://github.com/grafana/mcp-grafana/pull/793) **merged**. `get_assertions` timestamp validation fix. 10 live-backend assertions use `skip_unless_env` (annotations, incidents, dashboards, Prometheus, Loki, Sift). |
+| `grafana/mcp-grafana` | Go | stdio | 54 | 100% (50/50 tools) | 2 (1 fixed, 1 open) | [grafana/mcp-grafana#793](https://github.com/grafana/mcp-grafana/pull/793) **merged**: `get_assertions` timestamp validation fix. [#830](https://github.com/grafana/mcp-grafana/issues/830): 72 fuzz crashes from type mismatches (needs `WithInputSchemaValidation` from mcp-go v0.50.0). 10 live-backend assertions use `skip_unless_env`. |
 
 ### macOS (Swift)
 
@@ -347,8 +347,9 @@ Adversarial input testing via `mcp-assert fuzz`. Unlike audit (one valid call pe
 | `duckduckgo-mcp-server` | Python | 2 | 20 | 20 | 0 | Clean |
 | `markitdown-mcp` | Python | 1 | 10 | 10 | 0 | Clean |
 | `arxiv-mcp-server` | Python | 10 | 100 | 89 | 11 | `check_alerts` timeouts (slow external API calls, not a server bug) |
+| `grafana/mcp-grafana` | Go | 50 | 500 | 428 | 72 | All 50 tools: wrong argument types return `-32603` instead of `isError: true`. mcp-go SDK needs `WithInputSchemaValidation()` (v0.50.0+). [#830](https://github.com/grafana/mcp-grafana/issues/830) |
 
-**Totals:** 12 servers fuzzed, 93 tools, 930 runs, 907 passed, 23 failed.
+**Totals:** 13 servers fuzzed, 143 tools, 1,430 runs, 1,335 passed, 95 failed.
 
 **Key findings:**
 
