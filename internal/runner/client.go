@@ -310,33 +310,41 @@ func (h *staticElicitationHandler) Elicit(_ context.Context, _ mcp.ElicitationRe
 type connectOpts struct {
 	fixture     string
 	dockerImage string
+	timeout     time.Duration // handshake timeout; 0 means 30s default
 }
 
 // connectAndInitialize creates an MCP client from a server config, performs
 // the MCP initialize handshake, and returns both the client and the init
 // result. The caller must defer mcpClient.Close().
-func connectAndInitialize(serverCfg assertion.ServerConfig, opts ...connectOpts) (client.MCPClient, *mcp.InitializeResult, error) {
-	var o connectOpts
-	if len(opts) > 0 {
-		o = opts[0]
+func connectAndInitialize(serverCfg assertion.ServerConfig, opts connectOpts) (client.MCPClient, *mcp.InitializeResult, error) {
+	timeout := opts.timeout
+	if timeout == 0 {
+		timeout = 30 * time.Second
 	}
-	mcpClient, err := createMCPClient(serverCfg, o.fixture, o.dockerImage)
+
+	mcpClient, err := createMCPClient(serverCfg, opts.fixture, opts.dockerImage)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to start server: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	initReq := mcp.InitializeRequest{}
 	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
 	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
+
 	initResult, err := mcpClient.Initialize(ctx, initReq)
 	if err != nil {
-		mcpClient.Close()
+		_ = mcpClient.Close()
+
 		if isTransportError(err) {
-			return nil, nil, fmt.Errorf("MCP initialize failed: %w\n\nhint: the server exited immediately. Check that any required environment variables (API keys, tokens) are set", err)
+			return nil, nil, fmt.Errorf(
+				"MCP initialize failed: %w\n\nhint: the server exited immediately. Check that any required environment variables (API keys, tokens) are set",
+				err,
+			)
 		}
+
 		return nil, nil, fmt.Errorf("MCP initialize failed: %w", err)
 	}
 

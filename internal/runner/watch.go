@@ -1,3 +1,20 @@
+// watch.go implements the watch command: poll for YAML file changes and
+// rerun assertions automatically, showing diffs when assertion status flips.
+//
+// The design is intentionally simple: polling via os.ReadDir + mtime comparison.
+// No fsnotify, no inotify, no dependencies. This works on every OS including
+// Docker containers and network-mounted filesystems where event-based watchers
+// are unreliable.
+//
+// Limitations:
+//   - Only watches the top-level suite directory (not subdirectories).
+//     LoadSuite recurses one level, so files in subdirectories are executed
+//     but changes to them don't trigger a rerun.
+//   - No graceful shutdown: Ctrl+C terminates the process. Running MCP server
+//     subprocesses from in-progress assertions may be left as orphans.
+//   - Stale prevResults: if all YAML files are deleted, the previous results
+//     map retains stale entries but no diffs are shown (no current results
+//     to compare against).
 package runner
 
 import (
@@ -12,6 +29,9 @@ import (
 )
 
 // Watch reruns assertions when YAML files in the suite directory change.
+// Runs an initial pass, then enters an infinite poll loop comparing file
+// mtimes. On change: clears the screen, reruns all assertions, prints
+// results and status-change diffs.
 func Watch(args []string) error {
 	fs := flag.NewFlagSet("watch", flag.ExitOnError)
 	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")
@@ -27,8 +47,8 @@ func Watch(args []string) error {
 		return fmt.Errorf("--suite is required")
 	}
 
-	// runAndCollect loads and runs all assertions, returning the raw results.
-	// Unlike Run(), it does not print results or exit on failure.
+	// runAndCollect loads the suite fresh (picking up file changes) and runs
+	// all assertions. Returns raw results without printing or exiting on failure.
 	runAndCollect := func() []assertion.Result {
 		suite, err := assertion.LoadSuite(*suiteDir)
 		if err != nil {
@@ -52,7 +72,8 @@ func Watch(args []string) error {
 		return results
 	}
 
-	// Snapshot mtimes of all YAML files in the suite directory.
+	// snapshot captures the mtime of every .yaml/.yml file in the suite dir.
+	// Used for change detection between poll iterations.
 	snapshot := func() (map[string]time.Time, error) {
 		mtimes := make(map[string]time.Time)
 		entries, err := os.ReadDir(*suiteDir)
@@ -76,6 +97,8 @@ func Watch(args []string) error {
 		return mtimes, nil
 	}
 
+	// changed compares two mtime snapshots. Returns true if any file was
+	// added, removed, or modified.
 	changed := func(prev, curr map[string]time.Time) bool {
 		if len(prev) != len(curr) {
 			return true
@@ -89,7 +112,8 @@ func Watch(args []string) error {
 	}
 
 	// printDiffs compares current results against previous results and prints
-	// status change notifications and unified diffs for flipped assertions.
+	// status change notifications (PASS->FAIL, FAIL->PASS) with unified diffs
+	// for assertions that started failing.
 	printDiffs := func(prevResults map[string]assertion.Result, currResults []assertion.Result) {
 		for _, curr := range currResults {
 			prev, seen := prevResults[curr.Name]
@@ -107,10 +131,10 @@ func Watch(args []string) error {
 		}
 	}
 
-	// Track results from the previous iteration for diff computation.
+	// prevResults tracks the last run's results for diff computation.
 	prevResults := make(map[string]assertion.Result)
 
-	// Initial run.
+	// Initial run: execute all assertions before entering the poll loop.
 	clearScreen()
 	fmt.Printf("[watch] Running assertions from %s (polling every %s)\n\n", *suiteDir, *interval)
 	results := runAndCollect()
@@ -124,7 +148,7 @@ func Watch(args []string) error {
 		return err
 	}
 
-	// Poll loop.
+	// Poll loop: check for file changes, rerun on change.
 	for {
 		time.Sleep(*interval)
 
@@ -150,6 +174,8 @@ func Watch(args []string) error {
 	}
 }
 
+// clearScreen sends ANSI escape codes to clear the terminal and move the
+// cursor to the top-left. Works on all modern terminals (macOS, Linux, WSL).
 func clearScreen() {
 	fmt.Print("\033[2J\033[H")
 }

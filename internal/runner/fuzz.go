@@ -95,7 +95,7 @@ func Fuzz(args []string) error {
 	if !sf.jsonOut {
 		fmt.Fprintf(os.Stderr, "Connecting to server...\n")
 	}
-	mcpClient, initResult, err := connectAndInitialize(serverCfg)
+	mcpClient, initResult, err := connectAndInitialize(serverCfg, connectOpts{})
 	if err != nil {
 		return err
 	}

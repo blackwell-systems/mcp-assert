@@ -85,7 +85,7 @@ func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
 		}
 	}
 
-	mcpClient, _, err := connectAndInitialize(serverCfg)
+	mcpClient, _, err := connectAndInitialize(serverCfg, connectOpts{})
 	if err != nil {
 		return nil, err
 	}
