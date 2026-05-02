@@ -11,6 +11,8 @@
 | **C# server suites** | Done (v0.6.0) | `modelcontextprotocol/csharp-sdk` QuickstartWeatherServer. 2 assertions, 100% tool coverage (2/2 tools). 7th language. |
 | **Reference suite registry** | Medium | Canonical protocol conformance assertions any MCP server can run. Independent of server-specific fixtures. "Does this server speak MCP correctly?" |
 | **Docker images** | Low | Per-runtime images (node, python, go) for running `mcp-assert audit/ci` without installing the binary. Useful for CI without install (`docker run ghcr.io/blackwell-systems/mcp-assert:node ci --suite evals/`) and as the backend for the hosted audit experiment. Not needed until hosted audit or Docker Hub pull metrics become a priority. |
+| **Fuzz testing** | High | `mcp-assert fuzz --server "npx my-server" --runs 100 --seed 42`. Generate random and adversarial inputs from each tool's JSON Schema (empty strings, wrong types, boundary values, missing required fields), call tools, report crashes. Zero YAML needed, same zero-setup philosophy as audit. Reproducible via seed. Covers a real gap: audit tests happy-path schema defaults, fuzz tests what happens when inputs are hostile. |
+| **Schema linting** | Medium | `mcp-assert lint --server "..."`. Validate tool JSON Schemas follow best practices: descriptions on all properties, required fields marked, consistent naming. Reports warnings/errors. No YAML needed. Catches quality issues before runtime testing. |
 | **Nix flake** | Low | Nix users are quality-focused and vocal. |
 
 ## `mcp-assert ui` (deferred, feature-gated)
