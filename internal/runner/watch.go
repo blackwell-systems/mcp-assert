@@ -1,3 +1,5 @@
+// Package runner
+//
 // watch.go implements the watch command: poll for YAML file changes and
 // rerun assertions automatically, showing diffs when assertion status flips.
 //
@@ -52,7 +54,7 @@ func Watch(args []string) error {
 	runAndCollect := func() []assertion.Result {
 		suite, err := assertion.LoadSuite(*suiteDir)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error loading suite: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "error loading suite: %v\n", err)
 			return nil
 		}
 
@@ -154,7 +156,7 @@ func Watch(args []string) error {
 
 		currentMtimes, err := snapshot()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "warning: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "warning: %v\n", err)
 			continue
 		}
 

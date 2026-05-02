@@ -43,7 +43,7 @@ func main() {
 
 	if fn, ok := commands[cmd]; ok {
 		if err := fn(os.Args[2:]); err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
 		return
@@ -56,7 +56,7 @@ func main() {
 	case "--help", "-h", "help":
 		printUsage()
 	default:
-		fmt.Fprintf(os.Stderr, "unknown command: %s\n", cmd)
+		_, _ = fmt.Fprintf(os.Stderr, "unknown command: %s\n", cmd)
 		printUsage()
 		os.Exit(1)
 	}

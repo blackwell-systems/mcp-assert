@@ -5,7 +5,10 @@ import (
 	"strings"
 )
 
-// CheckNotifications evaluates notification expectations against captured notifications.
+// CheckNotifications evaluates notification expectations against a list of
+// captured notifications. It checks count bounds, required/excluded methods,
+// and required/excluded param substrings. Returns nil when all expectations
+// are satisfied, or a descriptive error for the first failing check.
 func CheckNotifications(expect NotificationExpect, notifications []CapturedNotification) error {
 	count := len(notifications)
 

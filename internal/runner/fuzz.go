@@ -93,7 +93,7 @@ func Fuzz(args []string) error {
 	transportLower := strings.ToLower(sf.transport)
 
 	if !sf.jsonOut {
-		fmt.Fprintf(os.Stderr, "Connecting to server...\n")
+		_, _ = fmt.Fprintf(os.Stderr, "Connecting to server...\n")
 	}
 	mcpClient, initResult, err := connectAndInitialize(serverCfg, connectOpts{})
 	if err != nil {
@@ -130,10 +130,10 @@ func Fuzz(args []string) error {
 	}
 
 	if !sf.jsonOut {
-		fmt.Fprintf(os.Stderr, "Server: %s\n", serverName)
-		fmt.Fprintf(os.Stderr, "Tools:  %d to fuzz\n", len(tools))
-		fmt.Fprintf(os.Stderr, "Runs:   %d per tool\n", *runs)
-		fmt.Fprintf(os.Stderr, "Seed:   %d\n\n", *seed)
+		_, _ = fmt.Fprintf(os.Stderr, "Server: %s\n", serverName)
+		_, _ = fmt.Fprintf(os.Stderr, "Tools:  %d to fuzz\n", len(tools))
+		_, _ = fmt.Fprintf(os.Stderr, "Runs:   %d per tool\n", *runs)
+		_, _ = fmt.Fprintf(os.Stderr, "Seed:   %d\n\n", *seed)
 	}
 
 	// Fuzz each tool.

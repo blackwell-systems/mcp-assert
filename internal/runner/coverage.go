@@ -34,8 +34,9 @@ func Coverage(args []string) error {
 		return err
 	}
 
-	// Count which tools have direct assertions. Setup tools are intentionally
-	// excluded: they are test infrastructure, not coverage targets.
+	// Count which tools have direct assertions (both standard and sampling).
+	// Setup tools are intentionally excluded: they are test infrastructure,
+	// not coverage targets.
 	testedTools := make(map[string]int) // tool name -> assertion count
 	for _, a := range suite.Assertions {
 		if a.Assert.Tool != "" {
@@ -46,7 +47,8 @@ func Coverage(args []string) error {
 		}
 	}
 
-	// Start the server and query tools/list.
+	// Start the server and query tools/list to get the full set of
+	// server-advertised tools for the denominator of the coverage ratio.
 	serverConfig, err := parseServerSpec(*serverSpec)
 	if err != nil {
 		return err
@@ -139,6 +141,7 @@ func Coverage(args []string) error {
 	return nil
 }
 
+// plural returns "s" for counts other than 1 (for English pluralization).
 func plural(n int) string {
 	if n == 1 {
 		return ""

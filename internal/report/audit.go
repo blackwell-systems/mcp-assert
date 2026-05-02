@@ -1,3 +1,7 @@
+// audit.go contains formatting routines for the "mcp-assert audit" command.
+// Each function prints a section of the audit report to stdout using ANSI
+// colors when available.
+
 package report
 
 import (
@@ -20,6 +24,7 @@ func PrintAuditHeader(serverName, transport string, score int) {
 	fmt.Printf("  %s %s\n", colorize(bold, "Server:"), serverName)
 	fmt.Printf("  %s %s\n", colorize(bold, "Transport:"), transport)
 
+	// Color-code the score: green >= 80, yellow >= 50, red < 50.
 	scoreColor := green
 	if score < 80 {
 		scoreColor = yellow

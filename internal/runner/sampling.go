@@ -17,6 +17,8 @@ func runSamplingAssertion(a assertion.Assertion, fixture string, timeout time.Du
 	sb := a.AssertSampling
 
 	// Build a modified server config that includes sampling capability.
+	// If the assertion already specifies sampling config, respect it;
+	// otherwise inject a default mock that returns the assertion's MockText.
 	server := a.Server
 	model := sb.MockModel
 	if model == "" {
@@ -56,7 +58,8 @@ func runSamplingAssertion(a assertion.Assertion, fixture string, timeout time.Du
 		}
 	}
 
-	// Run setup steps with variable capture.
+	// Run setup steps with variable capture. Each step may call a tool and
+	// extract values from its response via JSONPath for use in later steps.
 	captured := make(map[string]string)
 	for _, step := range a.Setup {
 		stepArgs := substituteAll(step.Args, fixture, captured)
@@ -90,7 +93,9 @@ func runSamplingAssertion(a assertion.Assertion, fixture string, timeout time.Du
 		}
 	}
 
-	// Call the tool that triggers the server's sampling request.
+	// Call the tool that triggers the server's sampling request. The server
+	// will issue a createMessage sampling call during execution; the MCP
+	// client intercepts it and replies with the mock text configured above.
 	req := mcp.CallToolRequest{}
 	req.Params.Name = sb.Tool
 	req.Params.Arguments = substituteAll(sb.Args, fixture, captured)
@@ -104,6 +109,7 @@ func runSamplingAssertion(a assertion.Assertion, fixture string, timeout time.Du
 		}
 	}
 
+	// Assert on the final tool result (after the sampling round-trip).
 	resultText := extractText(result)
 	if err := assertion.Check(sb.Expect, resultText, result.IsError); err != nil {
 		detail := err.Error()

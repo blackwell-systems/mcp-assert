@@ -1,3 +1,8 @@
+// junit.go generates JUnit XML reports compatible with CI systems (GitHub
+// Actions, Jenkins, GitLab CI). When the suite was run with multiple trials
+// (--trials > 1), pass@k and pass^k reliability properties are included
+// in the <testsuite> element.
+
 package report
 
 import (
@@ -93,7 +98,8 @@ func WriteJUnit(results []assertion.Result, path string) error {
 		Cases:    cases,
 	}
 
-	// Add pass@k / pass^k properties when results contain multiple trials.
+	// Embed pass@k / pass^k as <property> elements when the suite was run
+	// with multiple trials. CI systems can parse these for flaky-test reporting.
 	if hasMultipleTrials(results) {
 		stats := ComputeReliability(results)
 		capable, reliable := 0, 0

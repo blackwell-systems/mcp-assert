@@ -10,6 +10,8 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
+// extractText concatenates all TextContent entries in a tool result into a
+// single string. Non-text content (images, embedded resources) is ignored.
 func extractText(result *mcp.CallToolResult) string {
 	var parts []string
 	for _, c := range result.Content {
@@ -20,6 +22,7 @@ func extractText(result *mcp.CallToolResult) string {
 	return strings.Join(parts, "\n")
 }
 
+// countFails returns the number of results with a Fail status.
 func countFails(results []assertion.Result) int {
 	n := 0
 	for _, r := range results {
@@ -30,6 +33,7 @@ func countFails(results []assertion.Result) int {
 	return n
 }
 
+// countPasses returns the number of results with a Pass status.
 func countPasses(results []assertion.Result) int {
 	n := 0
 	for _, r := range results {

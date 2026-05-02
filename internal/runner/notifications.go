@@ -27,6 +27,9 @@ func runNotificationAssertion(a assertion.Assertion, fixture string, timeout tim
 	defer mcpClient.Close()
 
 	// Register notification handler to capture all notifications.
+	// The handler runs on the MCP transport goroutine, so we guard the
+	// shared slice with a mutex. AdditionalFields is serialized to JSON
+	// so that assertion checks can do substring matching on params.
 	var mu sync.Mutex
 	var captured []assertion.CapturedNotification
 	mcpClient.OnNotification(func(n mcp.JSONRPCNotification) {
@@ -57,9 +60,12 @@ func runNotificationAssertion(a assertion.Assertion, fixture string, timeout tim
 	}
 
 	// Allow a brief window for any remaining notifications to arrive.
+	// Notifications may be delivered asynchronously after the tool call
+	// returns, so this grace period prevents false negatives.
 	time.Sleep(100 * time.Millisecond)
 
-	// Check notification expectations.
+	// Snapshot the captured notifications under the lock to avoid races
+	// with late-arriving notifications during assertion checking.
 	mu.Lock()
 	capturedCopy := make([]assertion.CapturedNotification, len(captured))
 	copy(capturedCopy, captured)

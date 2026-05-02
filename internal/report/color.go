@@ -19,7 +19,7 @@ const (
 
 var (
 	colorOnce   sync.Once
-	colorCached bool
+	colorCached bool // true when stdout is a TTY and NO_COLOR is unset
 )
 
 // ColorEnabled returns true if stdout is a terminal and NO_COLOR is not set.
@@ -36,11 +36,15 @@ func ColorEnabled() bool {
 		if err != nil {
 			return
 		}
+		// ModeCharDevice is set when stdout is a character device (TTY),
+		// absent when piped to a file or another process.
 		colorCached = fi.Mode()&os.ModeCharDevice != 0
 	})
 	return colorCached
 }
 
+// colorize wraps text in ANSI color codes when color output is enabled.
+// Returns plain text when color is disabled (pipe, NO_COLOR, dumb terminal).
 func colorize(color, text string) string {
 	if !ColorEnabled() {
 		return text

@@ -1,3 +1,11 @@
+// reliability.go computes pass@k and pass^k metrics for repeated trial runs.
+//
+// pass@k (capability): the assertion passed at least once across k trials,
+// proving the server can produce the correct behavior.
+//
+// pass^k (reliability): the assertion passed every trial, proving the server
+// produces correct behavior consistently.
+
 package report
 
 import (
@@ -17,10 +25,12 @@ type ReliabilityStats struct {
 	Rate   float64 // pass rate as 0.0-1.0
 }
 
-// ComputeReliability groups results by assertion name and computes metrics.
+// ComputeReliability groups results by assertion name and computes per-assertion
+// pass@k and pass^k metrics. Results are returned in first-seen order so the
+// output is deterministic for a given input sequence.
 func ComputeReliability(results []assertion.Result) []ReliabilityStats {
 	groups := make(map[string][]assertion.Result)
-	order := []string{}
+	order := []string{} // preserves first-seen insertion order
 
 	for _, r := range results {
 		if _, seen := groups[r.Name]; !seen {

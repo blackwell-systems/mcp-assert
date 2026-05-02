@@ -20,6 +20,9 @@ func substituteFixture(args map[string]any, fixture string) map[string]any {
 	return substituteAll(args, fixture, nil)
 }
 
+// substituteValue recursively walks a value tree (scalars, slices, maps) and
+// replaces {{fixture}} and any captured variable placeholders in string leaves.
+// Non-string types are returned unchanged.
 func substituteValue(v any, fixture string, captured map[string]string) any {
 	switch val := v.(type) {
 	case string:
@@ -51,6 +54,8 @@ func substituteValue(v any, fixture string, captured map[string]string) any {
 // extractJSONPath extracts a value from JSON text using a simple dot-notation path.
 // Reuses the jsonPathLookup logic from the assertion checker.
 func extractJSONPath(jsonText, path string) (string, error) {
+	// Normalize the path: strip the leading "$." prefix so we work with
+	// bare dot-separated segments like "foo.bar[0].baz".
 	path = strings.TrimPrefix(path, "$.")
 	if path == "" || path == "$" {
 		return jsonText, nil
@@ -61,10 +66,11 @@ func extractJSONPath(jsonText, path string) (string, error) {
 		return "", fmt.Errorf("response is not valid JSON: %w", err)
 	}
 
+	// Walk down the parsed JSON tree one segment at a time.
 	parts := strings.Split(path, ".")
 	current := parsed
 	for _, part := range parts {
-		// Handle array index: "field[0]"
+		// Handle array index notation: "field[0]"
 		if idx := strings.Index(part, "["); idx >= 0 {
 			field := part[:idx]
 			indexStr := strings.TrimSuffix(part[idx+1:], "]")
@@ -99,7 +105,9 @@ func extractJSONPath(jsonText, path string) (string, error) {
 		current = v
 	}
 
-	// Convert to string.
+	// Convert the final resolved value to a string representation.
+	// Numbers that are exact integers are formatted without a decimal point.
+	// Objects and arrays are marshaled back to JSON.
 	switch val := current.(type) {
 	case string:
 		return val, nil
