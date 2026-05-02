@@ -15,6 +15,12 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ### Fixed
 
+- **Intercept race condition**: replaced shared `cmd` variable with channel-based handoff, eliminating data race between goroutine and main thread on timeout.
+- **CI threshold skipped math**: `mcp-assert ci --threshold` now excludes skipped assertions from the denominator, matching audit score behavior. Previously, `skip: true` or `skip_unless_env` assertions counted against the threshold.
+- **Notification delivery window**: `assert_notifications` now waits 100ms after `CallTool` for in-flight notifications, matching the existing `assert_logging` pattern.
+- **Audit stderr in JSON mode**: "Connecting to server..." no longer printed to stderr when `--json` is set.
+- **JSON marshal error handling**: `json.MarshalIndent` errors in audit and fuzz JSON output are now checked and warned instead of silently discarded.
+- **Fuzz NaN/Infinity inputs**: number cases now include `NaN` and `Infinity` for float-type properties, testing JSON marshaling edge cases.
 - **Intercept process leak**: server process is now killed on timeout, preventing orphaned processes and goroutine leaks.
 - **Intercept scanner buffer**: increased from 64KB to 1MB to handle large JSON-RPC messages (embedded file content, base64 blobs).
 - **Intercept data race**: trace slice is now protected by a mutex for concurrent access between proxy goroutine and main goroutine.
