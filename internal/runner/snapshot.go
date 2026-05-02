@@ -1,3 +1,21 @@
+// snapshot.go implements the snapshot command: capture tool responses as golden
+// files for regression detection, similar to Jest's --updateSnapshot.
+//
+// Two modes:
+//   - Verify (default): compare current responses against saved snapshots.
+//     Fails if any response changed (checksum mismatch) or is missing.
+//   - Update (--update): overwrite snapshots with current responses.
+//     Reports NEW (first capture), UPDATE (changed), or matched (unchanged).
+//
+// Snapshots are stored as a JSON file (<suite-dir>/.snapshots.json) alongside
+// the assertion YAML files. Each snapshot records the tool name, response text,
+// isError flag, and a SHA256 checksum for fast comparison.
+//
+// The flow:
+//   1. Load the assertion suite and existing snapshots.
+//   2. For each assertion: connect to server, run setup steps, call tool, capture text.
+//   3. Compare captured text against saved snapshot (verify) or save it (update).
+//   4. Report results and optionally write updated snapshots to disk.
 package runner
 
 import (
@@ -15,33 +33,35 @@ import (
 type SnapshotOpts struct {
 	SuiteDir string
 	Fixture  string
-	Server   string
-	Docker   string
-	Update   bool
-	Timeout  time.Duration
+	Server   string        // override server command for all assertions
+	Docker   string        // Docker image for isolation
+	Update   bool          // true = overwrite snapshots, false = verify
+	Timeout  time.Duration // per-assertion timeout
 }
 
 // SnapshotResult holds the outcome of a snapshot operation.
 type SnapshotResult struct {
-	Matched int
-	Changed int
-	New     int
+	Matched int // snapshots that match current output
+	Changed int // snapshots that differ from current output
+	New     int // assertions with no prior snapshot
 }
 
 // SnapshotCore runs the snapshot logic and returns a result summary.
+// Used by both the Snapshot CLI command and Init (which captures baselines
+// after generating stubs).
 func SnapshotCore(opts SnapshotOpts) (*SnapshotResult, error) {
 	suite, err := assertion.LoadSuite(opts.SuiteDir)
 	if err != nil {
 		return nil, err
 	}
 
-	// Load existing snapshots.
+	// Load existing snapshots from <suite-dir>/.snapshots.json.
 	sf, err := report.LoadSnapshots(opts.SuiteDir)
 	if err != nil {
 		return nil, err
 	}
 
-	// Index existing snapshots by name.
+	// Index by name for O(1) lookup during comparison.
 	savedMap := make(map[string]report.Snapshot)
 	for _, s := range sf.Snapshots {
 		savedMap[s.Name] = s
@@ -59,7 +79,7 @@ func SnapshotCore(opts SnapshotOpts) (*SnapshotResult, error) {
 
 		report.ProgressLine(i+1, total, a.Name)
 
-		// Run the tool call and capture the response.
+		// Run the tool call and capture the response text.
 		isoFixture, cleanup := isolateFixture(opts.Fixture, opts.Docker)
 		text, isError, err := runAndCapture(a, isoFixture, opts.Timeout, opts.Docker)
 		cleanup()
@@ -79,6 +99,7 @@ func SnapshotCore(opts SnapshotOpts) (*SnapshotResult, error) {
 		saved, exists := savedMap[a.Name]
 
 		if opts.Update {
+			// Update mode: overwrite snapshots with current responses.
 			if !exists {
 				newCount++
 				fmt.Printf("  NEW    %s\n", a.Name)
@@ -90,6 +111,7 @@ func SnapshotCore(opts SnapshotOpts) (*SnapshotResult, error) {
 			}
 			newSnapshots = append(newSnapshots, snap)
 		} else {
+			// Verify mode: compare current responses against saved snapshots.
 			if !exists {
 				fmt.Printf("  MISS   %s (no snapshot — run with --update)\n", a.Name)
 				failures = append(failures, a.Name)
@@ -106,6 +128,7 @@ func SnapshotCore(opts SnapshotOpts) (*SnapshotResult, error) {
 	}
 	report.ClearProgress()
 
+	// Write updated snapshots to disk.
 	if opts.Update {
 		sf.Snapshots = newSnapshots
 		if err := report.SaveSnapshots(opts.SuiteDir, sf); err != nil {
@@ -126,7 +149,7 @@ func SnapshotCore(opts SnapshotOpts) (*SnapshotResult, error) {
 	return result, nil
 }
 
-// Snapshot runs assertions and compares/updates snapshots.
+// Snapshot is the CLI entry point for the snapshot command.
 func Snapshot(args []string) error {
 	fs := flag.NewFlagSet("snapshot", flag.ExitOnError)
 	suiteDir := fs.String("suite", "", "Directory containing assertion YAML files")
@@ -165,6 +188,9 @@ func Snapshot(args []string) error {
 }
 
 // runAndCapture executes a single assertion and returns the raw response text.
+// Connects to the server, runs any setup steps, calls the assertion tool, and
+// extracts the text content from the result. Does not check expectations;
+// that's the caller's job (compare against snapshot or pass to checker).
 func runAndCapture(a assertion.Assertion, fixture string, timeout time.Duration, dockerImage string) (string, bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -178,7 +204,11 @@ func runAndCapture(a assertion.Assertion, fixture string, timeout time.Duration,
 	}
 	defer mcpClient.Close()
 
-	// Run setup steps.
+	// Run setup steps (e.g., create a file before testing read_file).
+	// Note: setup steps in snapshot mode use fixture-only substitution,
+	// not the full substituteAll with captured variables. This means
+	// capture/variable interpolation between setup steps is not supported
+	// in snapshot mode.
 	for _, step := range a.Setup {
 		stepArgs := substituteFixture(step.Args, fixture)
 		req := mcp.CallToolRequest{}
@@ -189,7 +219,7 @@ func runAndCapture(a assertion.Assertion, fixture string, timeout time.Duration,
 		}
 	}
 
-	// Call the assertion tool.
+	// Call the assertion tool and capture the response.
 	assertArgs := substituteFixture(a.Assert.Args, fixture)
 	req := mcp.CallToolRequest{}
 	req.Params.Name = a.Assert.Tool

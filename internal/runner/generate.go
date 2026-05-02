@@ -1,3 +1,21 @@
+// generate.go handles two related commands: Generate (CLI entry point) and
+// GenerateCore (reusable logic shared with Init).
+//
+// The flow:
+//   1. Connect to the MCP server and run tools/list to discover all tools.
+//   2. For each tool, build a stub YAML assertion from the tool's input schema.
+//   3. Write one YAML file per tool into the output directory.
+//
+// Stub generation uses heuristics to pick sensible placeholder values for each
+// argument type (see generateStringPlaceholder). Destructive tools are marked
+// skip:true by default unless --include-writes is passed.
+//
+// This file also contains shared helpers used by other commands:
+//   - generateArgsFromSchema: builds placeholder args from a JSON Schema (used by audit)
+//   - isDestructiveTool: checks MCP tool annotations (used by audit, generate)
+//   - isTransportError: detects server startup failures (used by generate, coverage)
+//   - parseHeadersFlag: parses CLI header flags (used by audit, fuzz, generate)
+//   - sanitizeFilename: converts tool names to safe filenames
 package runner
 
 import (
@@ -16,12 +34,13 @@ import (
 
 // GenerateResult holds the outcome of a generate operation.
 type GenerateResult struct {
-	ToolCount  int
-	Created    int
-	Skipped    int
+	ToolCount int
+	Created   int
+	Skipped   int
 }
 
-// GenerateOpts configures the generate operation.
+// GenerateOpts configures the generate operation. Used by both Generate (CLI)
+// and Init (which calls GenerateCore internally).
 type GenerateOpts struct {
 	ServerSpec    string
 	Output        string
@@ -35,6 +54,7 @@ type GenerateOpts struct {
 
 // GenerateCore queries tools/list and creates stub assertion YAMLs. It returns
 // a result summary without printing next-steps guidance (the caller decides).
+// This is the shared implementation used by both the generate and init commands.
 func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
 	if opts.ServerSpec == "" {
 		return nil, fmt.Errorf("--server cannot be empty")
@@ -43,6 +63,9 @@ func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), opts.Timeout)
 	defer cancel()
 
+	// Build server config from options. This duplicates serverFlags.serverConfig()
+	// because GenerateCore accepts GenerateOpts (not serverFlags) to support
+	// programmatic callers like Init that don't go through CLI flag parsing.
 	transport := strings.ToLower(opts.Transport)
 	var serverCfg assertion.ServerConfig
 	if transport == "http" || transport == "sse" {
@@ -76,7 +99,6 @@ func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
 		return nil, fmt.Errorf("tools/list failed: %w", err)
 	}
 
-	// Create output directory.
 	if err := os.MkdirAll(opts.Output, 0755); err != nil {
 		return nil, fmt.Errorf("creating output dir: %w", err)
 	}
@@ -86,6 +108,7 @@ func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
 		filename := sanitizeFilename(tool.Name) + ".yaml"
 		path := filepath.Join(opts.Output, filename)
 
+		// Skip existing files unless --overwrite is set.
 		if !opts.Overwrite {
 			if _, err := os.Stat(path); err == nil {
 				skipped++
@@ -93,6 +116,7 @@ func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
 			}
 		}
 
+		// Mark destructive tools as skip:true so they don't run in CI by default.
 		skip := !opts.IncludeWrites && isDestructiveTool(tool)
 		stub := generateStub(tool, opts.ServerSpec, opts.Fixture, skip, opts)
 		data, err := yaml.Marshal(stub)
@@ -115,6 +139,7 @@ func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
 		Skipped:   skipped,
 	}
 
+	// Inform user about skipped destructive tools.
 	if !opts.IncludeWrites {
 		destructive := 0
 		for _, tool := range toolsResult.Tools {
@@ -130,7 +155,8 @@ func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
 	return result, nil
 }
 
-// Generate queries tools/list and creates stub assertion YAMLs for each tool.
+// Generate is the CLI entry point for the generate command. Parses flags and
+// delegates to GenerateCore, then prints next-steps guidance.
 func Generate(args []string) error {
 	fs := flag.NewFlagSet("generate", flag.ExitOnError)
 	serverSpec := fs.String("server", "", "Server command (stdio) or URL (http/sse)")
@@ -176,7 +202,9 @@ func Generate(args []string) error {
 	return nil
 }
 
-// stubAssertion is the YAML structure for a generated assertion file.
+// --- Stub YAML types ---
+
+// stubAssertion is the YAML structure written to each generated file.
 type stubAssertion struct {
 	Name    string         `yaml:"name"`
 	Server  stubServer     `yaml:"server"`
@@ -209,8 +237,10 @@ type stubExpect struct {
 	NotError bool `yaml:"not_error"`
 }
 
+// generateStub builds a complete stub YAML assertion for a single tool.
+// The stub uses generateArgsFromSchema to create placeholder values and
+// sets expect.not_error as the only expectation.
 func generateStub(tool mcp.Tool, serverSpec string, fixture string, skip bool, opts ...GenerateOpts) stubAssertion {
-	// Generate placeholder args from the input schema.
 	toolArgs := generateArgsFromSchema(tool.InputSchema, fixture)
 
 	var server stubServer
@@ -219,6 +249,7 @@ func generateStub(tool mcp.Tool, serverSpec string, fixture string, skip bool, o
 		genOpts = opts[0]
 	}
 
+	// Build server block matching the transport type.
 	transport := strings.ToLower(genOpts.Transport)
 	if transport == "http" || transport == "sse" {
 		server = stubServer{
@@ -255,7 +286,12 @@ func generateStub(tool mcp.Tool, serverSpec string, fixture string, skip bool, o
 	return stub
 }
 
-// generateArgsFromSchema creates placeholder args from a JSON Schema.
+// --- Schema-based argument generation ---
+
+// generateArgsFromSchema creates placeholder arguments from a tool's JSON Schema.
+// Only required properties get values. Optional properties are omitted so the
+// generated YAML stays minimal. Used by both generate (stub creation) and
+// audit (schema-based input for health checks).
 func generateArgsFromSchema(schema mcp.ToolInputSchema, fixture string) map[string]any {
 	args := make(map[string]any)
 
@@ -266,7 +302,6 @@ func generateArgsFromSchema(schema mcp.ToolInputSchema, fixture string) map[stri
 	}
 
 	for name, prop := range props {
-		// Only generate args for required properties.
 		if !required[name] {
 			continue
 		}
@@ -299,11 +334,12 @@ func generateArgsFromSchema(schema mcp.ToolInputSchema, fixture string) map[stri
 	return args
 }
 
-// generateStringPlaceholder creates a sensible default for string params.
+// generateStringPlaceholder picks a sensible default value for a string parameter
+// based on its name and description. Uses heuristics: path-like names get fixture
+// paths, query-like names get "TODO_QUERY", etc.
 func generateStringPlaceholder(name, desc, fixture string) string {
 	nameLower := strings.ToLower(name)
 
-	// Path-like params get fixture prefix.
 	if strings.Contains(nameLower, "path") || strings.Contains(nameLower, "dir") ||
 		strings.Contains(nameLower, "root") || strings.Contains(nameLower, "file") ||
 		strings.Contains(nameLower, "uri") {
@@ -313,17 +349,14 @@ func generateStringPlaceholder(name, desc, fixture string) string {
 		return "/path/to/TODO"
 	}
 
-	// Query-like params.
 	if strings.Contains(nameLower, "query") || strings.Contains(nameLower, "search") {
 		return "TODO_QUERY"
 	}
 
-	// Name-like params.
 	if strings.Contains(nameLower, "name") || strings.Contains(nameLower, "symbol") {
 		return "TODO_NAME"
 	}
 
-	// Language-like params.
 	if strings.Contains(nameLower, "language") || nameLower == "language_id" {
 		return "go"
 	}
@@ -331,21 +364,25 @@ func generateStringPlaceholder(name, desc, fixture string) string {
 	return "TODO"
 }
 
-// isDestructiveTool returns true if the tool's MCP annotations indicate
-// it performs write or destructive operations.
+// --- Shared helpers ---
+
+// isDestructiveTool returns true if the tool's MCP annotations indicate it
+// performs write or destructive operations. Used by audit and generate to
+// skip dangerous tools by default.
 func isDestructiveTool(tool mcp.Tool) bool {
 	a := tool.Annotations
 	if a.DestructiveHint != nil && *a.DestructiveHint {
 		return true
 	}
+	// readOnlyHint: false means "may modify state." Over-conservative but safe.
 	if a.ReadOnlyHint != nil && !*a.ReadOnlyHint {
 		return true
 	}
 	return false
 }
 
-// isTransportError checks if an error indicates the server exited
-// or failed to start, which often means missing auth credentials.
+// isTransportError checks if an error indicates the server exited or failed
+// to start, which often means missing auth credentials or a bad command.
 func isTransportError(err error) bool {
 	msg := err.Error()
 	return strings.Contains(msg, "transport closed") ||
@@ -353,7 +390,8 @@ func isTransportError(err error) bool {
 		strings.Contains(msg, "connection refused")
 }
 
-// parseHeadersFlag parses "Key=Value,Key2=Value2" into a map.
+// parseHeadersFlag parses "Key=Value,Key2=Value2" into a map. Returns nil
+// for empty input. Used by audit, fuzz, and generate for the --headers flag.
 func parseHeadersFlag(raw string) map[string]string {
 	if strings.TrimSpace(raw) == "" {
 		return nil
@@ -368,8 +406,9 @@ func parseHeadersFlag(raw string) map[string]string {
 	return headers
 }
 
+// sanitizeFilename converts a tool name into a safe filename by replacing
+// dots, slashes, backslashes, and spaces with underscores.
 func sanitizeFilename(name string) string {
-	// Replace dots and special chars with underscores.
 	r := strings.NewReplacer(".", "_", "/", "_", "\\", "_", " ", "_")
 	return r.Replace(name)
 }
