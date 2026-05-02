@@ -235,7 +235,10 @@ func Fuzz(args []string) error {
 	}
 
 	if *jsonOut {
-		data, _ := json.MarshalIndent(fuzzReport, "", "  ")
+		data, err := json.MarshalIndent(fuzzReport, "", "  ")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: JSON marshal failed: %v\n", err)
+		}
 		fmt.Println(string(data))
 	} else {
 		report.PrintFuzzHeader(fuzzReport.Server, fuzzReport.Transport, fuzzReport.Seed)

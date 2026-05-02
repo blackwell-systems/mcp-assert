@@ -312,7 +312,12 @@ func CI(args []string) error {
 	}
 
 	passed := countPasses(allResults)
-	total := len(allResults)
+	total := 0
+	for _, r := range allResults {
+		if r.Status != assertion.StatusSkip {
+			total++
+		}
+	}
 	pct := 0
 	if total > 0 {
 		pct = (passed * 100) / total

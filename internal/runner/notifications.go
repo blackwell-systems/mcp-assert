@@ -56,6 +56,9 @@ func runNotificationAssertion(a assertion.Assertion, fixture string, timeout tim
 		return failResult(a.Name, start, fmt.Sprintf("tool call %s failed: %v", nb.Tool, err))
 	}
 
+	// Allow a brief window for any remaining notifications to arrive.
+	time.Sleep(100 * time.Millisecond)
+
 	// Check notification expectations.
 	mu.Lock()
 	capturedCopy := make([]assertion.CapturedNotification, len(captured))

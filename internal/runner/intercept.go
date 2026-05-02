@@ -64,32 +64,44 @@ func Intercept(args []string) error {
 	}
 
 	// proxyStdio returns the exec.Cmd so we can kill the server on timeout.
-	done := make(chan error, 1)
-	var cmd *exec.Cmd
+	type proxyResult struct {
+		cmd *exec.Cmd
+		err error
+	}
+	done := make(chan proxyResult, 1)
 	go func() {
-		var err error
-		cmd, err = proxyStdio(serverCmd, serverArgs, nil, onToolCall)
-		done <- err
+		cmd, err := proxyStdio(serverCmd, serverArgs, nil, onToolCall)
+		done <- proxyResult{cmd: cmd, err: err}
 	}()
 	if *timeout > 0 {
 		timer := time.NewTimer(*timeout)
 		defer timer.Stop()
 		select {
-		case err := <-done:
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "server exited: %v\n", err)
+		case res := <-done:
+			if res.err != nil {
+				fmt.Fprintf(os.Stderr, "server exited: %v\n", res.err)
 			}
 		case <-timer.C:
 			fmt.Fprintf(os.Stderr, "intercept timed out after %s\n", *timeout)
 			// Kill the server process to stop the proxy goroutine.
-			if cmd != nil && cmd.Process != nil {
-				_ = cmd.Process.Kill()
+			// Receive cmd from the channel if available; otherwise the
+			// goroutine hasn't returned yet and we wait for it below.
+			select {
+			case res := <-done:
+				if res.cmd != nil && res.cmd.Process != nil {
+					_ = res.cmd.Process.Kill()
+				}
+			default:
+				// Goroutine still running; wait for it, then kill.
+				res := <-done
+				if res.cmd != nil && res.cmd.Process != nil {
+					_ = res.cmd.Process.Kill()
+				}
 			}
-			<-done // wait for goroutine to finish
 		}
 	} else {
-		if err := <-done; err != nil {
-			fmt.Fprintf(os.Stderr, "server exited: %v\n", err)
+		if res := <-done; res.err != nil {
+			fmt.Fprintf(os.Stderr, "server exited: %v\n", res.err)
 		}
 	}
 

@@ -218,6 +218,8 @@ func numberCases(name, typ string) []labeledValue {
 			labeledValue{"very small float", 0.000000001},
 			labeledValue{"very large float", 1e308},
 			labeledValue{"negative zero", math.Copysign(0, -1)},
+			labeledValue{"NaN", math.NaN()},
+			labeledValue{"positive infinity", math.Inf(1)},
 		)
 	}
 	return cases

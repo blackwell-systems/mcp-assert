@@ -92,7 +92,9 @@ func Audit(args []string) error {
 	}
 
 	// Connect and initialize.
-	fmt.Fprintf(os.Stderr, "Connecting to server...\n")
+	if !*jsonOut {
+		fmt.Fprintf(os.Stderr, "Connecting to server...\n")
+	}
 	mcpClient, err := createMCPClient(serverCfg, "", "")
 	if err != nil {
 		return fmt.Errorf("failed to start server: %w", err)
@@ -184,7 +186,10 @@ func Audit(args []string) error {
 
 	// Print report.
 	if *jsonOut {
-		data, _ := json.MarshalIndent(auditReport, "", "  ")
+		data, err := json.MarshalIndent(auditReport, "", "  ")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: JSON marshal failed: %v\n", err)
+		}
 		fmt.Println(string(data))
 	} else {
 		report.PrintAuditHeader(auditReport.Server, auditReport.Transport, auditReport.Score)
