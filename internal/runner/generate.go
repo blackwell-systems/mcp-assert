@@ -62,21 +62,11 @@ func GenerateCore(opts GenerateOpts) (*GenerateResult, error) {
 		}
 	}
 
-	mcpClient, err := createMCPClient(serverCfg, "", "")
+	mcpClient, _, err := connectAndInitialize(serverCfg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to start server: %w", err)
+		return nil, err
 	}
 	defer mcpClient.Close()
-
-	initReq := mcp.InitializeRequest{}
-	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
-	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
-	if _, err := mcpClient.Initialize(ctx, initReq); err != nil {
-		if isTransportError(err) {
-			return nil, fmt.Errorf("MCP initialize failed: %w\n\nhint: the server exited immediately. Check that any required environment variables (API keys, tokens) are set", err)
-		}
-		return nil, fmt.Errorf("MCP initialize failed: %w", err)
-	}
 
 	toolsResult, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
 	if err != nil {

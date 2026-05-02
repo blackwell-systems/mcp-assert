@@ -169,18 +169,14 @@ func runAndCapture(a assertion.Assertion, fixture string, timeout time.Duration,
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	mcpClient, err := createMCPClient(a.Server, fixture, dockerImage)
+	mcpClient, _, err := connectAndInitialize(a.Server, connectOpts{
+		fixture:     fixture,
+		dockerImage: dockerImage,
+	})
 	if err != nil {
-		return "", false, fmt.Errorf("start server: %w", err)
+		return "", false, err
 	}
 	defer mcpClient.Close()
-
-	initReq := mcp.InitializeRequest{}
-	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
-	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
-	if _, err := mcpClient.Initialize(ctx, initReq); err != nil {
-		return "", false, fmt.Errorf("initialize: %w", err)
-	}
 
 	// Run setup steps.
 	for _, step := range a.Setup {

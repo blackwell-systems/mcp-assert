@@ -306,11 +306,21 @@ func (h *staticElicitationHandler) Elicit(_ context.Context, _ mcp.ElicitationRe
 	}, nil
 }
 
+// connectOpts configures optional parameters for connectAndInitialize.
+type connectOpts struct {
+	fixture     string
+	dockerImage string
+}
+
 // connectAndInitialize creates an MCP client from a server config, performs
 // the MCP initialize handshake, and returns both the client and the init
 // result. The caller must defer mcpClient.Close().
-func connectAndInitialize(serverCfg assertion.ServerConfig) (client.MCPClient, *mcp.InitializeResult, error) {
-	mcpClient, err := createMCPClient(serverCfg, "", "")
+func connectAndInitialize(serverCfg assertion.ServerConfig, opts ...connectOpts) (client.MCPClient, *mcp.InitializeResult, error) {
+	var o connectOpts
+	if len(opts) > 0 {
+		o = opts[0]
+	}
+	mcpClient, err := createMCPClient(serverCfg, o.fixture, o.dockerImage)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to start server: %w", err)
 	}

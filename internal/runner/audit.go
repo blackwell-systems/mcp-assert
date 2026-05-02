@@ -200,21 +200,11 @@ func Audit(args []string) error {
 func auditToolInDocker(serverCfg assertion.ServerConfig, tool mcp.Tool, dockerImage string, timeout time.Duration) AuditToolResult {
 	start := time.Now()
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout+10*time.Second)
-	defer cancel()
-
-	isoClient, err := createMCPClient(serverCfg, "", dockerImage)
+	isoClient, _, err := connectAndInitialize(serverCfg, connectOpts{dockerImage: dockerImage})
 	if err != nil {
-		return auditResult(tool, AuditCrash, fmt.Sprintf("docker client: %v", err), false, false, time.Since(start))
+		return auditResult(tool, AuditCrash, fmt.Sprintf("docker: %v", err), false, false, time.Since(start))
 	}
 	defer isoClient.Close()
-
-	initReq := mcp.InitializeRequest{}
-	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
-	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
-	if _, err := isoClient.Initialize(ctx, initReq); err != nil {
-		return auditResult(tool, AuditCrash, fmt.Sprintf("docker init: %v", err), false, false, time.Since(start))
-	}
 
 	return auditSingleTool(isoClient, tool, timeout)
 }
