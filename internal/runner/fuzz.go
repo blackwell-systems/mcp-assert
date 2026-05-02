@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blackwell-systems/mcp-assert/internal/assertion"
 	"github.com/blackwell-systems/mcp-assert/internal/fuzz"
 	"github.com/blackwell-systems/mcp-assert/internal/report"
 	"github.com/mark3labs/mcp-go/mcp"
@@ -68,21 +67,18 @@ type FuzzSummary struct {
 // errors under unexpected input.
 func Fuzz(args []string) error {
 	fs := flag.NewFlagSet("fuzz", flag.ExitOnError)
-	serverSpec := fs.String("server", "", "Server command (stdio) or URL (http/sse)")
-	transport := fs.String("transport", "stdio", "Transport type: stdio (default), http, sse")
-	headersFlag := fs.String("headers", "", "Custom headers as key=value pairs, comma-separated")
+	var sf serverFlags
+	sf.register(fs)
 	runs := fs.Int("runs", 50, "Number of fuzz inputs per tool")
 	seed := fs.Int64("seed", 0, "Seed for reproducible runs (0 = use current time)")
 	toolFilter := fs.String("tool", "", "Fuzz only this tool (default: all tools)")
-	timeout := fs.Duration("timeout", 15*time.Second, "Per-call timeout")
-	jsonOut := fs.Bool("json", false, "Output results as JSON")
 	junitPath := fs.String("junit", "", "Write JUnit XML report to path")
 	markdownPath := fs.String("markdown", "", "Write markdown summary to path (auto-detects $GITHUB_STEP_SUMMARY)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 
-	if *serverSpec == "" {
+	if sf.server == "" {
 		return fmt.Errorf("--server is required\n\nUsage: mcp-assert fuzz --server <command-or-url> [--runs 50] [--seed 42]")
 	}
 
@@ -90,30 +86,14 @@ func Fuzz(args []string) error {
 		*seed = time.Now().UnixNano()
 	}
 
-	headers := parseHeadersFlag(*headersFlag)
-
-	// Build server config.
-	transportLower := strings.ToLower(*transport)
-	var serverCfg assertion.ServerConfig
-	if transportLower == "http" || transportLower == "sse" {
-		serverCfg = assertion.ServerConfig{
-			Transport: transportLower,
-			URL:       *serverSpec,
-			Headers:   headers,
-		}
-	} else {
-		parts := strings.Fields(*serverSpec)
-		if len(parts) == 0 {
-			return fmt.Errorf("--server cannot be empty")
-		}
-		serverCfg = assertion.ServerConfig{
-			Command: parts[0],
-			Args:    parts[1:],
-		}
+	serverCfg, err := sf.serverConfig()
+	if err != nil {
+		return err
 	}
+	transportLower := strings.ToLower(sf.transport)
 
 	// Connect and initialize.
-	if !*jsonOut {
+	if !sf.jsonOut {
 		fmt.Fprintf(os.Stderr, "Connecting to server...\n")
 	}
 	mcpClient, err := createMCPClient(serverCfg, "", "")
@@ -144,7 +124,7 @@ func Fuzz(args []string) error {
 
 	serverName := initResult.ServerInfo.Name
 	if serverName == "" {
-		serverName = *serverSpec
+		serverName = sf.server
 	}
 
 	// Filter tools if --tool is set.
@@ -162,7 +142,7 @@ func Fuzz(args []string) error {
 		tools = filtered
 	}
 
-	if !*jsonOut {
+	if !sf.jsonOut {
 		fmt.Fprintf(os.Stderr, "Server: %s\n", serverName)
 		fmt.Fprintf(os.Stderr, "Tools:  %d to fuzz\n", len(tools))
 		fmt.Fprintf(os.Stderr, "Runs:   %d per tool\n", *runs)
@@ -185,11 +165,11 @@ func Fuzz(args []string) error {
 		passed := 0
 
 		for i, input := range inputs {
-			if !*jsonOut {
+			if !sf.jsonOut {
 				report.ProgressLine(ti*(*runs)+i+1, len(tools)*(*runs), fmt.Sprintf("%s [%d/%d]", tool.Name, i+1, len(inputs)))
 			}
 
-			result := fuzzSingleCall(mcpClient, tool.Name, input, *timeout)
+			result := fuzzSingleCall(mcpClient, tool.Name, input, sf.timeout)
 
 			if result.Status == FuzzPassed {
 				passed++
@@ -221,7 +201,7 @@ func Fuzz(args []string) error {
 		summary.TotalFailures += len(failures)
 	}
 
-	if !*jsonOut {
+	if !sf.jsonOut {
 		report.ClearProgress()
 	}
 
@@ -234,7 +214,7 @@ func Fuzz(args []string) error {
 		Summary:   summary,
 	}
 
-	if *jsonOut {
+	if sf.jsonOut {
 		data, err := json.MarshalIndent(fuzzReport, "", "  ")
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "warning: JSON marshal failed: %v\n", err)
@@ -247,7 +227,7 @@ func Fuzz(args []string) error {
 		}
 		report.PrintFuzzSummary(summary.ToolsTested, summary.TotalRuns, summary.TotalPassed, summary.TotalFailures,
 			summary.Crashes, summary.Timeouts, summary.ProtocolErrors)
-		fmt.Fprintf(os.Stderr, "\n  Reproduce: mcp-assert fuzz --server %q --seed %d\n\n", *serverSpec, *seed)
+		fmt.Fprintf(os.Stderr, "\n  Reproduce: mcp-assert fuzz --server %q --seed %d\n\n", sf.server, *seed)
 	}
 
 	// Write structured reports.

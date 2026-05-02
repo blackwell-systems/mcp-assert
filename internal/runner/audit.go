@@ -53,46 +53,27 @@ type AuditReport struct {
 // Optionally generates starter YAML assertion files for CI regression testing.
 func Audit(args []string) error {
 	fs := flag.NewFlagSet("audit", flag.ExitOnError)
-	serverSpec := fs.String("server", "", "Server command (stdio) or URL (http/sse)")
-	transport := fs.String("transport", "stdio", "Transport type: stdio (default), http, sse")
-	headersFlag := fs.String("headers", "", "Custom headers as key=value pairs, comma-separated")
+	var sf serverFlags
+	sf.register(fs)
 	docker := fs.String("docker", "", "Run destructive tools in fresh Docker containers (stdio only)")
-	timeout := fs.Duration("timeout", 15*time.Second, "Per-tool timeout")
 	output := fs.String("output", "", "Generate assertion YAML files in this directory")
-	jsonOut := fs.Bool("json", false, "Output results as JSON")
 	includeWrites := fs.Bool("include-writes", false, "Also call destructive/write tools (skipped by default)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 
-	if *serverSpec == "" {
+	if sf.server == "" {
 		return fmt.Errorf("--server is required\n\nUsage: mcp-assert audit --server <command-or-url> [--output <dir>]")
 	}
 
-	headers := parseHeadersFlag(*headersFlag)
-
-	// Build server config from flags.
-	transportLower := strings.ToLower(*transport)
-	var serverCfg assertion.ServerConfig
-	if transportLower == "http" || transportLower == "sse" {
-		serverCfg = assertion.ServerConfig{
-			Transport: transportLower,
-			URL:       *serverSpec,
-			Headers:   headers,
-		}
-	} else {
-		parts := strings.Fields(*serverSpec)
-		if len(parts) == 0 {
-			return fmt.Errorf("--server cannot be empty")
-		}
-		serverCfg = assertion.ServerConfig{
-			Command: parts[0],
-			Args:    parts[1:],
-		}
+	serverCfg, err := sf.serverConfig()
+	if err != nil {
+		return err
 	}
+	transportLower := strings.ToLower(sf.transport)
 
 	// Connect and initialize.
-	if !*jsonOut {
+	if !sf.jsonOut {
 		fmt.Fprintf(os.Stderr, "Connecting to server...\n")
 	}
 	mcpClient, err := createMCPClient(serverCfg, "", "")
@@ -123,10 +104,10 @@ func Audit(args []string) error {
 
 	serverName := initResult.ServerInfo.Name
 	if serverName == "" {
-		serverName = *serverSpec
+		serverName = sf.server
 	}
 
-	if !*jsonOut {
+	if !sf.jsonOut {
 		fmt.Fprintf(os.Stderr, "Server: %s\n", serverName)
 		fmt.Fprintf(os.Stderr, "Tools:  %d discovered\n", len(toolsResult.Tools))
 		fmt.Fprintf(os.Stderr, "Transport: %s\n\n", effectiveTransport(transportLower))
@@ -135,7 +116,7 @@ func Audit(args []string) error {
 	// Call each tool and collect results.
 	var results []AuditToolResult
 	for i, tool := range toolsResult.Tools {
-		if !*jsonOut {
+		if !sf.jsonOut {
 			report.ProgressLine(i+1, len(toolsResult.Tools), tool.Name)
 		}
 
@@ -153,16 +134,16 @@ func Audit(args []string) error {
 
 		// Destructive tools with --docker: spin up a fresh container per tool.
 		if destructive && *docker != "" {
-			r := auditToolInDocker(serverCfg, tool, *docker, *timeout)
+			r := auditToolInDocker(serverCfg, tool, *docker, sf.timeout)
 			results = append(results, r)
 			continue
 		}
 
-		r := auditSingleTool(mcpClient, tool, *timeout)
+		r := auditSingleTool(mcpClient, tool, sf.timeout)
 		results = append(results, r)
 	}
 
-	if !*jsonOut {
+	if !sf.jsonOut {
 		report.ClearProgress()
 	}
 
@@ -177,7 +158,7 @@ func Audit(args []string) error {
 
 	// Generate YAML files if --output is set.
 	if *output != "" {
-		if err := generateAuditYAML(toolsResult.Tools, serverCfg, *serverSpec, *output, transportLower, headers); err != nil {
+		if err := generateAuditYAML(toolsResult.Tools, serverCfg, sf.server, *output, transportLower, parseHeadersFlag(sf.headers)); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: YAML generation: %v\n", err)
 		} else {
 			auditReport.GeneratedAt = *output
@@ -185,7 +166,7 @@ func Audit(args []string) error {
 	}
 
 	// Print report.
-	if *jsonOut {
+	if sf.jsonOut {
 		data, err := json.MarshalIndent(auditReport, "", "  ")
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "warning: JSON marshal failed: %v\n", err)
