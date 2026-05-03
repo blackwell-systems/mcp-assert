@@ -13,7 +13,8 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Total assertions | 603 (520 server + 63 agent-lsp + 20 trajectory) |
 | Upstream bugs found | 32 (13 servers affected + 1 SDK) |
 | Upstream issues filed | 10 (1 unfiled: repo archived) |
-| Upstream fix PRs submitted | 9 (6 ours pending, 2 merged, 1 closed after maintainer fix) |
+| Upstream fix PRs submitted | 9 (5 ours pending, 3 merged, 1 closed after maintainer fix) |
+| Schema lint findings | 53 issues across 3 official servers (20 errors, 21 warnings) |
 | Clean scans (no bugs) | 46 |
 | Internal bugs fixed | 6 |
 
@@ -385,3 +386,15 @@ Not all tools can be tested at full coverage. The main blockers:
 **Per-assertion Docker isolation** (shipped) addresses write safety but not missing credentials or backends. For servers that need a backend (Grafana, databases), the next step is docker-compose with service containers.
 
 **What we can test without credentials:** auth error handling (does the server return `isError: true` with a helpful message?), input validation (does it reject bad params gracefully?), schema conformance (does `tools/list` return valid schemas?), and graceful degradation (does the server start and respond without crashing?).
+
+## Schema Quality (lint)
+
+Static analysis of tool schemas via `mcp-assert lint`. Checks for issues that cause agents to misuse tools: missing descriptions, untyped parameters, free-text strings without constraints.
+
+| Server | Tools | Errors | Warnings | Worst issue |
+|--------|------:|-------:|---------:|-------------|
+| `@modelcontextprotocol/server-everything` | 13 | 0 | 3 | W103: `echo.message` has no constraints |
+| `@modelcontextprotocol/server-filesystem` | 14 | 16 | 17 | E103: every `path` parameter has no description |
+| `@modelcontextprotocol/server-memory` | 9 | 4 | 1 | E103: `entities`, `relations`, `observations`, `deletions` undescribed |
+
+**Key finding:** The official filesystem server (the most commonly configured MCP server) has 16 required parameters with zero description. An agent seeing `path: string (required)` must guess whether it expects a relative path, absolute path, glob pattern, or file URI.
