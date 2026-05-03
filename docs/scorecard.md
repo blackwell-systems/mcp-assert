@@ -14,7 +14,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Upstream bugs found | 32 (13 servers affected + 1 SDK) |
 | Upstream issues filed | 10 (1 unfiled: repo archived) |
 | Upstream fix PRs submitted | 9 (5 ours pending, 3 merged, 1 closed after maintainer fix) |
-| Schema lint findings | 53 issues across 3 official servers (20 errors, 21 warnings) |
+| Schema lint findings | 165 issues across 6 servers (40 errors, 125 warnings) |
 | Clean scans (no bugs) | 46 |
 | Internal bugs fixed | 6 |
 
@@ -394,7 +394,12 @@ Static analysis of tool schemas via `mcp-assert lint`. Checks for issues that ca
 | Server | Tools | Errors | Warnings | Worst issue |
 |--------|------:|-------:|---------:|-------------|
 | `@modelcontextprotocol/server-everything` | 13 | 0 | 3 | W103: `echo.message` has no constraints |
-| `@modelcontextprotocol/server-filesystem` | 14 | 16 | 17 | E103: every `path` parameter has no description |
+| `@modelcontextprotocol/server-filesystem` | 14 | 16 | 17 | E103: every `path` parameter has no description. [#4095](https://github.com/modelcontextprotocol/servers/issues/4095) |
 | `@modelcontextprotocol/server-memory` | 9 | 4 | 1 | E103: `entities`, `relations`, `observations`, `deletions` undescribed |
+| `github/github-mcp-server` | 26 | 20 | 92 | E103: `create_issue`, `search_repositories`, `create_pull_request` params undescribed. [#2425](https://github.com/github/github-mcp-server/issues/2425) |
+| `@modelcontextprotocol/server-puppeteer` | 7 | 0 | 9 | W103: navigation params have no constraints |
+| `@modelcontextprotocol/server-sequential-thinking` | 1 | 0 | 1 | Clean (single tool, minimal schema) |
 
-**Key finding:** The official filesystem server (the most commonly configured MCP server) has 16 required parameters with zero description. An agent seeing `path: string (required)` must guess whether it expects a relative path, absolute path, glob pattern, or file URI.
+**Key findings:**
+- The official filesystem server (the most commonly configured MCP server) has 16 required parameters with zero description. An agent seeing `path: string (required)` must guess whether it expects a relative path, absolute path, glob pattern, or file URI.
+- The GitHub MCP server (19k stars) has 112 schema issues: 20 required parameters undescribed, 92 optional parameters undescribed. Agents using `create_pull_request` don't know if `head` is a branch name or a full ref.
