@@ -54,8 +54,8 @@ for GOKEY in "${!PLATFORMS[@]}"; do
   cp "${TMP_DIR}/${BINARY_NAME}" "${BIN_DIR}/${BINARY_NAME}"
   chmod +x "${BIN_DIR}/${BINARY_NAME}"
   rm -f "${TMP_DIR}/${BINARY_NAME}"
-  # Remove .gitignore so npm packs the binary (files field overrides gitignore
-  # at the package root, but not nested .gitignore files within subdirs)
+  # npm pack honors nested .gitignore files even when "files" is set in
+  # package.json. A bin/.gitignore would exclude the binary from the tarball.
   rm -f "${BIN_DIR}/.gitignore"
 
   # Update version
@@ -67,6 +67,7 @@ for GOKEY in "${!PLATFORMS[@]}"; do
     fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
   "
 
+  # Skip if this exact version is already on the registry (idempotent reruns).
   PKG_NAME="@blackwell-systems/mcp-assert-${NPM_SUFFIX}"
   if npm view "${PKG_NAME}@${VERSION}" version &>/dev/null 2>&1; then
     echo "  [${NPM_SUFFIX}] Already published at ${VERSION}, skipping."
@@ -76,7 +77,9 @@ for GOKEY in "${!PLATFORMS[@]}"; do
   fi
 done
 
-# Update root package version + optionalDependencies
+# Sync the root (meta) package version and pin every optionalDependency to the
+# same release. The root package has no binary itself; it lists per-platform
+# packages as optionalDependencies so npm installs only the matching one.
 ROOT_PKG="${NPM_DIR}/mcp-assert/package.json"
 node -e "
   const fs = require('fs');

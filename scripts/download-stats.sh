@@ -44,7 +44,8 @@ packagist_total=$(curl -sf --max-time 10 "https://packagist.org/packages/blackwe
 # ── High-water mark: never regress displayed totals ────────────────
 # Cache stores the last known good value per channel. Downloads are
 # monotonic, so if the API returns a lower number or fails, we keep
-# the previous value.
+# the previous value. This prevents badge flicker from API outages
+# or rolling-window quirks in PyPI stats.
 read_cache() {
   local key="$1"
   if [[ -f "$CACHE" ]]; then
@@ -52,6 +53,8 @@ read_cache() {
   fi
 }
 
+# Returns max(fresh_value, cached_value), falling back to cache on API failure.
+# Guarantees displayed totals never decrease between runs.
 use_or_cache() {
   local key="$1" val="$2"
   local prev
@@ -102,6 +105,8 @@ docker=${docker_total}
 CACHEEOF
 
 # ── Calculate cumulative total ──────────────────────────────────────
+# Sum all channels that returned a numeric value; skip unknowns so they
+# don't pollute the total. If every channel failed, display "?" instead of 0.
 cumulative=0
 for v in "$pypi_total" "$pytest_total" "$npm_total" "$vitest_total" "$jest_total" "$gh_total" "$packagist_total" "$docker_total"; do
   if [[ "$v" != "?" && "$v" != "--" ]]; then
@@ -143,8 +148,8 @@ date_str=$(date +"%Y-%m-%d")
 # Each visible row is 22px tall, starting at y=74.
 has_downloads() {
   local val="$1"
-  # Hide only channels with confirmed zero or never-fetched values.
-  # "?" means API failed (could have real downloads), so we show it.
+  # "--" = package not yet published (known zero); "0" = confirmed zero.
+  # "?" = API failed but package exists, so we still render the row.
   [[ "$val" != "--" && "$val" != "0" ]]
 }
 

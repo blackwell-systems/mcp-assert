@@ -13,10 +13,10 @@ PYPI_DIR="${SCRIPT_DIR}/../pypi"
 DIST_DIR="${PYPI_DIR}/dist"
 TAG="${1:-$(git describe --tags --abbrev=0)}"
 
-# Build wheels
+# Two-step flow: build platform wheels first, then upload them all at once.
+# Separated so pypi-build-wheels.sh can also be used standalone for local testing.
 "${SCRIPT_DIR}/pypi-build-wheels.sh" "$TAG"
 
-# Publish
 echo "Publishing to PyPI..."
 python3 -m twine upload "${DIST_DIR}"/*.whl
 

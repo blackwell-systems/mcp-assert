@@ -19,15 +19,17 @@ DIST_DIR="${PYPI_DIR}/dist"
 
 echo "Building mcp-assert wheels for ${VERSION} (tag: ${TAG})"
 
-# Update version in pyproject.toml to match the release tag
+# Stamp the git tag version into pyproject.toml and __init__.py so the wheel
+# metadata matches the release. sed -i.bak + rm is portable across macOS/GNU.
 sed -i.bak "s/^version = .*/version = \"${VERSION}\"/" "${PYPI_DIR}/pyproject.toml"
 rm -f "${PYPI_DIR}/pyproject.toml.bak"
-# Update __init__.py version too
 sed -i.bak "s/^__version__ = .*/__version__ = \"${VERSION}\"/" "${PYPI_DIR}/mcp_assert/__init__.py"
 rm -f "${PYPI_DIR}/mcp_assert/__init__.py.bak"
 
 # Mapping: goreleaser_key -> "platform_tag:binary_name:archive_ext"
-# Platform tags follow PEP 427 / wheel naming conventions
+# Platform tags follow PEP 427 / wheel naming conventions.
+# Keys match GoReleaser's OS_ARCH naming; values use PyPI platform tags
+# (e.g. manylinux2014 for broad Linux compatibility, macosx minimum OS versions).
 declare -A PLATFORMS=(
   ["darwin_arm64"]="macosx_11_0_arm64:mcp-assert:tar.gz"
   ["darwin_amd64"]="macosx_10_12_x86_64:mcp-assert:tar.gz"
@@ -70,9 +72,11 @@ for GOKEY in "${!PLATFORMS[@]}"; do
   cd "$PYPI_DIR"
   python3 -m pip wheel . --no-deps --wheel-dir "$TMP_DIR/wheels"
 
-  # Retag the wheel with the correct platform tag
-  # setuptools produces: mcp_assert-VERSION-py3-none-any.whl
-  # wheel tags rewrites both filename and internal RECORD/METADATA
+  # Retag the wheel with the correct platform tag.
+  # setuptools builds a generic "py3-none-any" wheel because it doesn't know
+  # about the embedded Go binary. `wheel tags` rewrites both the filename
+  # and internal WHEEL/RECORD metadata so pip installs only on the right OS.
+  # --remove deletes the original generic wheel after retagging.
   SRC_WHEEL=$(ls "$TMP_DIR/wheels"/mcp_assert-*.whl | head -1)
   python3 -m wheel tags --platform-tag "$PLAT_TAG" --remove "$SRC_WHEEL"
   TAGGED_WHEEL=$(ls "$TMP_DIR/wheels"/mcp_assert-*.whl | head -1)
@@ -82,7 +86,8 @@ for GOKEY in "${!PLATFORMS[@]}"; do
   echo "  [${PLAT_TAG}] -> $(basename "$TAGGED_WHEEL")"
 done
 
-# Clean up bin dir
+# Remove bin dir so platform binaries don't linger in the source tree.
+# Each iteration already copied its binary into a wheel; nothing needs bin/ after.
 rm -rf "${PYPI_DIR}/mcp_assert/bin"
 
 echo ""
