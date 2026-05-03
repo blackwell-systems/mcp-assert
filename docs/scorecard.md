@@ -253,7 +253,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **What:** Tool calls `time.Sleep()` which creates a timing window for `fmt.Printf` hooks to corrupt the stdio JSON-RPC stream.
 - **Impact:** Any mcp-go server with debug hooks and slow tool handlers will crash over stdio.
 - **Issue:** [mark3labs/mcp-go#826](https://github.com/mark3labs/mcp-go/issues/826)
-- **Status:** Fix submitted ([#828](https://github.com/mark3labs/mcp-go/pull/828)), pending merge
+- **Status:** Fix [#828](https://github.com/mark3labs/mcp-go/pull/828) pending merge. Related fix [#838](https://github.com/mark3labs/mcp-go/pull/838) **merged** (example server returning -32603 for input validation).
 
 ### Bug #3: rmcp SDK example: get_value mutates state
 
