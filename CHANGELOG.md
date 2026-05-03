@@ -5,6 +5,10 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- **`lint` command**: static schema analysis for MCP tool schemas. Checks for missing descriptions (E101), missing types (E102), undescribed required parameters (E103), oversized responses (E301), vague descriptions (W101), undescribed optional parameters (W102), and free-text string parameters without constraints (W103). Supports `--json` output, `--threshold` for CI gates, and `--call-tools` for response size checking. Zero tool calls by default (schema-only analysis).
+
 ### Changed
 
 - **Shared server flags**: `--server`, `--transport`, `--headers`, `--timeout`, `--json` are now defined in one place (`serverFlags`) and shared across `audit` and `fuzz` commands. Prevents flag name/default/description drift.

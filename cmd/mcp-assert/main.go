@@ -37,6 +37,7 @@ func main() {
 		"audit":     runner.Audit,
 		"fuzz":      runner.Fuzz,
 		"intercept": runner.Intercept,
+		"lint":      runner.Lint,
 	}
 
 	cmd := os.Args[1]
@@ -78,8 +79,10 @@ Usage:
   mcp-assert snapshot --suite <dir> [--update] [--server <cmd>] [--fixture <dir>]
   mcp-assert watch    --suite <dir> [--server <cmd>] [--interval <duration>]
   mcp-assert intercept --server <cmd> --trajectory <yaml>
+  mcp-assert lint      --server <cmd> [--json] [--threshold N] [--call-tools]
 
 Commands:
+  lint      Static schema analysis: check descriptions, types, examples, response sizes
   audit     Zero-config quality audit: connect, discover tools, test each one
   fuzz      Adversarial input testing: throw bad inputs at every tool, find crashes
   init      Scaffold a template, or generate a complete suite with --server

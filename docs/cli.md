@@ -14,8 +14,40 @@ mcp-assert generate --server <cmd> --output <dir> [flags]
 mcp-assert snapshot --suite <dir> --server <cmd> [flags]
 mcp-assert watch    --suite <dir> [flags]
 mcp-assert intercept --server <cmd> --trajectory <path> [--timeout <duration>]
+mcp-assert lint      --server <cmd> [--json] [--threshold N] [--call-tools]
 mcp-assert version
 ```
+
+### `mcp-assert lint`
+
+Static schema analysis. Connects to a server, discovers all tools, and checks each tool's schema for common issues that cause agents to misuse tools. No tool calls by default (schema-only checks).
+
+```bash
+mcp-assert lint --server "npx my-mcp-server"
+mcp-assert lint --server "npx my-mcp-server" --call-tools --max-response-kb 50
+mcp-assert lint --server "npx my-mcp-server" --json --threshold 5
+```
+
+| Flag | Description |
+|------|-------------|
+| `--server <cmd>` | Server command (stdio) or URL (http/sse) (required) |
+| `--transport` | Transport type: stdio (default), http, sse |
+| `--json` | Output results as JSON |
+| `--threshold N` | Fail (exit 1) if findings exceed N (default: fail on errors only) |
+| `--call-tools` | Also call each tool to check response size (slower) |
+| `--max-response-kb N` | Maximum acceptable response size in KB (default: 100, with `--call-tools`) |
+
+**Lint codes:**
+
+| Code | Severity | What it catches |
+|------|----------|-----------------|
+| E101 | Error | Tool has no description |
+| E102 | Error | Parameter has no type defined |
+| E103 | Error | Required parameter has no description |
+| E301 | Error | Response exceeds size limit (with `--call-tools`) |
+| W101 | Warning | Tool description is too generic/vague |
+| W102 | Warning | Optional parameter has no description |
+| W103 | Warning | Required string parameter has no enum, pattern, example, or default |
 
 ### `mcp-assert audit`
 
