@@ -14,7 +14,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Upstream bugs found | 32 (13 servers affected + 1 SDK) |
 | Upstream issues filed | 10 (1 unfiled: repo archived) |
 | Upstream fix PRs submitted | 9 (5 ours pending, 3 merged, 1 closed after maintainer fix) |
-| Schema lint findings | 165 issues across 6 servers (40 errors, 125 warnings) |
+| Schema lint findings | 254 issues across 11 servers (70 errors, 184 warnings) |
 | Clean scans (no bugs) | 46 |
 | Internal bugs fixed | 6 |
 
@@ -397,7 +397,12 @@ Static analysis of tool schemas via `mcp-assert lint`. Checks for issues that ca
 | `@modelcontextprotocol/server-filesystem` | 14 | 16 | 17 | E103: every `path` parameter has no description. [#4095](https://github.com/modelcontextprotocol/servers/issues/4095) |
 | `@modelcontextprotocol/server-memory` | 9 | 4 | 1 | E103: `entities`, `relations`, `observations`, `deletions` undescribed |
 | `github/github-mcp-server` | 26 | 20 | 92 | E103: `create_issue`, `search_repositories`, `create_pull_request` params undescribed. [#2425](https://github.com/github/github-mcp-server/issues/2425) |
+| `@notionhq/notion-mcp-server` | 22 | 8 | 28 | E103: 8 required params undescribed across search, create, update tools |
+| `mcp-server-git` | 12 | 22 | 23 | E103: every parameter in all 12 tools is undescribed |
 | `@modelcontextprotocol/server-puppeteer` | 7 | 0 | 9 | W103: navigation params have no constraints |
+| `mcp-server-sqlite` | 6 | 0 | 5 | W103: `query` param has no constraints |
+| `mcp-server-time` | 2 | 0 | 4 | W103: timezone params have no constraints |
+| `mcp-server-fetch` | 1 | 0 | 1 | W103: `url` param has no example/pattern |
 | `@modelcontextprotocol/server-sequential-thinking` | 1 | 0 | 1 | Clean (single tool, minimal schema) |
 
 **Key findings:**
