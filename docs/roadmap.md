@@ -4,16 +4,12 @@
 
 | Item | Priority | Description |
 |------|----------|-------------|
-| **Blog post** | Ready | "We tested 55 MCP servers from Anthropic, Google, OpenAI, Microsoft, Mozilla, Sentry, and AWS. Here's what we found." The scorecard data is the content; needs prose around it. Publish on docs site (mkdocs already deployed). |
-| **MCP server leaderboard** | High | Static page on docs site ranking servers by coverage score and pass rate. Data exists for 55 servers. Becomes valuable once there's external traffic (blog post drives traffic). |
-| **antvis CI integration PR** | Ready (#292 merged) | antvis maintainer asked us to add mcp-assert to their CI. Submit follow-up PR with `evals/` directory (25 assertions) + GitHub Actions workflow using `mcp-assert-action@v1`. [#294](https://github.com/antvis/mcp-server-chart/pull/294) submitted. First external adoption. |
-| **Download stats dashboard** | Medium | Script or tool that queries PyPI, npm, GitHub releases, and Homebrew APIs to produce a unified download report. Optionally append to CSV in repo for historical tracking. |
-| **C# server suites** | Done (v0.6.0) | `modelcontextprotocol/csharp-sdk` QuickstartWeatherServer. 2 assertions, 100% tool coverage (2/2 tools). 7th language. |
+| **MCP server leaderboard** | High | Static page on docs site ranking servers by coverage score, pass rate, and lint score. Data exists for 58 servers. |
 | **Reference suite registry** | Medium | Canonical protocol conformance assertions any MCP server can run. Independent of server-specific fixtures. "Does this server speak MCP correctly?" |
-| **Docker images** | Low | Per-runtime images (node, python, go) for running `mcp-assert audit/ci` without installing the binary. Useful for CI without install (`docker run ghcr.io/blackwell-systems/mcp-assert:node ci --suite evals/`) and as the backend for the hosted audit experiment. Not needed until hosted audit or Docker Hub pull metrics become a priority. |
-| **~~Fuzz testing~~** | ~~High~~ | Shipped. See "Recently Shipped" below. |
-| **Schema linting** | Medium | `mcp-assert lint --server "..."`. Validate tool JSON Schemas follow best practices: descriptions on all properties, required fields marked, consistent naming. Reports warnings/errors. No YAML needed. Catches quality issues before runtime testing. |
+| **Download stats dashboard** | Medium | Script or tool that queries PyPI, npm, GitHub releases, and Homebrew APIs to produce a unified download report. |
+| **Docker images** | Low | Per-runtime images (node, python, go) for running `mcp-assert audit/ci` without installing the binary. |
 | **Nix flake** | Low | Nix users are quality-focused and vocal. |
+| **Lint: tool ambiguity detection** | Low | Compare all tool names/descriptions pairwise, flag pairs an LLM would confuse. |
 
 ## `mcp-assert ui` (deferred, feature-gated)
 
@@ -84,15 +80,28 @@ Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-
 
 ## Open PRs and Issues
 
-| PR/Issue | Repo | Status | What happens when it merges |
-|----------|------|--------|----------------------------|
-| antvis/mcp-server-chart#292 | Fix: isError on chart failures | **Merged** (2026-04-28) | CI integration PR #294 submitted |
-| grafana/mcp-grafana#793 | Fix: timestamp validation | **Merged** (2026-04-27) | Scorecard updated, assertion unskipped |
-| mark3labs/mcp-go#828 | Fix: stderr hooks | Open | Update scorecard |
-| modelcontextprotocol/servers#4044 | Fix: blob content type (community) | Open | Update scorecard, unskip filesystem assertion |
-| modelcontextprotocol/servers#4051 | Fix: puppeteer_navigate isError | Open (archived branch) | Update scorecard, unskip assertion |
-| sammcj/mcp-devtools#258 | Fix: isError instead of internal error | Open | Update scorecard, unskip assertions |
-| steipete/Peekaboo#108 | Issue: internal error on missing perms | Open | Swift fix, not pursuing PR |
+| PR/Issue | Repo | Status | Description |
+|----------|------|--------|-------------|
+| mark3labs/mcp-go#839 | Fix: listenForever infinite retry on 404 | Open | Session terminated not detected |
+| mark3labs/mcp-go#828 | Fix: stderr hooks | Open | stdio transport corruption |
+| modelcontextprotocol/servers#4095 | Issue: filesystem schema quality | Open | 16 required params undescribed |
+| modelcontextprotocol/servers#4044 | Fix: blob content type | Open | MCP spec violation |
+| modelcontextprotocol/servers#4051 | Fix: puppeteer_navigate isError | Open | Unhandled CDP error |
+| github/github-mcp-server#2425 | Issue: schema quality (112 findings) | Open | 20 errors, 92 warnings |
+| makenotion/notion-mcp-server#280 | Issue: schema quality (36 findings) | Open | 8 required params undescribed |
+| modelcontextprotocol/typescript-sdk#2013 | Fix: null args crash | Open | Affects all TS SDK servers |
+| modelcontextprotocol/go-sdk#929 | Fix: HTTP response body leak | Open | Leaked on every session close |
+| modelcontextprotocol/python-sdk#2536 | Fix: lost-wakeup race | Open | Concurrent pollers hang forever |
+| modelcontextprotocol/php-sdk#297 | Fix: URI scheme validation | Open | RFC 3986 compliance |
+| sammcj/mcp-devtools#258 | Fix: isError instead of internal error | Open | 4 tools affected |
+
+### Merged
+
+| PR/Issue | Repo | Date |
+|----------|------|------|
+| mark3labs/mcp-go#838 | Fix: isError for input validation in example | 2026-05-03 |
+| antvis/mcp-server-chart#292 | Fix: isError on chart failures | 2026-04-28 |
+| grafana/mcp-grafana#793 | Fix: timestamp validation | 2026-04-27 |
 
 ## Coverage Expansion Opportunities
 
@@ -124,9 +133,13 @@ Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-
 
 | Item | Version | Description |
 |------|---------|-------------|
-| **`mcp-assert fuzz` command** | 0.8.0 | Zero-setup adversarial testing. Category-based input generation from JSON Schema: empty/null args, wrong types, boundary values, injection payloads, missing required fields, random mutations. Reproducible via `--seed`. First test found a bug in the official MCP TypeScript SDK (12k stars): null arguments crash every server built on it. |
-| **getsentry/XcodeBuildMCP suite** | 0.6.0 | 10 assertions, 27 tools discovered, 100% clean. First macOS-specific server. Server #39. |
-| **`mcp-assert audit` command** | 0.6.0 | Zero-config quality audit. Connects, discovers tools, calls each with schema-generated inputs, reports quality score. Generates starter YAML for CI. Discovery on-ramp to the YAML workflow. |
+| **`mcp-assert lint` command** | 0.9.0 | Static schema analysis for agent usability. 7 lint codes (E101-E103, E301, W101-W103). Checks missing descriptions, types, constraints. Found 254 issues across 11 servers including official filesystem (16 errors) and GitHub MCP (112 issues). |
+| **`mcp-assert fuzz` command** | 0.8.0 | Zero-setup adversarial testing. Category-based input generation from JSON Schema. Found bugs in 5 official MCP SDKs. |
+| **Shared server flags + connectAndInitialize** | 0.9.0 | Internal refactoring: shared flags prevent drift, shared connection logic eliminates duplication across audit/fuzz/lint/generate. |
+| **`mcp-assert audit` command** | 0.6.0 | Zero-config quality audit. Connects, discovers tools, calls each with schema-generated inputs, reports quality score. |
+| **Blog post** | -- | "We Tested 55 MCP Servers. Here's What Breaks." Published, needs update to current numbers. |
+| **antvis CI integration** | -- | PR #292 merged. Follow-up #294 submitted (closed by maintainer). First external adoption. |
+| **C# server suites** | 0.6.0 | 7th language. QuickstartWeatherServer. |
 | **`skip_unless_env` field** | 0.6.0 | Conditional assertion skipping based on env vars. Live-backend and no-auth assertions coexist in same suite. |
 | **Per-assertion Docker isolation** | 0.6.0 | `docker:` field in server YAML. Fresh container per assertion for safe write testing. |
 | **Coverage expansion** | 0.6.0 | SQLite 100%, Memory 100%, engram 100%. Anthropic git 92%, Playwright 67%. |
