@@ -1,8 +1,8 @@
 pip=8088
 pytest=2828
-npm=1207
-vitest=451
-jest=203
+npm=1345
+vitest=591
+jest=333
 gh=341
 packagist=0
-docker=128
+docker=129
