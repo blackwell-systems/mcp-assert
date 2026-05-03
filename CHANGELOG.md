@@ -5,13 +5,15 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-05-03
+
 ### Added
 
-- **`lint` command**: static schema analysis for MCP tool schemas. Checks for missing descriptions (E101), missing types (E102), undescribed required parameters (E103), oversized responses (E301), vague descriptions (W101), undescribed optional parameters (W102), and free-text string parameters without constraints (W103). Supports `--json` output, `--threshold` for CI gates, and `--call-tools` for response size checking. Zero tool calls by default (schema-only analysis).
+- **`lint` command**: static schema analysis for MCP tool schemas. Checks for missing descriptions (E101), missing types (E102), undescribed required parameters (E103), oversized responses (E301), vague descriptions (W101), undescribed optional parameters (W102), and free-text string parameters without constraints (W103). Supports `--json` output, `--threshold` for CI gates, and `--call-tools` for response size checking. Zero tool calls by default (schema-only analysis). Lints for **agent usability**, not schema correctness: a schema can be 100% valid JSON Schema and still cause agents to fail.
 
 ### Changed
 
-- **Shared server flags**: `--server`, `--transport`, `--headers`, `--timeout`, `--json` are now defined in one place (`serverFlags`) and shared across `audit` and `fuzz` commands. Prevents flag name/default/description drift.
+- **Shared server flags**: `--server`, `--transport`, `--headers`, `--timeout`, `--json` are now defined in one place (`serverFlags`) and shared across `audit`, `fuzz`, and `lint` commands. Prevents flag name/default/description drift.
 - **Shared connection logic**: `connectAndInitialize()` in `client.go` replaces the duplicated connect+handshake block in audit, fuzz, generate, snapshot, and audit-docker. Uses `connectOpts` struct for fixture, docker, and timeout params.
 - **connectAndInitialize API cleanup**: dropped variadic opts in favor of plain struct, added configurable timeout, explicit `_ = Close()` on error path.
 
@@ -19,6 +21,7 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 - **Source comments**: added package-level, function-level, and inline comments across 11 source files covering template substitution, sampling round-trips, notification capture, TTY detection, JUnit output, pass@k/pass^k semantics, and coverage reporting.
 - **FEATURES.md**: synced against codebase. Added fuzz command, `assert_notifications` block type, 4 missing example suites, corrected test and assertion counts.
+- **CLI reference**: lint command documented with all flags, lint codes table, and distinction between schema correctness (ajv/spectral) vs agent usability (mcp-assert lint).
 
 ## [0.8.0] - 2026-05-02
 
