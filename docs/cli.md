@@ -20,7 +20,11 @@ mcp-assert version
 
 ### `mcp-assert lint`
 
-Static schema analysis. Connects to a server, discovers all tools, and checks each tool's schema for common issues that cause agents to misuse tools. No tool calls by default (schema-only checks).
+Static schema analysis for **agent usability**, not schema correctness. Standard JSON Schema linters (ajv, spectral) check if a schema is syntactically valid. `mcp-assert lint` checks if an AI agent can actually use the schema correctly: are descriptions present, do parameters have guidance, will the agent hallucinate values?
+
+A schema can be 100% valid JSON Schema and still cause agents to fail. `{"type": "string"}` is valid, but an agent seeing `path: string (required)` with no description will guess wrong.
+
+No tool calls by default (schema-only checks). Connects, calls `tools/list`, inspects the returned schemas.
 
 ```bash
 mcp-assert lint --server "npx my-mcp-server"
