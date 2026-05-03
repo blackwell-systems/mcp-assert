@@ -192,8 +192,18 @@ Same bridge architecture. Published to Packagist as `blackwell-systems/phpunit-m
 ### "Works with mcp-assert" Badge
 Static and dynamic (CI-verified) badge for MCP server READMEs. Every badge is a backlink. See the [Badge guide](badge.md).
 
-### Awesome MCP DevTools
-PR submitted ([punkpeye/awesome-mcp-devtools#144](https://github.com/punkpeye/awesome-mcp-devtools/pull/144)). Pending maintainer review. Listed under Testing Tools.
+### Awesome Lists
+
+| List | Stars | Status | Section |
+|------|------:|--------|---------|
+| punkpeye/awesome-mcp-devtools | 448 | **PR #144 open** | Testing Tools |
+| appcypher/awesome-mcp-servers | 5.5K | Branch pushed, needs PR | Development Tools |
+| wong2/awesome-mcp-servers | 4K | Not submitted | Community Servers |
+| TheJambo/awesome-testing | 2.2K | Not submitted | AI & LLM Testing |
+| ai-boost/awesome-harness-engineering | 705 | Not submitted | Verification & CI |
+| ai-for-developers/awesome-ai-coding-tools | 1.7K | Not submitted | Testing and QA |
+| rohitg00/awesome-devops-mcp-servers | 979 | Not submitted | Testing & Chaos Engineering |
+| avelino/awesome-go | 172K | **Blocked until Sep 2026** (5-month history req) | Testing Frameworks |
 
 ### Snap (Linux)
 ```bash
