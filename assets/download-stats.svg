@@ -35,12 +35,12 @@
   <text x="24" y="184" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">github releases</text>
   <text x="296" y="184" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">342</text>
   <text x="24" y="206" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">docker pulls</text>
-  <text x="296" y="206" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">137</text>
+  <text x="296" y="206" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">139</text>
 
   <!-- Divider -->
   <line x1="24" y1="210" x2="296" y2="210" stroke="#334155" stroke-width="1"/>
 
   <!-- Total -->
-  <text x="24" y="238" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700">13664 total</text>
+  <text x="24" y="238" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700">13666 total</text>
   <text x="296" y="238" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">cumulative downloads</text>
 </svg>
