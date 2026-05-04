@@ -2,7 +2,7 @@ name: Update download stats
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Every hour
+    - cron: '0 */6 * * *'  # Every 6 hours
   workflow_dispatch:       # Manual trigger
 
 permissions:
