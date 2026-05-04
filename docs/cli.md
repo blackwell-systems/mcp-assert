@@ -320,7 +320,7 @@ mcp-assert version
 ```
 
 ```
-mcp-assert v0.7.3
+mcp-assert v0.9.0
 ```
 
 ## Server Override

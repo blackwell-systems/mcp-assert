@@ -58,3 +58,4 @@ See [Getting Started](getting-started.md) for a full walkthrough.
 | Multi-language | Not supported | Same assertion across N language servers |
 | Bidirectional MCP | Not supported | Client capabilities: roots, sampling, elicitation |
 | Trajectory testing | Not supported | Tool call sequence validation (no server needed) |
+| Schema linting | Not supported | Static analysis for agent usability: missing descriptions, untyped params, unconstrained strings |

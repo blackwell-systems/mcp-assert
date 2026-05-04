@@ -55,6 +55,16 @@ mcp-assert fuzz --server "npx my-mcp-server" --seed 42 --runs 100
 
 A tool **passes** if it responds (with content or `isError: true`). A tool **fails** if it crashes, hangs, or leaks internal errors (stack traces, panics). Rejecting bad input gracefully is correct behavior.
 
+### Schema quality
+
+Check tool schemas for agent usability issues without calling any tools:
+
+```bash
+mcp-assert lint --server "npx my-mcp-server"
+```
+
+Reports missing descriptions, untyped parameters, and free-text strings without constraints. Use `--threshold 0` in CI to gate on errors.
+
 When you're ready for deeper testing (expected outputs, multi-step flows, state verification), move on to YAML assertions:
 
 ## One-step suite generation (recommended)
@@ -228,4 +238,4 @@ Edit the generated YAMLs to replace `TODO` placeholders with real values, then r
 - [CLI Reference](cli.md): full command reference with flags and examples
 - [CI Integration](ci-integration.md): GitHub Action, JUnit XML, regression detection
 - [Badge](badge.md): add the "Works with mcp-assert" badge to your README
-- [Examples](examples.md): 61 suites across 55 servers in 7 languages (570 assertions)
+- [Examples](examples.md): 65 suites across 58 servers in 8 languages (606 assertions)

@@ -361,7 +361,7 @@ Adversarial input testing via `mcp-assert fuzz`. Unlike audit (one valid call pe
 
 ## Observations
 
-**Bug rate:** 31 bugs across 12 servers + 1 SDK. The most common pattern: unhandled exceptions propagating as JSON-RPC `-32603` internal errors instead of returning `isError: true`. This affects the TypeScript SDK itself (all servers), antvis (9 tools), mcp-devtools (4 tools), Puppeteer (15+ tools via fuzz), Grafana (1 tool), Peekaboo (1 tool). Less common: missing isError flag (arxiv), logic bugs (rmcp), spec violations (filesystem blob type), transport corruption (mcp-go stdio).
+**Bug rate:** 32 bugs across 13 servers + 1 SDK. The most common pattern: unhandled exceptions propagating as JSON-RPC `-32603` internal errors instead of returning `isError: true`. This affects the TypeScript SDK itself (all servers), antvis (9 tools), mcp-devtools (4 tools), Puppeteer (15+ tools via fuzz), Grafana (1 tool), Peekaboo (1 tool). Less common: missing isError flag (arxiv), logic bugs (rmcp), spec violations (filesystem blob type), transport corruption (mcp-go stdio).
 
 **Fuzz testing validates Python SDK quality.** 8 Python servers, 50 tools, 535 adversarial inputs: zero crashes. The Python MCP SDK handles null args, wrong types, missing fields, and boundary values correctly at the transport layer. Every TypeScript server fails on the same SDK-level null args bug.
 

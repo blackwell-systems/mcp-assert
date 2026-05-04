@@ -15,7 +15,7 @@
 mcp-assert connects to your server exactly like Claude, Cursor, or any MCP client would: real stdio/SSE/HTTP transport, full initialize handshake, actual tool calls. It checks responses against expectations you define in YAML. If it passes mcp-assert, it works with every MCP client.
 
 > [!WARNING]
-> We scanned 58 MCP servers and found **25 real bugs** across 10 servers. The most common failure: tools crash instead of returning errors agents can recover from. See the [scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/).
+> We scanned 58 MCP servers and found **32 real bugs** across 13 servers. The most common failure: tools crash instead of returning errors agents can recover from. See the [scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/).
 
 ```
 Your YAML        ──→  mcp-assert  ──→  MCP Server
@@ -168,6 +168,7 @@ pytest --mcp-suite evals/
 | `watch --suite evals/` | Re-run on YAML changes, show diffs when status flips | YAML files |
 | `matrix --languages go:gopls,ts:tsserver` | Same suite across multiple language servers | YAML files |
 | `intercept --server "..." --trajectory t.yaml` | Proxy between agent and server, capture live tool call trace | Trajectory YAML |
+| `lint --server "..."` | Check tool schemas for missing descriptions, untyped params, and agent usability issues | None |
 
 Start with `audit` (zero setup), then `fuzz` (adversarial testing), then `init` (generates everything), then customize the YAML for your specific assertions.
 
@@ -275,13 +276,12 @@ Full documentation is available at [blackwell-systems.github.io/mcp-assert](http
 - [Getting Started](https://blackwell-systems.github.io/mcp-assert/getting-started/): install, scaffold, first run
 - [Writing Assertions](https://blackwell-systems.github.io/mcp-assert/writing-assertions/): YAML format, all 18 assertion types + 4 trajectory types, 8 block types, 6 test framework plugins (pytest, Vitest, Jest, Bun, PHPUnit, Go test), setup steps, capture, fixtures
 - [CLI Reference](https://blackwell-systems.github.io/mcp-assert/cli/): full command reference with flags and examples
-- [Examples](https://blackwell-systems.github.io/mcp-assert/examples/): 61 example suites across 7 languages (570 assertions)
+- [Examples](https://blackwell-systems.github.io/mcp-assert/examples/): 65 example suites across 8 languages (606 assertions)
 - [CI Integration](https://blackwell-systems.github.io/mcp-assert/ci-integration/): GitHub Action, JUnit XML, regression detection
 - [Badge](https://blackwell-systems.github.io/mcp-assert/badge/): add the "Works with mcp-assert" badge to your server README
 - [Architecture](https://blackwell-systems.github.io/mcp-assert/architecture/): internals and design decisions
 - [Roadmap](https://blackwell-systems.github.io/mcp-assert/roadmap/): what's shipped and what's next
-- [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): 20 bugs found across 9 of 55 servers, 6 fix PRs submitted
-- [Dogfooding](https://blackwell-systems.github.io/mcp-assert/dogfooding/): findings from testing our own servers
+- [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): 32 bugs found across 13 servers, 9 fix PRs submitted, 58 servers scanned
 
 <p align="center">
   <img src="assets/download-stats.svg?v=2" alt="Download stats" width="320">
