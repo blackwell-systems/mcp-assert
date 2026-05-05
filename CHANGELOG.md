@@ -5,6 +5,12 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- **W104: Generic parameter names.** Flags parameters named `data`, `value`, `input`, `payload`, `options`, etc. that give agents no signal about what to pass. Only fires when the parameter also has no description.
+- **W105: Tool similarity detection.** Compares all tool descriptions pairwise using Dice coefficient bigram similarity. Flags pairs with >80% similarity that agents will confuse (e.g. `list_directory` and `list_directory_with_sizes` at 94%).
+- **W106: Schema bloat.** Warns when the total `tools/list` response exceeds 8K tokens (~32KB JSON), which consumes a significant portion of the agent's context window.
+
 ## [0.9.0] - 2026-05-03
 
 ### Added

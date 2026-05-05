@@ -52,6 +52,9 @@ mcp-assert lint --server "npx my-mcp-server" --json --threshold 5
 | W101 | Warning | Tool description is too generic/vague |
 | W102 | Warning | Optional parameter has no description |
 | W103 | Warning | Required string parameter has no enum, pattern, example, or default |
+| W104 | Warning | Parameter name is too generic (e.g. `data`, `value`, `input`) with no description |
+| W105 | Warning | Two tools have >80% similar descriptions; agents may confuse them |
+| W106 | Warning | `tools/list` response exceeds 8K tokens; consumes significant context budget |
 
 ### `mcp-assert audit`
 

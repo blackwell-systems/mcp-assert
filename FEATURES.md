@@ -19,7 +19,7 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 | `snapshot` | Capture/compare tool response snapshots | `--suite`, `--server`, `--fixture`, `--update`, `--docker` |
 | `watch` | Rerun assertions on YAML file change; shows unified diff when assertion status flips | `--suite`, `--fixture`, `--server`, `--interval`, `--timeout` |
 | `intercept` | Proxy stdio between agent and MCP server, capturing tool calls for live trajectory validation | `--server`, `--trajectory`, `--timeout` |
-| `lint` | Static schema analysis for agent usability: missing descriptions, untyped params, unconstrained strings, oversized responses (with --call-tools) | `--server`, `--transport`, `--headers`, `--json`, `--threshold`, `--call-tools`, `--max-response-kb` |
+| `lint` | Static schema analysis for agent usability: 10 lint codes covering missing descriptions, untyped params, unconstrained strings, generic param names, tool similarity detection, schema bloat, oversized responses. | `--server`, `--transport`, `--headers`, `--json`, `--threshold`, `--call-tools`, `--max-response-kb` |
 
 ---
 
