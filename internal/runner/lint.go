@@ -106,6 +106,10 @@ func Lint(args []string) error {
 		findings = append(findings, lintTool(tool)...)
 	}
 
+	// Cross-tool checks (require the full tool list).
+	findings = append(findings, lintToolSimilarity(toolsResult.Tools)...)
+	findings = append(findings, lintSchemaBloat(toolsResult.Tools)...)
+
 	// Optional: call each tool with empty args to check response size.
 	if *callTools {
 		for _, tool := range toolsResult.Tools {
@@ -235,6 +239,17 @@ func lintTool(tool mcp.Tool) []LintFinding {
 			})
 		}
 
+		// W104: Generic parameter name.
+		if isGenericParamName(name) && strings.TrimSpace(desc) == "" {
+			findings = append(findings, LintFinding{
+				Tool:     tool.Name,
+				Code:     "W104",
+				Severity: LintWarning,
+				Message:  fmt.Sprintf("Parameter %q is a generic name with no description. Agents cannot infer what to pass.", name),
+				Field:    "args." + name,
+			})
+		}
+
 		// W103: String parameter with no enum, pattern, or example.
 		typ, _ := propMap["type"].(string)
 		if typ == "string" && required[name] {
@@ -316,6 +331,112 @@ func isVagueDescription(desc string) bool {
 		return true
 	}
 	return false
+}
+
+// genericParamNames is the blocklist of parameter names too vague for agents.
+var genericParamNames = map[string]bool{
+	"data": true, "value": true, "input": true, "output": true,
+	"payload": true, "info": true, "content": true, "body": true,
+	"params": true, "args": true, "options": true, "config": true,
+	"settings": true, "result": true, "object": true, "item": true,
+	"obj": true, "val": true, "str": true, "num": true,
+}
+
+// isGenericParamName returns true if the parameter name is too vague for agents.
+func isGenericParamName(name string) bool {
+	return genericParamNames[strings.ToLower(name)]
+}
+
+// lintToolSimilarity checks for pairs of tools with very similar descriptions.
+// When two tools have >80% similar descriptions, agents pick between them randomly.
+func lintToolSimilarity(tools []mcp.Tool) []LintFinding {
+	var findings []LintFinding
+
+	for i := 0; i < len(tools); i++ {
+		for j := i + 1; j < len(tools); j++ {
+			a := strings.TrimSpace(tools[i].Description)
+			b := strings.TrimSpace(tools[j].Description)
+			if a == "" || b == "" {
+				continue // already caught by E101
+			}
+			sim := stringSimilarity(a, b)
+			if sim >= 0.80 {
+				findings = append(findings, LintFinding{
+					Tool:     tools[i].Name,
+					Code:     "W105",
+					Severity: LintWarning,
+					Message:  fmt.Sprintf("Tool %q and %q have %.0f%% similar descriptions. Agents may confuse them.", tools[i].Name, tools[j].Name, sim*100),
+					Field:    "description",
+				})
+			}
+		}
+	}
+
+	return findings
+}
+
+// stringSimilarity returns a 0-1 similarity score between two strings using
+// bigram overlap (Dice coefficient). Fast, no external dependencies.
+func stringSimilarity(a, b string) float64 {
+	if a == b {
+		return 1.0
+	}
+	a = strings.ToLower(a)
+	b = strings.ToLower(b)
+
+	bigramsA := makeBigrams(a)
+	bigramsB := makeBigrams(b)
+
+	if len(bigramsA) == 0 || len(bigramsB) == 0 {
+		return 0.0
+	}
+
+	intersection := 0
+	for bg := range bigramsA {
+		if bigramsB[bg] {
+			intersection++
+		}
+	}
+
+	return 2.0 * float64(intersection) / float64(len(bigramsA)+len(bigramsB))
+}
+
+func makeBigrams(s string) map[string]bool {
+	bigrams := make(map[string]bool)
+	for i := 0; i < len(s)-1; i++ {
+		bigrams[s[i:i+2]] = true
+	}
+	return bigrams
+}
+
+// lintSchemaBloat measures the total token cost of the tools/list response
+// and warns if it exceeds a reasonable budget for an agent's context window.
+func lintSchemaBloat(tools []mcp.Tool) []LintFinding {
+	totalBytes := 0
+	for _, tool := range tools {
+		// Approximate the JSON size of each tool definition.
+		data, err := json.Marshal(tool)
+		if err != nil {
+			continue
+		}
+		totalBytes += len(data)
+	}
+
+	// 1 token per 4 bytes (standard approximation for code/JSON).
+	tokens := totalBytes / 4
+	// Warn if tools/list consumes more than 8K tokens (a significant chunk
+	// of a typical agent's context budget).
+	if tokens > 8000 {
+		return []LintFinding{{
+			Tool:     "(all tools)",
+			Code:     "W106",
+			Severity: LintWarning,
+			Message:  fmt.Sprintf("tools/list response is ~%d tokens (%dKB). This consumes a significant portion of the agent's context window.", tokens, totalBytes/1024),
+			Field:    "schema_size",
+		}}
+	}
+
+	return nil
 }
 
 // printLintReport outputs a human-readable lint report to stderr/stdout.
