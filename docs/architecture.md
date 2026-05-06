@@ -48,6 +48,56 @@ This assertion: starts a filesystem MCP server as a subprocess, performs the MCP
 
 ---
 
+## Process Model
+
+mcp-assert has a simpler process model than a typical MCP host because it is a test runner, not an interactive agent. It spawns processes, uses them, and tears them down.
+
+**mcp-assert process (the test runner):**
+
+- Single Go binary, runs for the duration of the test suite, then exits.
+- Reads YAML assertion files from disk, resolves fixtures and templates, drives all test execution.
+- Acts as an MCP client: performs the full `initialize` handshake, calls tools/prompts/resources, validates responses.
+- Owns the connection lifecycle: one connection per assertion (or per server block, with connection reuse within a suite).
+
+**MCP server subprocess(es):**
+
+- One subprocess per unique server configuration in the test suite.
+- Spawned via `exec.Command` from the `server.command` + `server.args` fields in each YAML file.
+- Communicate with mcp-assert over **stdio** (stdin/stdout pipes, JSON-RPC with Content-Length framing) or **HTTP** (SSE/Streamable HTTP to a URL).
+- Each subprocess receives its own isolated environment: `server.env` vars are injected, `{{fixture}}` paths are resolved to absolute paths before spawning.
+- The subprocess is the system under test. mcp-assert never modifies the server's behavior; it observes the protocol output and checks it against expectations.
+
+**Communication direction:**
+
+```
+mcp-assert ──MCP JSON-RPC──► server subprocess (stdio)
+mcp-assert ◄──MCP JSON-RPC── server subprocess
+
+mcp-assert ──HTTP POST──► server URL (SSE/Streamable HTTP)
+mcp-assert ◄──SSE events── server URL
+```
+
+**Lifecycle per assertion:**
+
+```
+1. Parse YAML → resolve {{fixture}} templates
+2. Start server subprocess (or connect to remote URL)
+3. MCP initialize handshake (client info, capabilities, protocol version)
+4. Call tool/prompt/resource with specified args
+5. Receive response
+6. Run expectation checks (not_error, contains, json_schema, etc.)
+7. Record pass/fail result
+8. Shutdown server subprocess (send interrupt, wait, force kill after timeout)
+```
+
+For the `audit` command, steps 4-6 are replaced with: discover all tools via `tools/list`, generate inputs from JSON Schema, call each tool, classify the response as healthy/error/crash.
+
+For the `lint` command, only steps 2-3 are needed: connect, call `tools/list`, analyze the schema statically. No tool calls are made (unless `--call-tools` is passed).
+
+For the `fuzz` command, step 4 uses adversarial input generation (category-based: type mismatches, boundary values, null injection, oversized strings) instead of the YAML-defined args.
+
+---
+
 ## How MCP Works (Brief Primer)
 
 The **Model Context Protocol (MCP)** is a standard for AI agents to interact with external services. If you are already familiar with MCP, skip to the next section.
