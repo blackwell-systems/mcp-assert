@@ -125,7 +125,7 @@ func Run(args []string) error {
 	saveBaseline := fs.String("save-baseline", "", "Save current results as baseline to path")
 	fix := fs.Bool("fix", false, "Scan nearby positions when position-sensitive assertions fail")
 	if err := fs.Parse(args); err != nil {
-		return err
+		return fmt.Errorf("run: %w", err)
 	}
 
 	if *suiteDir == "" {
@@ -134,7 +134,7 @@ func Run(args []string) error {
 
 	suite, err := assertion.LoadSuite(*suiteDir)
 	if err != nil {
-		return err
+		return fmt.Errorf("run: %w", err)
 	}
 
 	allResults := runSuite(suite, suiteRunOptions{
@@ -201,7 +201,7 @@ func Matrix(args []string) error {
 	fixture := fs.String("fixture", "", "Fixture directory")
 	timeout := fs.Duration("timeout", 30*time.Second, "Per-assertion timeout")
 	if err := fs.Parse(args); err != nil {
-		return err
+		return fmt.Errorf("matrix: %w", err)
 	}
 
 	if *suiteDir == "" || *languages == "" {
@@ -210,7 +210,7 @@ func Matrix(args []string) error {
 
 	suite, err := assertion.LoadSuite(*suiteDir)
 	if err != nil {
-		return err
+		return fmt.Errorf("matrix: %w", err)
 	}
 
 	var allResults []assertion.Result
@@ -253,7 +253,7 @@ func CI(args []string) error {
 	failOnRegression := fs.Bool("fail-on-regression", false, "Exit 1 if any previously-passing assertion regresses (requires --baseline)")
 	fix := fs.Bool("fix", false, "Scan nearby positions when position-sensitive assertions fail")
 	if err := fs.Parse(args); err != nil {
-		return err
+		return fmt.Errorf("ci: %w", err)
 	}
 
 	if *suiteDir == "" {
@@ -265,7 +265,7 @@ func CI(args []string) error {
 
 	suite, err := assertion.LoadSuite(*suiteDir)
 	if err != nil {
-		return err
+		return fmt.Errorf("ci: %w", err)
 	}
 
 	allResults := runSuite(suite, suiteRunOptions{

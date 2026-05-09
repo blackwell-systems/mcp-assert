@@ -70,6 +70,12 @@ func Intercept(args []string) error {
 	}
 	done := make(chan proxyResult, 1)
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Fprintf(os.Stderr, "intercept: panic recovered: %v\n", r)
+				done <- proxyResult{err: fmt.Errorf("panic: %v", r)}
+			}
+		}()
 		cmd, err := proxyStdio(serverCmd, serverArgs, nil, onToolCall)
 		done <- proxyResult{cmd: cmd, err: err}
 	}()
@@ -169,6 +175,11 @@ func proxyStdio(
 	// Agent-to-server: read JSON-RPC lines from os.Stdin, inspect for tool calls,
 	// forward each line to the server's stdin.
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Fprintf(os.Stderr, "intercept: panic recovered: %v\n", r)
+			}
+		}()
 		scanner := bufio.NewScanner(os.Stdin)
 		// Increase buffer from default 64KB to 1MB to handle large JSON-RPC
 		// messages (embedded file content, base64 blobs, etc.).
@@ -189,6 +200,11 @@ func proxyStdio(
 
 	// Server-to-agent: read from server stdout, write to os.Stdout.
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Fprintf(os.Stderr, "intercept: panic recovered: %v\n", r)
+			}
+		}()
 		_, err := io.Copy(os.Stdout, serverOut)
 		done <- err
 	}()

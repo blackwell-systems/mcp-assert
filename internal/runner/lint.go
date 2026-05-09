@@ -61,7 +61,7 @@ func Lint(args []string) error {
 	callTools := fs.Bool("call-tools", false, "Also call each tool with empty args to check response size")
 	maxResponseKB := fs.Int("max-response-kb", 100, "Maximum acceptable response size in KB (with --call-tools)")
 	if err := fs.Parse(args); err != nil {
-		return err
+		return fmt.Errorf("lint: %w", err)
 	}
 
 	if sf.server == "" {
@@ -70,7 +70,7 @@ func Lint(args []string) error {
 
 	serverCfg, err := sf.serverConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("lint: %w", err)
 	}
 
 	if !sf.jsonOut {
@@ -78,7 +78,7 @@ func Lint(args []string) error {
 	}
 	mcpClient, initResult, err := connectAndInitialize(serverCfg, connectOpts{})
 	if err != nil {
-		return err
+		return fmt.Errorf("lint: %w", err)
 	}
 	defer mcpClient.Close()
 

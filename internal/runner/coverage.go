@@ -21,7 +21,7 @@ func Coverage(args []string) error {
 	timeout := fs.Duration("timeout", 15*time.Second, "Timeout for tools/list call")
 	coverageJSON := fs.String("coverage-json", "", "Write coverage data as JSON to path")
 	if err := fs.Parse(args); err != nil {
-		return err
+		return fmt.Errorf("coverage: %w", err)
 	}
 
 	if *suiteDir == "" || *serverSpec == "" {
@@ -31,7 +31,7 @@ func Coverage(args []string) error {
 	// Load assertion suite to find which tools are tested.
 	suite, err := assertion.LoadSuite(*suiteDir)
 	if err != nil {
-		return err
+		return fmt.Errorf("coverage: %w", err)
 	}
 
 	// Count which tools have direct assertions (both standard and sampling).
@@ -51,12 +51,12 @@ func Coverage(args []string) error {
 	// server-advertised tools for the denominator of the coverage ratio.
 	serverConfig, err := parseServerSpec(*serverSpec)
 	if err != nil {
-		return err
+		return fmt.Errorf("coverage: %w", err)
 	}
 
 	ctx, cancel, mcpClient, err := initializedClientFromConfig(serverConfig, "", *timeout, "")
 	if err != nil {
-		return err
+		return fmt.Errorf("coverage: %w", err)
 	}
 	defer cancel()
 	defer mcpClient.Close()

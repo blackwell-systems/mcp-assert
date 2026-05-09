@@ -78,7 +78,7 @@ func Init(args []string) error {
 	fixture := fs.String("fixture", "", "Fixture directory for {{fixture}} substitution")
 	timeout := fs.Duration("timeout", 15*time.Second, "Timeout for tools/list call")
 	if err := fs.Parse(args); err != nil {
-		return err
+		return fmt.Errorf("init: %w", err)
 	}
 
 	dir := "evals"
