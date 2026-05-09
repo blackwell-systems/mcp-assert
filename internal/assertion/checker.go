@@ -21,6 +21,26 @@ import (
 	"strings"
 )
 
+// firstJSONSegment returns the first segment of response that parses as valid
+// JSON. MCP responses may contain multiple content items joined by newlines
+// (e.g. a JSON array followed by a "Next step: ..." hint). Structured checks
+// like json_path and min_max_results need to parse just the primary content.
+// If the full string is valid JSON it is returned as-is.
+func firstJSONSegment(response string) string {
+	// Fast path: whole response is valid JSON.
+	if json.Valid([]byte(response)) {
+		return response
+	}
+	// Try splitting on newline and returning the first valid JSON segment.
+	for _, line := range strings.SplitN(response, "\n", -1) {
+		line = strings.TrimSpace(line)
+		if line != "" && json.Valid([]byte(line)) {
+			return line
+		}
+	}
+	return response
+}
+
 // checkFunc evaluates a single expectation type against the tool result.
 // Returns nil if the check passes (or does not apply), or an error on failure.
 type checkFunc func(expect Expect, response string, isError bool) error
@@ -168,7 +188,11 @@ func checkJSONPath(expect Expect, response string, _ bool) error {
 	if len(expect.JSONPath) > 0 {
 		var parsed any
 		if err := json.Unmarshal([]byte(response), &parsed); err != nil {
-			return fmt.Errorf("json_path: result is not valid JSON: %w", err)
+			// Multi-content response: try the first JSON segment.
+			seg := firstJSONSegment(response)
+			if err2 := json.Unmarshal([]byte(seg), &parsed); err2 != nil {
+				return fmt.Errorf("json_path: result is not valid JSON: %w", err)
+			}
 		}
 		// Sort paths for deterministic evaluation order and error messages.
 		jsonPaths := make([]string, 0, len(expect.JSONPath))
@@ -198,11 +222,14 @@ func checkJSONPath(expect Expect, response string, _ bool) error {
 // response shapes where the array is nested inside a wrapper object.
 func checkMinMaxResults(expect Expect, response string, _ bool) error {
 	if expect.MinResults != nil || expect.MaxResults != nil {
+		// Multi-content responses may have a JSON array followed by hint
+		// text. Extract the first valid JSON segment for parsing.
+		jsonText := firstJSONSegment(response)
 		var arr []any
-		if err := json.Unmarshal([]byte(response), &arr); err != nil {
+		if err := json.Unmarshal([]byte(jsonText), &arr); err != nil {
 			// Try object with common array fields.
 			var obj map[string]any
-			if err2 := json.Unmarshal([]byte(response), &obj); err2 == nil {
+			if err2 := json.Unmarshal([]byte(jsonText), &obj); err2 == nil {
 				for _, key := range []string{"locations", "items", "results", "references", "symbols"} {
 					if v, ok := obj[key].([]any); ok {
 						arr = v

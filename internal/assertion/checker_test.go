@@ -187,6 +187,24 @@ func TestCheck_MinMaxResults(t *testing.T) {
 	}
 }
 
+func TestCheck_MinMaxResults_MultiContent(t *testing.T) {
+	// MCP servers may return multiple content items joined by newlines.
+	// The JSON array is in the first item; the second is a hint.
+	multiContent := "[{\"file\":\"a.go\"},{\"file\":\"b.go\"}]\nNext step: Use get_change_impact for blast radius."
+	err := Check(Expect{MinResults: intPtr(2)}, multiContent, false)
+	if err != nil {
+		t.Fatalf("unexpected error for multi-content response: %v", err)
+	}
+}
+
+func TestCheck_JSONPath_MultiContent(t *testing.T) {
+	multiContent := "{\"name\":\"Alice\",\"age\":30}\nNext step: Use get_references."
+	err := Check(Expect{JSONPath: map[string]any{"$.name": "Alice"}}, multiContent, false)
+	if err != nil {
+		t.Fatalf("unexpected error for multi-content JSON path: %v", err)
+	}
+}
+
 func TestCheck_NetDelta(t *testing.T) {
 	json := `{"net_delta": 0, "safe": true}`
 	err := Check(Expect{NetDelta: intPtr(0)}, json, false)
