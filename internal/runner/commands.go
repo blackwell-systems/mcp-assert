@@ -45,31 +45,19 @@ type serverGroup struct {
 	isolate    bool
 }
 
-// statefulTools lists tool names that mutate server state in ways that leak
-// across assertions. These must run isolated when server reuse is enabled.
+// statefulTools lists tool names that mutate server or filesystem state in
+// ways that leak across assertions. These must run isolated when server
+// reuse is enabled. Session tools (create/simulate/evaluate/commit/discard/
+// destroy) use unique session IDs and don't leak, so they share safely.
 var statefulTools = map[string]bool{
 	// Kills/restarts the server process.
 	"restart_lsp_server": true,
 	// Skill phase state carries across calls.
 	"activate_skill":   true,
 	"deactivate_skill": true,
-	// Session state is per-server, not per-assertion.
-	"create_simulation_session": true,
-	"simulate_edit":             true,
-	"simulate_edit_atomic":      true,
-	"simulate_chain":            true,
-	"evaluate_session":          true,
-	"commit_session":            true,
-	"discard_session":           true,
-	"destroy_session":           true,
-	// Modifies files on disk.
+	// Modifies files on disk in the shared fixture.
 	"apply_edit":    true,
 	"rename_symbol": true,
-	// Runs external processes (go test, go build).
-	"run_tests": true,
-	"run_build": true,
-	// Executes arbitrary workspace commands on the language server.
-	"execute_command": true,
 }
 
 // isStateful returns true if the assertion uses a tool that mutates server
