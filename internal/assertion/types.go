@@ -10,8 +10,11 @@
 package assertion
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strings"
 	"time"
 )
 
@@ -152,6 +155,35 @@ type ServerConfig struct {
 	Headers            map[string]string  `yaml:"headers,omitempty"`            // custom HTTP headers for sse/http transports (supports ${VAR} expansion)
 	Docker             string             `yaml:"docker,omitempty"`             // Docker image name; when set, each assertion runs in a fresh container
 	ClientCapabilities ClientCapabilities `yaml:"client_capabilities,omitempty"` // capabilities the mcp-assert client advertises to the server
+}
+
+// ServerKey returns a stable identity string for this server configuration.
+// Assertions with the same ServerKey can share a server process. The key
+// includes command, args, env, transport, URL, docker, and client capabilities.
+func (s ServerConfig) ServerKey() string {
+	h := sha256.New()
+	fmt.Fprintf(h, "cmd=%s\n", s.Command)
+	fmt.Fprintf(h, "args=%s\n", strings.Join(s.Args, "\x00"))
+	fmt.Fprintf(h, "transport=%s\n", s.Transport)
+	fmt.Fprintf(h, "url=%s\n", s.URL)
+	fmt.Fprintf(h, "docker=%s\n", s.Docker)
+
+	// Sort env keys for deterministic hashing.
+	envKeys := make([]string, 0, len(s.Env))
+	for k := range s.Env {
+		envKeys = append(envKeys, k)
+	}
+	sort.Strings(envKeys)
+	for _, k := range envKeys {
+		fmt.Fprintf(h, "env.%s=%s\n", k, s.Env[k])
+	}
+
+	// Include client capabilities in the key.
+	if capJSON, err := json.Marshal(s.ClientCapabilities); err == nil {
+		fmt.Fprintf(h, "caps=%s\n", capJSON)
+	}
+
+	return fmt.Sprintf("%x", h.Sum(nil))[:16]
 }
 
 // ClientCapabilities declares what the mcp-assert client supports.

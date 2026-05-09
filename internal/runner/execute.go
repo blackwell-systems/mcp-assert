@@ -47,6 +47,40 @@ func initializedClient(
 	return initializedClientFromConfig(a.Server, fixture, timeout, dockerImage)
 }
 
+// initializedLongLivedClient creates an MCP client that lives for the duration
+// of a server group. The returned context has no timeout; per-assertion timeouts
+// are applied as child contexts in runAssertionWithSharedClient. initTimeout
+// bounds only the initialize handshake.
+func initializedLongLivedClient(
+	server assertion.ServerConfig,
+	fixture string,
+	initTimeout time.Duration,
+	dockerImage string,
+) (context.Context, context.CancelFunc, client.MCPClient, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	mcpClient, err := createMCPClient(server, fixture, dockerImage)
+	if err != nil {
+		cancel()
+		return nil, nil, nil, fmt.Errorf("failed to start MCP server: %w", err)
+	}
+
+	initCtx, initCancel := context.WithTimeout(ctx, initTimeout)
+	defer initCancel()
+
+	initReq := mcp.InitializeRequest{}
+	initReq.Params.ClientInfo = mcp.Implementation{Name: "mcp-assert", Version: "1.0"}
+	initReq.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
+
+	if _, err := mcpClient.Initialize(initCtx, initReq); err != nil {
+		_ = mcpClient.Close()
+		cancel()
+		return nil, nil, nil, fmt.Errorf("MCP initialize failed: %w", err)
+	}
+
+	return ctx, cancel, mcpClient, nil
+}
+
 // initializedClientFromConfig creates an MCP client from a ServerConfig,
 // connects, and performs the initialize handshake. Use this when you have a
 // bare ServerConfig (e.g., coverage command) rather than a full Assertion.
@@ -504,6 +538,102 @@ func runTrajectoryAssertion(a assertion.Assertion, fixture string, start time.Ti
 
 	if err := assertion.CheckTrajectory(a.Trajectory, trace); err != nil {
 		return failResult(a.Name, start, err.Error())
+	}
+
+	return passResult(a.Name, start)
+}
+
+// runAssertionWithSharedClient executes an assertion against a pre-existing
+// MCP client. Used by runServerGroup to amortize server startup across
+// multiple assertions. Trajectory and non-tool assertions that don't need
+// the shared client fall back to their own isolated execution.
+func runAssertionWithSharedClient(
+	a assertion.Assertion,
+	fixture string,
+	timeout time.Duration,
+	dockerImage string,
+	sharedCtx context.Context,
+	sharedClient client.MCPClient,
+) assertion.Result {
+	start := time.Now()
+	timeout = resolveTimeout(a, timeout)
+
+	if a.Skip {
+		return skipResult(a.Name, start, "")
+	}
+
+	if a.SkipUnlessEnv != "" && os.Getenv(a.SkipUnlessEnv) == "" {
+		return skipResult(a.Name, start, fmt.Sprintf("skipped: env var %s not set", a.SkipUnlessEnv))
+	}
+
+	// Trajectory assertions don't use a server; run directly.
+	if len(a.Trajectory) > 0 {
+		return runTrajectoryAssertion(a, fixture, start)
+	}
+
+	// Non-tool assertions (resources, prompts, completion, sampling, logging,
+	// notifications) may require different client capabilities or state.
+	// Fall back to isolated execution for safety.
+	if a.AssertResources != nil || a.AssertPrompts != nil || a.AssertCompletion != nil ||
+		a.AssertSampling != nil || a.AssertLogging != nil || a.AssertNotifications != nil {
+		return runAssertion(a, fixture, timeout, dockerImage)
+	}
+
+	// Tool assertion: use the shared client.
+	ctx, cancel := context.WithTimeout(sharedCtx, timeout)
+	defer cancel()
+
+	var progressCount int32
+	if a.Assert.CaptureProgress {
+		sharedClient.OnNotification(func(n mcp.JSONRPCNotification) {
+			if n.Method == "notifications/progress" {
+				atomic.AddInt32(&progressCount, 1)
+			}
+		})
+	}
+
+	captured, err := runSetupSteps(ctx, sharedClient, a.Setup, fixture)
+	if err != nil {
+		return failResult(a.Name, start, err.Error())
+	}
+
+	snapshots := make(map[string]string)
+	for _, path := range a.Assert.Expect.FileUnchanged {
+		p := strings.ReplaceAll(path, "{{fixture}}", fixture)
+		if data, err := os.ReadFile(p); err == nil {
+			snapshots[p] = string(data)
+		}
+	}
+
+	assertArgs := substituteAll(a.Assert.Args, fixture, captured)
+	req := mcp.CallToolRequest{}
+	req.Params.Name = a.Assert.Tool
+	req.Params.Arguments = assertArgs
+	result, err := sharedClient.CallTool(ctx, req)
+	if err != nil {
+		return failResult(a.Name, start, fmt.Sprintf("tool call %s failed: %v", a.Assert.Tool, err))
+	}
+
+	resultText := extractText(result)
+	isError := result.IsError
+
+	expect := a.Assert.Expect
+	expect.FileContains = substituteMapKeys(expect.FileContains, fixture)
+	expect.FileNotContains = substituteMapKeys(expect.FileNotContains, fixture)
+	expect.FileNotExists = substituteSlice(expect.FileNotExists, fixture)
+
+	if err := assertion.CheckWithSnapshots(expect, resultText, isError, snapshots); err != nil {
+		detail := err.Error()
+		if isError && resultText != "" {
+			detail += "\n      server response: " + resultText
+		}
+		return failResult(a.Name, start, detail)
+	}
+
+	if a.Assert.CaptureProgress {
+		if err := assertion.CheckProgress(a.Assert.Expect, int(atomic.LoadInt32(&progressCount))); err != nil {
+			return failResult(a.Name, start, err.Error())
+		}
 	}
 
 	return passResult(a.Name, start)
