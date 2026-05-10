@@ -179,6 +179,7 @@ jobs:
             --suite examples/agent-lsp-go \
             --fixture /tmp/agent-lsp/test/fixtures/go \
             --timeout 120s \
+            --reuse-server \
             --junit agent-lsp-results.xml
 
       - name: Upload results
