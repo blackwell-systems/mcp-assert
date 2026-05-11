@@ -11,5 +11,6 @@ assert:
   args:
     session_id: "nonexistent-session"
   expect:
-    is_error: true
+    not_error: true
+    contains: ["already_destroyed"]
 timeout: 30s
