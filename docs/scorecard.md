@@ -6,16 +6,16 @@ Servers tested by mcp-assert, bugs found, issues filed.
 
 | Metric | Count |
 |--------|-------|
-| Servers scanned | 58 (12 fuzzed) |
-| Server suites | 65 total (63 server + 1 agent-lsp + 1 trajectory) |
+| Servers scanned | 102 (12 fuzzed, 43 AWS bulk lint) |
+| Server suites | 109 total (107 server + 1 agent-lsp + 1 trajectory) |
 | Languages tested | 7 (Go, TypeScript/JavaScript, Python, Rust, Kotlin/Java, Swift, C#) |
 | Transports tested | 3 (stdio, SSE, HTTP) |
-| Total assertions | 603 (520 server + 63 agent-lsp + 20 trajectory) |
-| Upstream bugs found | 32 (13 servers affected + 1 SDK) |
-| Upstream issues filed | 10 (1 unfiled: repo archived) |
+| Total assertions | 614 (531 server + 63 agent-lsp + 20 trajectory) |
+| Upstream bugs found | 34 (15 servers affected + 1 SDK) |
+| Upstream issues filed | 12 (1 unfiled: repo archived) |
 | Upstream fix PRs submitted | 9 (5 ours pending, 3 merged, 1 closed after maintainer fix) |
-| Schema lint findings | 254 issues across 11 servers (70 errors, 184 warnings) |
-| Clean scans (no bugs) | 46 |
+| Schema lint findings | 4,794 issues across 55 servers (2,239 errors, 2,555 warnings) |
+| Clean scans (no bugs) | 51 |
 | Internal bugs fixed | 6 |
 
 ## Server Results
@@ -117,10 +117,11 @@ Servers tested by mcp-assert, bugs found, issues filed.
 |--------|----------|-----------|------------|----------|------|-------|
 | `blazickjp/arxiv-mcp-server` | Python | stdio | 5 | 50% (5/10 tools) | 1 | [blazickjp/arxiv-mcp-server#92](https://github.com/blazickjp/arxiv-mcp-server/issues/92). `get_abstract` returns error content in body but `isError` flag not set for invalid paper IDs. |
 
-### AWS
+### AWS (awslabs/mcp monorepo)
 
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
+| `awslabs/mcp` (43 servers bulk lint) | Python | stdio | lint only | 870 tools | schema: 2,160 errors, 2,324 warnings | [awslabs/mcp#3486](https://github.com/awslabs/mcp/issues/3486). Systemic: `str \| None` union types drop `type` field from JSON Schema. `profile_name` untyped on 25 tools, `region` on 24, `max_items` on 7. CloudWatch alone: 90 errors, 107KB tools/list (27K tokens). Top offenders: healthomics (313 errors), valkey (260), dataprocessing (259), bedrock-agentcore (177). Full audit in `docs/audits/awslabs-mcp-audit.md`. |
 | `awslabs/aws-documentation-mcp-server` | Python | stdio | 4 | 100% (4/4 tools) | 0 | Clean. Search, recommend, no-results handling. Works without AWS credentials. |
 
 ### Search API
@@ -228,6 +229,12 @@ Servers tested by mcp-assert, bugs found, issues filed.
 | Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
 |--------|----------|-----------|------------|----------|------|-------|
 | `Gentleman-Programming/engram` | Go | stdio | 16 | 100% (16/16 tools) | 0 | Clean. Full coverage including writes (save, delete, update, merge, session lifecycle). SQLite state is self-contained. |
+
+### Code Intelligence (Python)
+
+| Server | Language | Transport | Assertions | Coverage | Bugs | Issue |
+|--------|----------|-----------|------------|----------|------|-------|
+| `oraios/serena` | Python | stdio | 11 | 38% (11/29 tools) | 1 (schema: 9 errors, 47 warnings) | [oraios/serena#1467](https://github.com/oraios/serena/issues/1467). 9 schema errors: 6 required params missing descriptions (`memory_name`, `content`, `old_name`, `new_name`), 3 params missing type definition (`end_line`, `cwd`). 47 warnings: 44 string params without examples. tools/list is 34KB (~8,848 tokens). Additionally: tool exceptions returned as `isError:false` (agents cannot distinguish success from failure). 24K stars. |
 
 ### Internal (agent-lsp)
 

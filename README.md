@@ -15,7 +15,7 @@
 mcp-assert connects to your server exactly like Claude, Cursor, or any MCP client would: real stdio/SSE/HTTP transport, full initialize handshake, actual tool calls. It checks responses against expectations you define in YAML. If it passes mcp-assert, it works with every MCP client.
 
 > [!WARNING]
-> We scanned 58 MCP servers and found **32 real bugs** across 13 servers. The most common failure: tools crash instead of returning errors agents can recover from. See the [scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/).
+> We scanned 102 MCP servers and found **4,794 schema issues** (2,239 errors) across 55 servers including AWS, Serena, and Grafana. The most common failure: parameters missing type definitions cause agents to send wrong value types. See the [scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/).
 
 ```
 Your YAML        ──→  mcp-assert  ──→  MCP Server
