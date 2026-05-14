@@ -1,8 +1,8 @@
-pip=12746
-pytest=4821
+pip=12822
+pytest=4851
 npm=1797
 vitest=1017
 jest=753
-gh=713
+gh=757
 packagist=0
-docker=287
+docker=289
