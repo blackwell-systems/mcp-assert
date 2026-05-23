@@ -1,8 +1,8 @@
 pip=13957
 pytest=5201
-npm=1830
+npm=1832
 vitest=1044
-jest=780
-gh=1601
+jest=786
+gh=1602
 packagist=0
 docker=304
