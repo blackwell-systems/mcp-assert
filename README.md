@@ -106,13 +106,7 @@ mcp-assert audit --server "npx my-mcp-server"
   3 tools tested, 2 healthy, 1 crashed
 ```
 
-Error codes help you quickly classify issues:
-- **E000**: Success
-- **E201**: Server panic/crash
-- **E202**: Timeout
-- **W301**: Large output warning
-
-See [Error Reference](docs/ERROR_REFERENCE.md) for all codes.
+Structured error codes classify issues instantly. See [Error Reference](docs/ERROR_REFERENCE.md) for all 24 codes.
 
 > [!TIP]
 > The audit connects, discovers every tool via `tools/list`, calls each one with schema-generated inputs, and reports which tools crash vs. handle errors properly. No YAML needed. To go deeper, generate assertion files and customize them:
@@ -191,6 +185,44 @@ mcp-assert snapshot --suite evals/ --server "my-mcp-server" --update
 
 # Assert nothing changed
 mcp-assert run --suite evals/ --server "my-mcp-server"
+```
+
+## Lint + Auto-Fix
+
+Static analysis catches schema issues without executing tools. 24 rules detect problems that cause agents to fail:
+
+```bash
+mcp-assert lint --server "npx my-mcp-server"
+```
+
+```
+  E  E103   create_entities       Required parameter "entities" has no description
+  W  W114   generate_chart        Input schema is 5 levels deep. LLMs struggle with nesting
+  W  W112   (server)              Server exposes 27 tools. LLM accuracy degrades beyond 20
+
+5 error(s), 11 warning(s)
+```
+
+Auto-generate fixes:
+
+```bash
+mcp-assert lint --server "npx my-mcp-server" --fix
+```
+
+```
+memory-server: 9 tools, 25 findings, 23 auto-fixable
+
+  E103   create_entities   Add description: "The entities value (array)"
+  W109   search_nodes      Add examples to "query": [search term]
+  W116   read_graph        Append: "Returns the graph data as JSON."
+
+23 fixes generated.
+```
+
+Use `--strict` in CI to fail on warnings:
+
+```bash
+mcp-assert lint --server "..." --strict --threshold 0
 ```
 
 ## How It Differs From LLM-as-Judge Frameworks
