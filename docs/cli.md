@@ -38,8 +38,11 @@ mcp-assert lint --server "npx my-mcp-server" --json --threshold 5
 | `--transport` | Transport type: stdio (default), http, sse |
 | `--json` | Output results as JSON |
 | `--threshold N` | Fail (exit 1) if findings exceed N (default: fail on errors only) |
+| `--strict` | Promote all warnings to errors (for CI gates) |
+| `--fix` | Auto-generate schema improvement suggestions |
 | `--call-tools` | Also call each tool to check response size (slower) |
 | `--max-response-kb N` | Maximum acceptable response size in KB (default: 100, with `--call-tools`) |
+| `--detect-nondeterminism` | Call each tool 3x and flag varying outputs |
 
 **Lint codes:**
 
@@ -65,6 +68,9 @@ mcp-assert lint --server "npx my-mcp-server" --json --threshold 5
 | W104 | Warning | Parameter name is too generic (e.g. `data`, `value`, `input`) with no description |
 | W105 | Warning | Two tools have >80% similar descriptions; agents may confuse them |
 | W106 | Warning | `tools/list` response exceeds 8K tokens; consumes significant context budget |
+| W108 | Warning | Tool name implies mutation but description doesn't acknowledge side effects |
+| W109 | Warning | User-facing parameter (query, email, url) has no examples |
+| W110 | Warning | >50% of parameters not mentioned in description (schema-description drift) |
 
 ### `mcp-assert audit`
 

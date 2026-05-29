@@ -176,7 +176,7 @@ pytest --mcp-suite evals/
 | `watch --suite evals/` | Re-run on YAML changes, show diffs when status flips | YAML files |
 | `matrix --languages go:gopls,ts:tsserver` | Same suite across multiple language servers | YAML files |
 | `intercept --server "..." --trajectory t.yaml` | Proxy between agent and server, capture live tool call trace | Trajectory YAML |
-| `lint --server "..."` | Check tool schemas for missing descriptions, untyped params, and agent usability issues | None |
+| `lint --server "..."` | 24 static analysis rules for agent usability; `--fix` auto-generates schema improvements | None |
 
 Start with `audit` (zero setup), then `fuzz` (adversarial testing), then `init` (generates everything), then customize the YAML for your specific assertions.
 

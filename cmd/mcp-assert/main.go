@@ -79,10 +79,10 @@ Usage:
   mcp-assert snapshot --suite <dir> [--update] [--server <cmd>] [--fixture <dir>]
   mcp-assert watch    --suite <dir> [--server <cmd>] [--interval <duration>]
   mcp-assert intercept --server <cmd> --trajectory <yaml>
-  mcp-assert lint      --server <cmd> [--json] [--threshold N] [--call-tools]
+  mcp-assert lint      --server <cmd> [--json] [--threshold N] [--call-tools] [--fix] [--strict]
 
 Commands:
-  lint      Static schema analysis: check descriptions, types, examples, response sizes
+  lint      Static schema analysis (24 rules) + auto-fix: descriptions, types, examples, dependencies
   audit     Zero-config quality audit: connect, discover tools, test each one
   fuzz      Adversarial input testing: throw bad inputs at every tool, find crashes
   init      Scaffold a template, or generate a complete suite with --server

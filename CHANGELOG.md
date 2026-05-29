@@ -26,7 +26,11 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **W115: Token cost.** Estimates per-tool token consumption. Warns when a single tool consumes >1000 tokens of context.
 - **W116: Broad output.** Flags tools whose description doesn't mention what they return.
 - **Overloaded tool detection.** Flags descriptions with >3 action verbs (multi-purpose tools cause unstable selection).
+- **W108: Hidden side effects.** Flags tools whose name implies mutation (create, delete, update) but whose description doesn't acknowledge side effects. Agents may retry unsafely.
+- **W109: Missing examples.** Flags user-facing parameters (query, email, url, etc.) that lack examples. LLMs perform significantly better with representative values.
+- **W110: Schema-description drift.** Flags tools where >50% of parameters are not mentioned in the description. Catches stale documentation.
 - **`--strict` flag.** Promotes all warnings to errors for CI gates.
+- **`--fix` flag.** Auto-generates schema improvement suggestions for lint findings. Infers descriptions from tool/param names, formats from naming patterns (email→email, user_id→uuid), examples from common patterns, and return clauses from tool verbs. Tested across 6 scorecard servers with 60-94% fix rates.
 - **Tool dependency graph.** `lint` now infers data-flow dependencies between tools by matching parameter names, types, and description overlap. Powers E105 and E107. Generic parameters (path, id, query, content, etc.) are excluded to prevent false positives.
 
 ### Changed

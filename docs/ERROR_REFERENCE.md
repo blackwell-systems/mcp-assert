@@ -426,11 +426,119 @@ Consumes significant portion of LLM context window.
 
 ---
 
-### W301: Large Output Warning (Reserved)
-**Category:** Output  
+### W107: Non-Deterministic Output
+**Category:** Behavior  
 **Severity:** Warning
 
-Reserved for large output detection during runtime testing.
+Tool produces different outputs for identical inputs across multiple calls.
+
+**Detected via:** `--detect-nondeterminism` flag (calls tool 3x, compares hashes)
+
+**Remediation:**
+Ensure tool is deterministic, or document non-deterministic behavior.
+
+---
+
+### W108: Hidden Side Effects
+**Category:** Schema  
+**Severity:** Warning
+
+Tool name implies mutation (create, delete, update) but description doesn't acknowledge side effects.
+
+**Why It Matters:**
+Agents may retry mutation operations unsafely if they don't know the tool has side effects.
+
+**Remediation:**
+Add explicit mutation language to description (e.g., "Creates a new record", "Permanently deletes").
+
+---
+
+### W109: Missing Examples
+**Category:** Schema  
+**Severity:** Warning
+
+User-facing parameter (query, email, url, name, etc.) has no examples.
+
+**Why It Matters:**
+LLMs perform significantly better when schemas include representative values.
+
+**Remediation:**
+Add `examples` array with 1-2 representative values.
+
+---
+
+### W110: Schema-Description Drift
+**Category:** Schema  
+**Severity:** Warning
+
+More than 50% of tool parameters are not mentioned in the description.
+
+**Why It Matters:**
+Stale descriptions confuse agents about what inputs are needed.
+
+**Remediation:**
+Update description to reference all parameters, or remove unused parameters.
+
+---
+
+### W111: Description Quality
+**Category:** Schema  
+**Severity:** Warning
+
+Description is too short (<20 chars) or too long (>500 chars).
+
+**Remediation:**
+Keep between 20-500 characters.
+
+---
+
+### W112: Too Many Tools
+**Category:** Schema  
+**Severity:** Warning
+
+Server exposes more than 20 tools.
+
+**Why It Matters:**
+Research shows LLM tool selection accuracy degrades with scale.
+
+**Remediation:**
+Split into multiple focused servers or use tool grouping.
+
+---
+
+### W114: Schema Too Deep
+**Category:** Schema  
+**Severity:** Warning
+
+Input schema nested deeper than 3 levels.
+
+**Why It Matters:**
+LLMs struggle to construct deeply nested JSON correctly.
+
+**Remediation:**
+Flatten schema or accept a JSON string parameter.
+
+---
+
+### W115: High Token Cost
+**Category:** Schema  
+**Severity:** Warning
+
+Single tool definition consumes more than 1000 tokens of context.
+
+**Remediation:**
+Simplify schema, reduce parameters, or shorten description.
+
+---
+
+### W116: Broad Output
+**Category:** Schema  
+**Severity:** Warning
+
+Tool description doesn't mention what it returns.
+
+**Remediation:**
+Add a "Returns ..." clause to the description.
 
 ---
 
@@ -478,29 +586,87 @@ mcp-assert audit --server "..." --categories runtime
 
 ## Error Code Ranges
 
-| Range | Category | Examples |
-|-------|----------|----------|
+| Range | Category | Codes |
+|-------|----------|-------|
 | E000 | Success | E000 |
-| E1xx | Schema & Definition | E101, E102, E103, E112, E113 |
+| E1xx | Schema & Definition | E101, E102, E103, E105, E107, E112, E113 |
 | E2xx | Runtime | E201, E202, E203 |
 | E3xx | Output Issues | E301 |
 | E4xx | Assertion Failures | E401, E402 (reserved) |
 | E5xx | Behavioral | E500, E501 (reserved) |
-| W1xx | Schema Warnings | W101, W102, W103, W104, W105, W106 |
+| W1xx | Schema & Behavior Warnings | W101-W116 (14 rules) |
 | W3xx | Output Warnings | W301 (reserved) |
+
+---
+
+## Auto-Fix (`--fix`)
+
+The `--fix` flag auto-generates schema improvement suggestions:
+
+```bash
+mcp-assert lint --server "npx my-server" --fix
+```
+
+**Fixable codes:**
+
+| Code | Fix Strategy |
+|------|-------------|
+| E101 | Generate description from tool name + parameters |
+| E103 | Generate param description from name + type |
+| W103 | Infer format or examples from param name (email→email, user_id→uuid) |
+| W108 | Prepend mutation acknowledgment to description |
+| W109 | Generate examples from param name patterns (query→"search term") |
+| W111 | Expand short descriptions using tool name |
+| W116 | Append "Returns ..." clause based on tool verb (get→"Returns X data") |
+
+**Not auto-fixable (require human judgment):**
+- E105, E107: Circular deps and free text propagation (need restructuring)
+- E112: Sensitive params (need architectural decision)
+- W105: Tool similarity (need renaming or merging)
+- W112: Too many tools (need splitting)
+- W114: Schema depth (need flattening)
+
+**JSON output:**
+
+```bash
+mcp-assert lint --server "..." --fix --json
+```
+
+Returns structured fixes for programmatic consumption:
+
+```json
+{
+  "server": "my-server",
+  "tools": 9,
+  "findings": 25,
+  "fixable": 23,
+  "fixes": [
+    {
+      "tool": "get_user",
+      "code": "E103",
+      "field": "args.user_id.description",
+      "action": "set_description",
+      "value": "Unique identifier (string)",
+      "message": "Add description for \"user_id\": \"Unique identifier (string)\""
+    }
+  ]
+}
+```
 
 ---
 
 ## Adding New Error Codes
 
-Error codes are defined in `internal/report/errors.go`. To add a new code:
+Error codes are defined in `internal/report/codes.go`. To add a new code:
 
-1. Define the constant
+1. Define the constant in the `const` block
 2. Add to `ErrorRegistry` with full metadata
-3. Update this documentation
-4. Implement detection logic in appropriate analyzer
+3. Implement detection logic in appropriate lint file
+4. Add fix generation in `lint_fix.go` (if auto-fixable)
+5. Update this documentation
 
 ---
 
 **Last Updated:** 2026-05-29  
+**Total Rules:** 24 (7 errors, 17 warnings)
 **Version:** Phase 1 (Runtime errors only, lint errors coming in Phase 1.2)
