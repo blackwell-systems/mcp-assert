@@ -22,24 +22,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/blackwell-systems/mcp-assert/internal/report"
 	"github.com/mark3labs/mcp-go/mcp"
-)
-
-// LintSeverity indicates how critical a lint finding is.
-type LintSeverity string
-
-const (
-	LintError   LintSeverity = "error"   // will cause agent misuse
-	LintWarning LintSeverity = "warning" // may cause agent confusion
 )
 
 // LintFinding is a single issue found during schema analysis.
 type LintFinding struct {
-	Tool     string       `json:"tool"`
-	Code     string       `json:"code"`
-	Severity LintSeverity `json:"severity"`
-	Message  string       `json:"message"`
-	Field    string       `json:"field,omitempty"` // e.g. "args.query", "description"
+	Tool     string              `json:"tool"`
+	Code     report.ErrorCode    `json:"code"`
+	Severity report.ErrorSeverity `json:"severity"`
+	Message  string              `json:"message"`
+	Field    string              `json:"field,omitempty"` // e.g. "args.query", "description"
 }
 
 // LintReport is the full output of a lint run.
@@ -60,6 +53,7 @@ func Lint(args []string) error {
 	threshold := fs.Int("threshold", 0, "Fail if total findings exceed this count (0 = no limit)")
 	callTools := fs.Bool("call-tools", false, "Also call each tool with empty args to check response size")
 	maxResponseKB := fs.Int("max-response-kb", 100, "Maximum acceptable response size in KB (with --call-tools)")
+	detectNondet := fs.Bool("detect-nondeterminism", false, "Call each tool 3 times and flag non-deterministic outputs")
 	if err := fs.Parse(args); err != nil {
 		return fmt.Errorf("lint: %w", err)
 	}
@@ -109,6 +103,10 @@ func Lint(args []string) error {
 	// Cross-tool checks (require the full tool list).
 	findings = append(findings, lintToolSimilarity(toolsResult.Tools)...)
 	findings = append(findings, lintSchemaBloat(toolsResult.Tools)...)
+	findings = append(findings, lintDuplicateNames(toolsResult.Tools)...)
+	findings = append(findings, lintSensitiveParams(toolsResult.Tools)...)
+	findings = append(findings, lintCircularDependency(toolsResult.Tools)...)
+	findings = append(findings, lintFreeTextPropagation(toolsResult.Tools)...)
 
 	// Optional: call each tool with empty args to check response size.
 	if *callTools {
@@ -123,10 +121,23 @@ func Lint(args []string) error {
 		}
 	}
 
+	// Optional: call each tool 3 times and flag non-deterministic outputs.
+	if *detectNondet {
+		for _, tool := range toolsResult.Tools {
+			if isDestructiveTool(tool) {
+				continue
+			}
+			finding := lintNonDeterminism(ctx, mcpClient, tool)
+			if finding != nil {
+				findings = append(findings, *finding)
+			}
+		}
+	}
+
 	// Build report.
 	errors, warnings := 0, 0
 	for _, f := range findings {
-		if f.Severity == LintError {
+		if f.Severity == report.SeverityError {
 			errors++
 		} else {
 			warnings++
@@ -169,8 +180,8 @@ func lintTool(tool mcp.Tool) []LintFinding {
 	if strings.TrimSpace(tool.Description) == "" {
 		findings = append(findings, LintFinding{
 			Tool:     tool.Name,
-			Code:     "E101",
-			Severity: LintError,
+			Code:     report.E101,
+			Severity: report.SeverityError,
 			Message:  "Tool has no description. Agents cannot determine when to use this tool.",
 			Field:    "description",
 		})
@@ -180,8 +191,8 @@ func lintTool(tool mcp.Tool) []LintFinding {
 	if isVagueDescription(tool.Description) {
 		findings = append(findings, LintFinding{
 			Tool:     tool.Name,
-			Code:     "W101",
-			Severity: LintWarning,
+			Code:     report.W101,
+			Severity: report.SeverityWarning,
 			Message:  fmt.Sprintf("Tool description is too generic: %q. Be specific about what the tool does and when to use it.", tool.Description),
 			Field:    "description",
 		})
@@ -209,8 +220,8 @@ func lintTool(tool mcp.Tool) []LintFinding {
 		if _, hasType := propMap["type"]; !hasType {
 			findings = append(findings, LintFinding{
 				Tool:     tool.Name,
-				Code:     "E102",
-				Severity: LintError,
+				Code:     report.E102,
+				Severity: report.SeverityError,
 				Message:  fmt.Sprintf("Parameter %q has no type defined. Agents will send wrong value types.", name),
 				Field:    "args." + name + ".type",
 			})
@@ -221,8 +232,8 @@ func lintTool(tool mcp.Tool) []LintFinding {
 		if required[name] && strings.TrimSpace(desc) == "" {
 			findings = append(findings, LintFinding{
 				Tool:     tool.Name,
-				Code:     "E103",
-				Severity: LintError,
+				Code:     report.E103,
+				Severity: report.SeverityError,
 				Message:  fmt.Sprintf("Required parameter %q has no description. Agents will guess what value to provide.", name),
 				Field:    "args." + name + ".description",
 			})
@@ -232,8 +243,8 @@ func lintTool(tool mcp.Tool) []LintFinding {
 		if !required[name] && strings.TrimSpace(desc) == "" {
 			findings = append(findings, LintFinding{
 				Tool:     tool.Name,
-				Code:     "W102",
-				Severity: LintWarning,
+				Code:     report.W102,
+				Severity: report.SeverityWarning,
 				Message:  fmt.Sprintf("Optional parameter %q has no description.", name),
 				Field:    "args." + name + ".description",
 			})
@@ -243,8 +254,8 @@ func lintTool(tool mcp.Tool) []LintFinding {
 		if isGenericParamName(name) && strings.TrimSpace(desc) == "" {
 			findings = append(findings, LintFinding{
 				Tool:     tool.Name,
-				Code:     "W104",
-				Severity: LintWarning,
+				Code:     report.W104,
+				Severity: report.SeverityWarning,
 				Message:  fmt.Sprintf("Parameter %q is a generic name with no description. Agents cannot infer what to pass.", name),
 				Field:    "args." + name,
 			})
@@ -260,8 +271,8 @@ func lintTool(tool mcp.Tool) []LintFinding {
 			if !hasEnum && !hasPattern && !hasExample && !hasDefault {
 				findings = append(findings, LintFinding{
 					Tool:     tool.Name,
-					Code:     "W103",
-					Severity: LintWarning,
+					Code:     report.W103,
+					Severity: report.SeverityWarning,
 					Message:  fmt.Sprintf("Required string parameter %q has no enum, pattern, example, or default. Agents may hallucinate values.", name),
 					Field:    "args." + name,
 				})
@@ -294,8 +305,8 @@ func lintResponseSize(ctx context.Context, mcpClient interface {
 	if sizeKB > maxKB {
 		return &LintFinding{
 			Tool:     tool.Name,
-			Code:     "E301",
-			Severity: LintError,
+			Code:     report.E301,
+			Severity: report.SeverityError,
 			Message:  fmt.Sprintf("Response is %dKB (limit: %dKB). Large responses blow the agent's context window.", sizeKB, maxKB),
 			Field:    "response",
 		}
@@ -363,8 +374,8 @@ func lintToolSimilarity(tools []mcp.Tool) []LintFinding {
 			if sim >= 0.80 {
 				findings = append(findings, LintFinding{
 					Tool:     tools[i].Name,
-					Code:     "W105",
-					Severity: LintWarning,
+					Code:     report.W105,
+					Severity: report.SeverityWarning,
 					Message:  fmt.Sprintf("Tool %q and %q have %.0f%% similar descriptions. Agents may confuse them.", tools[i].Name, tools[j].Name, sim*100),
 					Field:    "description",
 				})
@@ -429,8 +440,8 @@ func lintSchemaBloat(tools []mcp.Tool) []LintFinding {
 	if tokens > 8000 {
 		return []LintFinding{{
 			Tool:     "(all tools)",
-			Code:     "W106",
-			Severity: LintWarning,
+			Code:     report.W106,
+			Severity: report.SeverityWarning,
 			Message:  fmt.Sprintf("tools/list response is ~%d tokens (%dKB). This consumes a significant portion of the agent's context window.", tokens, totalBytes/1024),
 			Field:    "schema_size",
 		}}
@@ -439,23 +450,91 @@ func lintSchemaBloat(tools []mcp.Tool) []LintFinding {
 	return nil
 }
 
+// lintDuplicateNames detects multiple tools sharing the exact same name.
+func lintDuplicateNames(tools []mcp.Tool) []LintFinding {
+	var findings []LintFinding
+	seen := make(map[string]int) // name -> count
+
+	for _, tool := range tools {
+		seen[tool.Name]++
+	}
+
+	for name, count := range seen {
+		if count > 1 {
+			findings = append(findings, LintFinding{
+				Tool:     name,
+				Code:     report.E113,
+				Severity: report.SeverityError,
+				Message:  fmt.Sprintf("Tool name %q appears %d times. Tool names must be unique.", name, count),
+				Field:    "name",
+			})
+		}
+	}
+
+	return findings
+}
+
+// sensitiveParamPatterns are substrings that indicate a parameter carries secrets.
+var sensitiveParamPatterns = []string{
+	"password", "passwd", "secret", "token", "api_key", "apikey",
+	"api-key", "auth", "credential", "private_key", "privatekey",
+	"access_key", "accesskey", "client_secret", "webhook_secret",
+}
+
+// lintSensitiveParams flags parameters whose names suggest they carry secrets.
+func lintSensitiveParams(tools []mcp.Tool) []LintFinding {
+	var findings []LintFinding
+
+	for _, tool := range tools {
+		props := tool.InputSchema.Properties
+		if len(props) == 0 {
+			continue
+		}
+
+		for name, prop := range props {
+			lower := strings.ToLower(name)
+			for _, pattern := range sensitiveParamPatterns {
+				if strings.Contains(lower, pattern) {
+					// Check if it's marked writeOnly (acceptable)
+					propMap, ok := prop.(map[string]any)
+					if ok {
+						if wo, _ := propMap["writeOnly"].(bool); wo {
+							break // properly marked, skip
+						}
+					}
+					findings = append(findings, LintFinding{
+						Tool:     tool.Name,
+						Code:     report.E112,
+						Severity: report.SeverityError,
+						Message:  fmt.Sprintf("Parameter %q appears to contain sensitive data. Secrets in tool schemas may be logged or cached by agents.", name),
+						Field:    "args." + name,
+					})
+					break // only report once per param
+				}
+			}
+		}
+	}
+
+	return findings
+}
+
 // printLintReport outputs a human-readable lint report to stderr/stdout.
-func printLintReport(report LintReport) {
-	if len(report.Findings) == 0 {
-		fmt.Printf("✓ %s: %d tools, no issues found\n", report.Server, report.Tools)
+func printLintReport(r LintReport) {
+	if len(r.Findings) == 0 {
+		fmt.Printf("✓ %s: %d tools, no issues found\n", r.Server, r.Tools)
 		return
 	}
 
 	fmt.Printf("%s: %d tools, %d issues (%d errors, %d warnings)\n\n",
-		report.Server, report.Tools, len(report.Findings), report.Errors, report.Warnings)
+		r.Server, r.Tools, len(r.Findings), r.Errors, r.Warnings)
 
-	for _, f := range report.Findings {
+	for _, f := range r.Findings {
 		prefix := "W"
-		if f.Severity == LintError {
+		if f.Severity == report.SeverityError {
 			prefix = "E"
 		}
 		fmt.Printf("  %s  %-5s  %-30s  %s\n", prefix, f.Code, f.Tool, f.Message)
 	}
 
-	fmt.Printf("\n%d error(s), %d warning(s)\n", report.Errors, report.Warnings)
+	fmt.Printf("\n%d error(s), %d warning(s)\n", r.Errors, r.Warnings)
 }

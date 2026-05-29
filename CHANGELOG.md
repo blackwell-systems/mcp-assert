@@ -7,9 +7,25 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ### Added
 
+- **Unified error taxonomy**: Consolidated all error codes into `internal/report/codes.go`. Audit command now shows error codes in output (e.g., `[E201] Server panic`). JSON output includes `error_code` field. Lint and audit commands share the same code registry. See [Error Reference](docs/ERROR_REFERENCE.md).
+  - E1xx: Schema/lint errors (E101: Missing description, E102: Missing type, E103: No param description)
+  - E2xx: Runtime errors (E201: Server panic, E202: Timeout, E203: Connection failed)
+  - E3xx: Output issues (E301: Output explosion)
+  - W1xx: Schema warnings (W101-W106: description quality, constraints, similarity, bloat)
+- **E105: Free text propagation detection.** Infers tool-to-tool data flow by matching parameter names across tools. Flags when unconstrained strings flow between tools without enum, pattern, or format constraints. Agents may pass free text where structured data is expected.
+- **E107: Circular dependency detection.** Builds a dependency graph from tool schemas and detects cycles using DFS. Flags tool chains that could cause agents to loop forever. Generic parameters (path, id, query, etc.) are excluded to reduce false positives.
+- **E112: Sensitive parameter detection.** Flags parameters named `password`, `secret`, `token`, `api_key`, `client_secret`, etc. that expose secrets in tool schemas. Agents may log or cache these values. Suppressed if parameter is marked `writeOnly: true`.
+- **E113: Duplicate tool name detection.** Flags multiple tools with the exact same name. Tool names must be unique for correct routing.
 - **W104: Generic parameter names.** Flags parameters named `data`, `value`, `input`, `payload`, `options`, etc. that give agents no signal about what to pass. Only fires when the parameter also has no description.
 - **W105: Tool similarity detection.** Compares all tool descriptions pairwise using Dice coefficient bigram similarity. Flags pairs with >80% similarity that agents will confuse (e.g. `list_directory` and `list_directory_with_sizes` at 94%).
 - **W106: Schema bloat.** Warns when the total `tools/list` response exceeds 8K tokens (~32KB JSON), which consumes a significant portion of the agent's context window.
+- **W107: Non-determinism detection.** New `--detect-nondeterminism` flag for `lint`. Calls each tool 3 times with identical inputs and compares output hashes. Flags tools that produce different results across runs. Non-deterministic tools are unreliable for agent workflows.
+- **Tool dependency graph.** `lint` now infers data-flow dependencies between tools by matching parameter names, types, and description overlap. Powers E105 and E107. Generic parameters (path, id, query, content, etc.) are excluded to prevent false positives.
+
+### Changed
+
+- **Audit output**: Now includes error codes in both text and JSON output. Example: `✗ create_table 0ms [E201] internal error: panic...`
+- **Lint internals**: LintFinding now uses `report.ErrorCode` type instead of raw strings. No user-facing change to codes.
 
 ## [0.9.0] - 2026-05-03
 

@@ -12,10 +12,11 @@ import (
 
 // AuditToolResult holds display data for a single audited tool.
 type AuditToolResult struct {
-	Tool     string
-	Status   string // "healthy", "crash", "timeout", "skipped"
-	Detail   string
-	Duration time.Duration
+	Tool      string
+	Status    string // "healthy", "crash", "timeout", "skipped"
+	ErrorCode ErrorCode
+	Detail    string
+	Duration  time.Duration
 }
 
 // PrintAuditHeader prints server info and quality score.
@@ -57,7 +58,13 @@ func PrintAuditResults(results []AuditToolResult) {
 			name = name[:34] + "…"
 		}
 
-		line := fmt.Sprintf("  %-4s %-36s %6s  %s", icon, name, dur, colorize(gray, r.Detail))
+		// Include error code if present
+		codeStr := ""
+		if r.ErrorCode != "" {
+			codeStr = colorize(gray, fmt.Sprintf("[%s] ", r.ErrorCode))
+		}
+
+		line := fmt.Sprintf("  %-4s %-36s %6s  %s%s", icon, name, dur, codeStr, colorize(gray, r.Detail))
 		fmt.Println(line)
 	}
 }

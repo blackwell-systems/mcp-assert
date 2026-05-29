@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/blackwell-systems/mcp-assert/internal/report"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
@@ -137,7 +138,7 @@ func TestLintTool_MissingDescription(t *testing.T) {
 
 	found := false
 	for _, f := range findings {
-		if f.Code == "E101" {
+		if f.Code == report.E101 {
 			found = true
 			break
 		}
@@ -165,7 +166,7 @@ func TestLintTool_MissingParamType(t *testing.T) {
 
 	found := false
 	for _, f := range findings {
-		if f.Code == "E102" {
+		if f.Code == report.E102 {
 			found = true
 			break
 		}
@@ -193,7 +194,7 @@ func TestLintTool_RequiredParamNoDescription(t *testing.T) {
 
 	found := false
 	for _, f := range findings {
-		if f.Code == "E103" {
+		if f.Code == report.E103 {
 			found = true
 			break
 		}
@@ -213,7 +214,7 @@ func TestLintTool_NoParamsNoFindings(t *testing.T) {
 
 	// Should only have no property-level findings (may have E101/W101 for description).
 	for _, f := range findings {
-		if f.Code == "E102" || f.Code == "E103" || f.Code == "W102" || f.Code == "W103" || f.Code == "W104" {
+		if f.Code == report.E102 || f.Code == report.E103 || f.Code == report.W102 || f.Code == report.W103 || f.Code == report.W104 {
 			t.Errorf("unexpected property-level finding %s for tool with no params", f.Code)
 		}
 	}
@@ -253,7 +254,7 @@ func TestLintToolSimilarity_HighSimilarity(t *testing.T) {
 		t.Error("expected W105 finding for identical descriptions")
 	}
 	for _, f := range findings {
-		if f.Code != "W105" {
+		if f.Code != report.W105 {
 			t.Errorf("expected code W105, got %s", f.Code)
 		}
 	}
@@ -279,5 +280,96 @@ func TestLintSchemaBloat_SmallSchema(t *testing.T) {
 
 	if len(findings) != 0 {
 		t.Errorf("expected 0 findings for small schema, got %d", len(findings))
+	}
+}
+
+func TestLintDuplicateNames(t *testing.T) {
+	tools := []mcp.Tool{
+		{Name: "get_user", Description: "Get a user by ID"},
+		{Name: "get_user", Description: "Get user details"},
+		{Name: "list_users", Description: "List all users"},
+	}
+	findings := lintDuplicateNames(tools)
+
+	if len(findings) != 1 {
+		t.Fatalf("expected 1 finding for duplicate name, got %d", len(findings))
+	}
+	if findings[0].Code != report.E113 {
+		t.Errorf("expected code E113, got %s", findings[0].Code)
+	}
+}
+
+func TestLintDuplicateNames_NoDuplicates(t *testing.T) {
+	tools := []mcp.Tool{
+		{Name: "get_user", Description: "Get a user by ID"},
+		{Name: "list_users", Description: "List all users"},
+	}
+	findings := lintDuplicateNames(tools)
+
+	if len(findings) != 0 {
+		t.Errorf("expected 0 findings, got %d", len(findings))
+	}
+}
+
+func TestLintSensitiveParams(t *testing.T) {
+	tools := []mcp.Tool{
+		{
+			Name:        "login",
+			Description: "Login to system",
+			InputSchema: mcp.ToolInputSchema{
+				Properties: map[string]interface{}{
+					"username": map[string]any{"type": "string"},
+					"password": map[string]any{"type": "string"},
+				},
+			},
+		},
+	}
+	findings := lintSensitiveParams(tools)
+
+	if len(findings) != 1 {
+		t.Fatalf("expected 1 finding for password param, got %d", len(findings))
+	}
+	if findings[0].Code != report.E112 {
+		t.Errorf("expected code E112, got %s", findings[0].Code)
+	}
+}
+
+func TestLintSensitiveParams_WriteOnlyOK(t *testing.T) {
+	tools := []mcp.Tool{
+		{
+			Name:        "login",
+			Description: "Login to system",
+			InputSchema: mcp.ToolInputSchema{
+				Properties: map[string]interface{}{
+					"password": map[string]any{"type": "string", "writeOnly": true},
+				},
+			},
+		},
+	}
+	findings := lintSensitiveParams(tools)
+
+	if len(findings) != 0 {
+		t.Errorf("expected 0 findings for writeOnly password, got %d", len(findings))
+	}
+}
+
+func TestLintSensitiveParams_MultiplePatterns(t *testing.T) {
+	tools := []mcp.Tool{
+		{
+			Name:        "configure",
+			Description: "Set configuration",
+			InputSchema: mcp.ToolInputSchema{
+				Properties: map[string]interface{}{
+					"api_key":       map[string]any{"type": "string"},
+					"client_secret": map[string]any{"type": "string"},
+					"name":          map[string]any{"type": "string"},
+				},
+			},
+		},
+	}
+	findings := lintSensitiveParams(tools)
+
+	if len(findings) != 2 {
+		t.Fatalf("expected 2 findings for api_key and client_secret, got %d", len(findings))
 	}
 }

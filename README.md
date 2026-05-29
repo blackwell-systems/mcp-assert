@@ -99,12 +99,20 @@ mcp-assert audit --server "npx my-mcp-server"
   Transport: stdio
   Score: 83%
 
-  ✓ read_query      1ms  responds, returns content
-  ✗ create_table    0ms  internal error: panic: nil pointer...
-  ✓ list_tables     1ms  responds, returns content
+  ✓ read_query      1ms  [E000] responds, returns content
+  ✗ create_table    0ms  [E201] internal error: panic: nil pointer...
+  ✓ list_tables     1ms  [E000] responds, returns content
 
   3 tools tested, 2 healthy, 1 crashed
 ```
+
+Error codes help you quickly classify issues:
+- **E000**: Success
+- **E201**: Server panic/crash
+- **E202**: Timeout
+- **W301**: Large output warning
+
+See [Error Reference](docs/ERROR_REFERENCE.md) for all codes.
 
 > [!TIP]
 > The audit connects, discovers every tool via `tools/list`, calls each one with schema-generated inputs, and reports which tools crash vs. handle errors properly. No YAML needed. To go deeper, generate assertion files and customize them:

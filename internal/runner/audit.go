@@ -18,14 +18,15 @@ import (
 
 // AuditToolResult holds the outcome of calling a single tool during an audit.
 type AuditToolResult struct {
-	Tool        string      `json:"tool"`
-	Description string      `json:"description,omitempty"`
-	Status      AuditStatus `json:"status"`
-	Detail      string      `json:"detail,omitempty"`
-	IsError     bool        `json:"is_error"`
-	HasContent  bool        `json:"has_content"`
-	Duration    time.Duration `json:"-"`
-	DurationMS  int64       `json:"duration_ms"`
+	Tool        string          `json:"tool"`
+	Description string          `json:"description,omitempty"`
+	Status      AuditStatus     `json:"status"`
+	ErrorCode   report.ErrorCode `json:"error_code,omitempty"`
+	Detail      string          `json:"detail,omitempty"`
+	IsError     bool            `json:"is_error"`
+	HasContent  bool            `json:"has_content"`
+	Duration    time.Duration   `json:"-"`
+	DurationMS  int64           `json:"duration_ms"`
 }
 
 // AuditStatus classifies how a tool responded during the audit.
@@ -167,10 +168,11 @@ func Audit(args []string) error {
 		healthy, crashes, timeouts, skipped := 0, 0, 0, 0
 		for i, r := range results {
 			reportResults[i] = report.AuditToolResult{
-				Tool:     r.Tool,
-				Status:   string(r.Status),
-				Detail:   r.Detail,
-				Duration: r.Duration,
+				Tool:      r.Tool,
+				Status:    string(r.Status),
+				ErrorCode: r.ErrorCode,
+				Detail:    r.Detail,
+				Duration:  r.Duration,
 			}
 			switch r.Status {
 			case AuditHealthy:
@@ -331,10 +333,24 @@ func truncate(s string, n int) string {
 }
 
 func auditResult(tool mcp.Tool, status AuditStatus, detail string, isError, hasContent bool, duration time.Duration) AuditToolResult {
+	// Map audit status to error codes
+	var errorCode report.ErrorCode
+	switch status {
+	case AuditHealthy:
+		errorCode = report.E000
+	case AuditCrash:
+		errorCode = report.E201
+	case AuditTimeout:
+		errorCode = report.E202
+	case AuditSkipped:
+		errorCode = "" // No error code for skipped
+	}
+
 	return AuditToolResult{
 		Tool:        tool.Name,
 		Description: tool.Description,
 		Status:      status,
+		ErrorCode:   errorCode,
 		Detail:      detail,
 		IsError:     isError,
 		HasContent:  hasContent,

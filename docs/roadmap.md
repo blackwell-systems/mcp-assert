@@ -133,7 +133,7 @@ Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-
 
 | Item | Version | Description |
 |------|---------|-------------|
-| **`mcp-assert lint` command** | 0.9.0 | Static schema analysis for agent usability. 7 lint codes (E101-E103, E301, W101-W103). Checks missing descriptions, types, constraints. Found 254 issues across 11 servers including official filesystem (16 errors) and GitHub MCP (112 issues). |
+| **`mcp-assert lint` command** | 0.9.0 | Static schema analysis for agent usability. 15 lint codes (E101-E103, E105, E107, E112-E113, E301, W101-W107). Static analysis, dependency graph inference, and runtime behavior checks (non-determinism, response size). Found 4,794 issues across 55 servers. |
 | **`mcp-assert fuzz` command** | 0.8.0 | Zero-setup adversarial testing. Category-based input generation from JSON Schema. Found bugs in 5 official MCP SDKs. |
 | **Shared server flags + connectAndInitialize** | 0.9.0 | Internal refactoring: shared flags prevent drift, shared connection logic eliminates duplication across audit/fuzz/lint/generate. |
 | **`mcp-assert audit` command** | 0.6.0 | Zero-config quality audit. Connects, discovers tools, calls each with schema-generated inputs, reports quality score. |

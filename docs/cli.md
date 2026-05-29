@@ -48,7 +48,12 @@ mcp-assert lint --server "npx my-mcp-server" --json --threshold 5
 | E101 | Error | Tool has no description |
 | E102 | Error | Parameter has no type defined |
 | E103 | Error | Required parameter has no description |
+| E112 | Error | Parameter name suggests sensitive data (password, secret, token, api_key) |
+| E113 | Error | Multiple tools share the same name |
+| E105 | Error | Unconstrained string flows between tools (free text propagation) |
+| E107 | Error | Circular dependency detected in tool graph |
 | E301 | Error | Response exceeds size limit (with `--call-tools`) |
+| W107 | Warning | Tool produces different outputs for identical inputs (with `--detect-nondeterminism`) |
 | W101 | Warning | Tool description is too generic/vague |
 | W102 | Warning | Optional parameter has no description |
 | W103 | Warning | Required string parameter has no enum, pattern, example, or default |
