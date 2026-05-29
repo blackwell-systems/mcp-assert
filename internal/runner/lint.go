@@ -55,6 +55,7 @@ func Lint(args []string) error {
 	maxResponseKB := fs.Int("max-response-kb", 100, "Maximum acceptable response size in KB (with --call-tools)")
 	detectNondet := fs.Bool("detect-nondeterminism", false, "Call each tool 3 times and flag non-deterministic outputs")
 	strict := fs.Bool("strict", false, "Treat warnings as errors (useful for CI gates)")
+	autoFix := fs.Bool("fix", false, "Generate auto-fix suggestions for lint findings")
 	if err := fs.Parse(args); err != nil {
 		return fmt.Errorf("lint: %w", err)
 	}
@@ -168,6 +169,24 @@ func Lint(args []string) error {
 		Findings: findings,
 		Errors:   errors,
 		Warnings: warnings,
+	}
+
+	// Auto-fix mode: generate suggestions.
+	if *autoFix {
+		fixes := generateFixes(toolsResult.Tools, findings)
+		fixReport := FixReport{
+			Server:   serverName,
+			Tools:    len(toolsResult.Tools),
+			Findings: len(findings),
+			Fixable:  len(fixes),
+			Fixes:    fixes,
+		}
+		if sf.jsonOut {
+			printFixReportJSON(fixReport)
+		} else {
+			printFixReport(fixReport)
+		}
+		return nil
 	}
 
 	// Output.
