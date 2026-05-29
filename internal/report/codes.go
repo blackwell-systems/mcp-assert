@@ -68,6 +68,12 @@ const (
 	W105 ErrorCode = "W105" // Tool Similarity
 	W106 ErrorCode = "W106" // Schema Bloat
 	W107 ErrorCode = "W107" // Non-Deterministic Output
+	W108 ErrorCode = "W108" // Hidden Side Effects
+	W111 ErrorCode = "W111" // Description Too Short/Long
+	W112 ErrorCode = "W112" // Too Many Tools
+	W114 ErrorCode = "W114" // Schema Too Deep
+	W115 ErrorCode = "W115" // High Token Cost
+	W116 ErrorCode = "W116" // Broad Output Schema
 
 	// W3xx: Output Warnings
 	W301 ErrorCode = "W301" // Large Output Warning (reserved)
@@ -235,6 +241,54 @@ var ErrorRegistry = map[ErrorCode]ErrorDefinition{
 		Category:    "behavior",
 		Description: "Tool produces different outputs for identical inputs across multiple calls",
 		Remediation: "Ensure tool is deterministic, or document non-deterministic behavior. Non-deterministic tools are unreliable for agent workflows.",
+	},
+	W108: {
+		Code:        W108,
+		Name:        "Hidden Side Effects",
+		Severity:    SeverityWarning,
+		Category:    "schema",
+		Description: "Tool name suggests mutation (create/delete/update) but description doesn't acknowledge side effects",
+		Remediation: "Document side effects explicitly in the tool description so agents know the operation is not safe to retry",
+	},
+	W111: {
+		Code:        W111,
+		Name:        "Description Quality",
+		Severity:    SeverityWarning,
+		Category:    "schema",
+		Description: "Tool description is too short (<20 chars) or too long (>500 chars)",
+		Remediation: "Keep descriptions between 20-500 characters: specific enough for tool selection, concise enough for context budget",
+	},
+	W112: {
+		Code:        W112,
+		Name:        "Too Many Tools",
+		Severity:    SeverityWarning,
+		Category:    "schema",
+		Description: "Server exposes more than 20 tools; LLM tool selection accuracy degrades with scale",
+		Remediation: "Split into multiple focused servers, or use tool grouping to reduce the selection set",
+	},
+	W114: {
+		Code:        W114,
+		Name:        "Schema Too Deep",
+		Severity:    SeverityWarning,
+		Category:    "schema",
+		Description: "Input schema has more than 3 levels of nesting; LLMs struggle to construct deeply nested JSON",
+		Remediation: "Flatten the schema or accept a JSON string parameter instead of deeply nested objects",
+	},
+	W115: {
+		Code:        W115,
+		Name:        "High Token Cost",
+		Severity:    SeverityWarning,
+		Category:    "schema",
+		Description: "Single tool definition consumes more than 1000 tokens of context budget",
+		Remediation: "Simplify the schema, reduce the number of parameters, or shorten the description",
+	},
+	W116: {
+		Code:        W116,
+		Name:        "Broad Output Schema",
+		Severity:    SeverityWarning,
+		Category:    "schema",
+		Description: "Tool has no output schema or uses 'any' type; consumers cannot validate responses",
+		Remediation: "Define a specific output schema so downstream tools and agents know what to expect",
 	},
 }
 

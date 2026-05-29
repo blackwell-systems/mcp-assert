@@ -54,6 +54,7 @@ func Lint(args []string) error {
 	callTools := fs.Bool("call-tools", false, "Also call each tool with empty args to check response size")
 	maxResponseKB := fs.Int("max-response-kb", 100, "Maximum acceptable response size in KB (with --call-tools)")
 	detectNondet := fs.Bool("detect-nondeterminism", false, "Call each tool 3 times and flag non-deterministic outputs")
+	strict := fs.Bool("strict", false, "Treat warnings as errors (useful for CI gates)")
 	if err := fs.Parse(args); err != nil {
 		return fmt.Errorf("lint: %w", err)
 	}
@@ -107,6 +108,12 @@ func Lint(args []string) error {
 	findings = append(findings, lintSensitiveParams(toolsResult.Tools)...)
 	findings = append(findings, lintCircularDependency(toolsResult.Tools)...)
 	findings = append(findings, lintFreeTextPropagation(toolsResult.Tools)...)
+	findings = append(findings, lintToolCount(toolsResult.Tools)...)
+	findings = append(findings, lintDescriptionLength(toolsResult.Tools)...)
+	findings = append(findings, lintSchemaDepth(toolsResult.Tools)...)
+	findings = append(findings, lintTokenCost(toolsResult.Tools)...)
+	findings = append(findings, lintBroadOutput(toolsResult.Tools)...)
+	findings = append(findings, lintOverloadedTool(toolsResult.Tools)...)
 
 	// Optional: call each tool with empty args to check response size.
 	if *callTools {
@@ -130,6 +137,15 @@ func Lint(args []string) error {
 			finding := lintNonDeterminism(ctx, mcpClient, tool)
 			if finding != nil {
 				findings = append(findings, *finding)
+			}
+		}
+	}
+
+	// Strict mode: promote warnings to errors.
+	if *strict {
+		for i := range findings {
+			if findings[i].Severity == report.SeverityWarning {
+				findings[i].Severity = report.SeverityError
 			}
 		}
 	}
