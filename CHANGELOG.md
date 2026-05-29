@@ -20,6 +20,13 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **W105: Tool similarity detection.** Compares all tool descriptions pairwise using Dice coefficient bigram similarity. Flags pairs with >80% similarity that agents will confuse (e.g. `list_directory` and `list_directory_with_sizes` at 94%).
 - **W106: Schema bloat.** Warns when the total `tools/list` response exceeds 8K tokens (~32KB JSON), which consumes a significant portion of the agent's context window.
 - **W107: Non-determinism detection.** New `--detect-nondeterminism` flag for `lint`. Calls each tool 3 times with identical inputs and compares output hashes. Flags tools that produce different results across runs. Non-deterministic tools are unreliable for agent workflows.
+- **W111: Description quality.** Flags descriptions too short (<20 chars) or too long (>500 chars).
+- **W112: Tool count.** Warns when server exposes >20 tools (LLM accuracy degrades at scale).
+- **W114: Schema depth.** Flags input schemas nested deeper than 3 levels (LLMs struggle with deep nesting).
+- **W115: Token cost.** Estimates per-tool token consumption. Warns when a single tool consumes >1000 tokens of context.
+- **W116: Broad output.** Flags tools whose description doesn't mention what they return.
+- **Overloaded tool detection.** Flags descriptions with >3 action verbs (multi-purpose tools cause unstable selection).
+- **`--strict` flag.** Promotes all warnings to errors for CI gates.
 - **Tool dependency graph.** `lint` now infers data-flow dependencies between tools by matching parameter names, types, and description overlap. Powers E105 and E107. Generic parameters (path, id, query, content, etc.) are excluded to prevent false positives.
 
 ### Changed

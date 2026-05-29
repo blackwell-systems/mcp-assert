@@ -19,7 +19,7 @@ Machine-readable feature inventory. Dense structured lists for AI analysis and c
 | `snapshot` | Capture/compare tool response snapshots | `--suite`, `--server`, `--fixture`, `--update`, `--docker` |
 | `watch` | Rerun assertions on YAML file change; shows unified diff when assertion status flips | `--suite`, `--fixture`, `--server`, `--interval`, `--timeout` |
 | `intercept` | Proxy stdio between agent and MCP server, capturing tool calls for live trajectory validation | `--server`, `--trajectory`, `--timeout` |
-| `lint` | Static schema analysis for agent usability: 15 lint codes covering missing descriptions, untyped params, unconstrained strings, generic param names, tool similarity detection, schema bloat, oversized responses, sensitive parameter exposure, duplicate tool names, circular dependencies, free text propagation, non-determinism detection. | `--server`, `--transport`, `--headers`, `--json`, `--threshold`, `--call-tools`, `--max-response-kb`, `--detect-nondeterminism` |
+| `lint` | Static schema analysis for agent usability: 21 lint codes covering missing descriptions, untyped params, unconstrained strings, generic param names, tool similarity, schema bloat, oversized responses, sensitive params, duplicate names, circular deps, free text propagation, non-determinism, description quality, tool count, schema depth, token cost, broad output, overloaded responsibility. | `--server`, `--transport`, `--headers`, `--json`, `--threshold`, `--call-tools`, `--max-response-kb`, `--detect-nondeterminism`, `--strict` |
 
 ---
 

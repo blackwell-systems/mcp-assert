@@ -54,6 +54,11 @@ mcp-assert lint --server "npx my-mcp-server" --json --threshold 5
 | E107 | Error | Circular dependency detected in tool graph |
 | E301 | Error | Response exceeds size limit (with `--call-tools`) |
 | W107 | Warning | Tool produces different outputs for identical inputs (with `--detect-nondeterminism`) |
+| W111 | Warning | Description too short (<20 chars) or too long (>500 chars) |
+| W112 | Warning | Server has >20 tools; LLM selection accuracy degrades |
+| W114 | Warning | Input schema nested >3 levels; LLMs struggle with deep nesting |
+| W115 | Warning | Single tool consumes >1000 tokens of context budget |
+| W116 | Warning | Description doesn't mention what the tool returns |
 | W101 | Warning | Tool description is too generic/vague |
 | W102 | Warning | Optional parameter has no description |
 | W103 | Warning | Required string parameter has no enum, pattern, example, or default |
