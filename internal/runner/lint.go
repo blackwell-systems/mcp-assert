@@ -114,6 +114,9 @@ func Lint(args []string) error {
 	findings = append(findings, lintTokenCost(toolsResult.Tools)...)
 	findings = append(findings, lintBroadOutput(toolsResult.Tools)...)
 	findings = append(findings, lintOverloadedTool(toolsResult.Tools)...)
+	findings = append(findings, lintHiddenSideEffects(toolsResult.Tools)...)
+	findings = append(findings, lintMissingExamples(toolsResult.Tools)...)
+	findings = append(findings, lintSchemaDescriptionDrift(toolsResult.Tools)...)
 
 	// Optional: call each tool with empty args to check response size.
 	if *callTools {

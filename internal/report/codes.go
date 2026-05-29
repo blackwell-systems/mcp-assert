@@ -69,6 +69,8 @@ const (
 	W106 ErrorCode = "W106" // Schema Bloat
 	W107 ErrorCode = "W107" // Non-Deterministic Output
 	W108 ErrorCode = "W108" // Hidden Side Effects
+	W109 ErrorCode = "W109" // Missing Examples on User-Facing Params
+	W110 ErrorCode = "W110" // Schema-Description Drift
 	W111 ErrorCode = "W111" // Description Too Short/Long
 	W112 ErrorCode = "W112" // Too Many Tools
 	W114 ErrorCode = "W114" // Schema Too Deep
@@ -249,6 +251,22 @@ var ErrorRegistry = map[ErrorCode]ErrorDefinition{
 		Category:    "schema",
 		Description: "Tool name suggests mutation (create/delete/update) but description doesn't acknowledge side effects",
 		Remediation: "Document side effects explicitly in the tool description so agents know the operation is not safe to retry",
+	},
+	W109: {
+		Code:        W109,
+		Name:        "Missing Examples",
+		Severity:    SeverityWarning,
+		Category:    "schema",
+		Description: "User-facing parameter (query, email, url, etc.) has no examples; LLMs perform better with examples",
+		Remediation: "Add 'examples' array with 1-2 representative values",
+	},
+	W110: {
+		Code:        W110,
+		Name:        "Schema-Description Drift",
+		Severity:    SeverityWarning,
+		Category:    "schema",
+		Description: "More than half of the tool's parameters are not mentioned in its description",
+		Remediation: "Update the description to reference all parameters, or remove parameters the tool doesn't actually use",
 	},
 	W111: {
 		Code:        W111,
