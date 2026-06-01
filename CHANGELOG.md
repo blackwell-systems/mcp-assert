@@ -38,6 +38,12 @@ The format is based on Keep a Changelog, Semantic Versioning.
 - **Audit output**: Now includes error codes in both text and JSON output. Example: `✗ create_table 0ms [E201] internal error: panic...`
 - **Lint internals**: LintFinding now uses `report.ErrorCode` type instead of raw strings. No user-facing change to codes.
 
+### Fixed
+
+- **E112 false positives**: `token_budget`, `max_tokens`, `page_token`, and similar non-sensitive token parameters no longer flagged as secrets. Added allowlist for common non-auth "token" params.
+- **E107 false positives**: Circular dependency detection now requires strong field name match (>=0.8 similarity). Description cross-references ("see also `blast_radius`") no longer create dependency edges.
+- **`--skip-rules` flag**: New `--skip-rules E107,E112` flag to suppress specific rule codes in CI. Applied before `--strict` promotion.
+
 ## [0.9.0] - 2026-05-03
 
 ### Added
