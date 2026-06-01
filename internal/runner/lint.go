@@ -56,6 +56,7 @@ func Lint(args []string) error {
 	detectNondet := fs.Bool("detect-nondeterminism", false, "Call each tool 3 times and flag non-deterministic outputs")
 	strict := fs.Bool("strict", false, "Treat warnings as errors (useful for CI gates)")
 	autoFix := fs.Bool("fix", false, "Generate auto-fix suggestions for lint findings")
+	skipRules := fs.String("skip-rules", "", "Comma-separated list of rule codes to suppress (e.g., E107,E112)")
 	if err := fs.Parse(args); err != nil {
 		return fmt.Errorf("lint: %w", err)
 	}
@@ -143,6 +144,21 @@ func Lint(args []string) error {
 				findings = append(findings, *finding)
 			}
 		}
+	}
+
+	// Skip rules: filter out suppressed findings.
+	if *skipRules != "" {
+		skip := make(map[report.ErrorCode]bool)
+		for _, code := range strings.Split(*skipRules, ",") {
+			skip[report.ErrorCode(strings.TrimSpace(code))] = true
+		}
+		filtered := findings[:0]
+		for _, f := range findings {
+			if !skip[f.Code] {
+				filtered = append(filtered, f)
+			}
+		}
+		findings = filtered
 	}
 
 	// Strict mode: promote warnings to errors.
@@ -514,9 +530,29 @@ func lintDuplicateNames(tools []mcp.Tool) []LintFinding {
 
 // sensitiveParamPatterns are substrings that indicate a parameter carries secrets.
 var sensitiveParamPatterns = []string{
-	"password", "passwd", "secret", "token", "api_key", "apikey",
-	"api-key", "auth", "credential", "private_key", "privatekey",
+	"password", "passwd", "secret", "api_key", "apikey",
+	"api-key", "auth_token", "credential", "private_key", "privatekey",
 	"access_key", "accesskey", "client_secret", "webhook_secret",
+	"bearer", "jwt",
+}
+
+// nonSensitiveTokenParams are parameter names containing "token" that are NOT secrets.
+var nonSensitiveTokenParams = map[string]bool{
+	"token_budget":    true,
+	"token_count":     true,
+	"token_limit":     true,
+	"token_length":    true,
+	"max_tokens":      true,
+	"num_tokens":      true,
+	"token_usage":     true,
+	"total_tokens":    true,
+	"context_tokens":  true,
+	"prompt_tokens":   true,
+	"output_tokens":   true,
+	"page_token":      true,
+	"next_page_token": true,
+	"cursor_token":    true,
+	"pagination_token": true,
 }
 
 // lintSensitiveParams flags parameters whose names suggest they carry secrets.
@@ -531,6 +567,26 @@ func lintSensitiveParams(tools []mcp.Tool) []LintFinding {
 
 		for name, prop := range props {
 			lower := strings.ToLower(name)
+
+			// Skip known non-sensitive "token" params (token_budget, max_tokens, etc.)
+			if nonSensitiveTokenParams[lower] {
+				continue
+			}
+
+			// Check for bare "token" separately (only flag if it looks like an auth token)
+			if strings.Contains(lower, "token") {
+				// Only flag if the name is just "token" or has auth-related prefixes
+				isAuthToken := lower == "token" ||
+					strings.Contains(lower, "auth_token") ||
+					strings.Contains(lower, "access_token") ||
+					strings.Contains(lower, "refresh_token") ||
+					strings.Contains(lower, "bearer_token") ||
+					strings.Contains(lower, "api_token")
+				if !isAuthToken {
+					continue // token_budget, token_count, etc. are safe
+				}
+			}
+
 			for _, pattern := range sensitiveParamPatterns {
 				if strings.Contains(lower, pattern) {
 					// Check if it's marked writeOnly (acceptable)

@@ -120,32 +120,43 @@ var commonParamNames = map[string]bool{
 	"source": true, "destination": true, "target": true,
 	"content": true, "pattern": true, "query": true, "text": true,
 	"encoding": true, "recursive": true, "limit": true, "offset": true,
+	"exclude": true, "include": true, "filter": true, "options": true,
+	"excludepatterns": true, "includepatterns": true,
 }
 
 // fieldMatchConfidence calculates how likely two fields represent the same data.
+// Requires strong field name match (>= 0.8) as a prerequisite. Description
+// overlap alone is insufficient because tools often cross-reference each other
+// in documentation ("see also blast_radius") without implying data flow.
 func fieldMatchConfidence(from, to depFieldInfo, fromDesc, toDesc string) float64 {
 	// Skip common/generic params - they don't indicate real dependencies
 	if commonParamNames[strings.ToLower(from.name)] || commonParamNames[strings.ToLower(to.name)] {
 		return 0.0
 	}
 
+	// Name similarity is the primary signal. Without a strong name match,
+	// description overlap alone causes false positives from "see also" references.
+	nameSim := paramNameSimilarity(from.name, to.name)
+	if nameSim < 0.8 {
+		return 0.0 // require strong field name match as prerequisite
+	}
+
 	var confidence float64
 
 	// Name similarity (weight: 0.5)
-	nameSim := paramNameSimilarity(from.name, to.name)
 	confidence += nameSim * 0.5
 
-	// Type compatibility (weight: 0.2)
+	// Type compatibility (weight: 0.3)
 	if from.typ == to.typ && from.typ != "" {
-		confidence += 0.2
+		confidence += 0.3
 	} else if typeCompatible(from.typ, to.typ) {
-		confidence += 0.1
+		confidence += 0.15
 	}
 
-	// Description token overlap (weight: 0.3)
+	// Description token overlap (weight: 0.2, reduced from 0.3)
 	if fromDesc != "" && toDesc != "" {
 		descSim := tokenJaccard(fromDesc, toDesc)
-		confidence += descSim * 0.3
+		confidence += descSim * 0.2
 	}
 
 	// Bonus for exact name match + same type
