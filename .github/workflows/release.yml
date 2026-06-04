@@ -176,7 +176,7 @@ jobs:
           npm version "$VERSION" --no-git-tag-version
 
       - name: Build and publish jest plugin
-        run: cd jest-plugin && npm install && npm run build && npm publish
+        run: cd jest-plugin && npm install && npm run build && npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -198,7 +198,7 @@ jobs:
           npm version "$VERSION" --no-git-tag-version --allow-same-version
 
       - name: Publish bun plugin
-        run: cd bun-plugin && npm publish
+        run: cd bun-plugin && npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -220,6 +220,6 @@ jobs:
           npm version "$VERSION" --no-git-tag-version
 
       - name: Build and publish vitest plugin
-        run: cd vitest-plugin && npm install && npm run build && npm publish
+        run: cd vitest-plugin && npm install && npm run build && npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
