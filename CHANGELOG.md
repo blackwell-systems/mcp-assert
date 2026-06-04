@@ -40,6 +40,11 @@ The format is based on Keep a Changelog, Semantic Versioning.
 
 ### Fixed
 
+- **E105/E107 false positive reduction (#23).** On path/ID-heavy servers (e.g., agent-lsp with 65 tools), E105 produced 2,784 false positives and E107 produced 751 path variants. Fixed by: (1) skipping params with path/ID suffixes (`*_path`, `*_file`, `*_dir`, `*_id`, `*_uri`), (2) skipping content-shaped params (`new_text`, `scope`, `filter`, `query`, `command`, `description`, etc.), (3) collapsing E107 to one finding per unique cycle (not per path variant), (4) downgrading E107 from error to warning. Result: 97% reduction (3,535 → ~100 → 0 E105 errors on well-tested servers).
+- **npm plugin publish failures.** Scoped packages (`@blackwell-systems/*`) require `--access public` on first publish. Added to release workflow.
+
+### Fixed
+
 - **E112 false positives**: `token_budget`, `max_tokens`, `page_token`, and similar non-sensitive token parameters no longer flagged as secrets. Added allowlist for common non-auth "token" params.
 - **E107 false positives**: Circular dependency detection now requires strong field name match (>=0.8 similarity). Description cross-references ("see also `blast_radius`") no longer create dependency edges.
 - **`--skip-rules` flag**: New `--skip-rules E107,E112` flag to suppress specific rule codes in CI. Applied before `--strict` promotion.
