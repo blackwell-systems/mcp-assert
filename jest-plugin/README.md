@@ -1,4 +1,4 @@
-# jest-mcp-assert
+# @blackwell-systems/jest-mcp-assert
 
 Jest integration for [mcp-assert](https://github.com/blackwell-systems/mcp-assert). Run MCP server assertion YAML files as Jest tests.
 
@@ -7,7 +7,7 @@ Same YAML files work across Jest, Vitest, pytest, and the CLI.
 ## Install
 
 ```bash
-npm install -D jest-mcp-assert @blackwell-systems/mcp-assert
+npm install -D @blackwell-systems/jest-mcp-assert @blackwell-systems/mcp-assert
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ npm install -D jest-mcp-assert @blackwell-systems/mcp-assert
 
 ```ts
 // mcp.test.ts
-import { describeMcpSuite } from 'jest-mcp-assert'
+import { describeMcpSuite } from '@blackwell-systems/jest-mcp-assert'
 
 describeMcpSuite('my mcp server', 'evals/')
 ```
@@ -26,7 +26,7 @@ Each YAML file in `evals/` becomes a Jest test case.
 ### Single assertion mode
 
 ```ts
-import { runMcpAssert } from 'jest-mcp-assert'
+import { runMcpAssert } from '@blackwell-systems/jest-mcp-assert'
 
 test('echo tool returns message', () => {
   runMcpAssert('evals/echo.yaml')
@@ -50,7 +50,7 @@ runMcpAssert('evals/echo.yaml', {
 
 ## How it works
 
-jest-mcp-assert is a thin bridge (~100 lines). It shells out to the mcp-assert Go binary with `--json`, parses the result, and maps it to Jest pass/fail outcomes. The Go binary handles all MCP protocol logic.
+@blackwell-systems/jest-mcp-assert is a thin bridge (~100 lines). It shells out to the mcp-assert Go binary with `--json`, parses the result, and maps it to Jest pass/fail outcomes. The Go binary handles all MCP protocol logic.
 
 Binary resolution (in order):
 1. Explicit `binary` option

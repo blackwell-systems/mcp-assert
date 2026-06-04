@@ -1,5 +1,5 @@
 {
-  "name": "bun-mcp-assert",
+  "name": "@blackwell-systems/bun-mcp-assert",
   "version": "0.7.3",
   "description": "Bun test integration for mcp-assert: run MCP server assertion YAML files as Bun tests",
   "main": "src/index.ts",

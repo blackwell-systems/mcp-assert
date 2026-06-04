@@ -9,7 +9,7 @@ import type { McpSuiteOptions } from "./types";
  * as a Bun test case.
  *
  * Usage:
- *   import { describeMcpSuite } from "bun-mcp-assert"
+ *   import { describeMcpSuite } from "@blackwell-systems/bun-mcp-assert"
  *   describeMcpSuite("my mcp server", "evals/")
  */
 export function describeMcpSuite(

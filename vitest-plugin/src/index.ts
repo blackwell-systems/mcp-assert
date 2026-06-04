@@ -7,7 +7,7 @@
  *
  *    ```ts
  *    // mcp.test.ts
- *    import { describeMcpSuite } from 'vitest-mcp-assert'
+ *    import { describeMcpSuite } from '@blackwell-systems/vitest-mcp-assert'
  *    describeMcpSuite('mcp server', 'evals/')
  *    ```
  *
@@ -16,7 +16,7 @@
  *    ```ts
  *    // mcp.test.ts
  *    import { test } from 'vitest'
- *    import { runMcpAssert } from 'vitest-mcp-assert'
+ *    import { runMcpAssert } from '@blackwell-systems/vitest-mcp-assert'
  *
  *    test('echo tool', () => runMcpAssert('evals/echo.yaml'))
  *    test('greet tool', () => runMcpAssert('evals/greet.yaml', { timeout: '60s' }))

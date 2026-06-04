@@ -7,9 +7,9 @@ All integrations follow the same architecture: a thin bridge that shells out to 
 | Plugin | Language | Registry | Install |
 |--------|----------|----------|---------|
 | [pytest-mcp-assert](https://pypi.org/project/pytest-mcp-assert/) | Python | PyPI | `pip install pytest-mcp-assert` |
-| [vitest-mcp-assert](https://www.npmjs.com/package/vitest-mcp-assert) | TypeScript | npm | `npm i -D vitest-mcp-assert` |
-| [jest-mcp-assert](https://www.npmjs.com/package/jest-mcp-assert) | TypeScript | npm | `npm i -D jest-mcp-assert` |
-| [bun-mcp-assert](https://www.npmjs.com/package/bun-mcp-assert) | TypeScript | npm | `bun add -d bun-mcp-assert` |
+| [vitest-mcp-assert](https://www.npmjs.com/package/@blackwell-systems/vitest-mcp-assert) | TypeScript | npm | `npm i -D @blackwell-systems/vitest-mcp-assert` |
+| [jest-mcp-assert](https://www.npmjs.com/package/@blackwell-systems/jest-mcp-assert) | TypeScript | npm | `npm i -D @blackwell-systems/jest-mcp-assert` |
+| [bun-mcp-assert](https://www.npmjs.com/package/@blackwell-systems/bun-mcp-assert) | TypeScript | npm | `bun add -d @blackwell-systems/bun-mcp-assert` |
 | [phpunit-mcp-assert](https://packagist.org/packages/blackwell-systems/phpunit-mcp-assert) | PHP | Packagist | `composer require --dev blackwell-systems/phpunit-mcp-assert` |
 | [mcpassert](https://github.com/blackwell-systems/mcp-assert/tree/main/go-plugin) | Go | Go module | `go get github.com/blackwell-systems/mcp-assert/go-plugin` |
 
@@ -20,7 +20,7 @@ All six use the same YAML assertion files. Write once, run in any framework.
 ### Install
 
 ```bash
-npm install -D vitest-mcp-assert @blackwell-systems/mcp-assert
+npm install -D @blackwell-systems/vitest-mcp-assert @blackwell-systems/mcp-assert
 ```
 
 The `@blackwell-systems/mcp-assert` package provides the binary. If you already have `mcp-assert` on PATH (via Homebrew, Go, or pip), you can skip it.
@@ -29,7 +29,7 @@ The `@blackwell-systems/mcp-assert` package provides the binary. If you already 
 
 ```ts
 // mcp.test.ts
-import { describeMcpSuite } from 'vitest-mcp-assert'
+import { describeMcpSuite } from '@blackwell-systems/vitest-mcp-assert'
 
 describeMcpSuite('mcp server assertions', 'evals/')
 ```
@@ -46,7 +46,7 @@ Each `.yaml` file in `evals/` becomes a separate Vitest test, named from the YAM
 
 ```ts
 import { test } from 'vitest'
-import { runMcpAssert } from 'vitest-mcp-assert'
+import { runMcpAssert } from '@blackwell-systems/vitest-mcp-assert'
 
 test('echo tool', () => runMcpAssert('evals/echo.yaml'))
 test('greet tool', () => runMcpAssert('evals/greet.yaml', { timeout: '60s' }))
@@ -137,7 +137,7 @@ timeout: 30s
 ### Install
 
 ```bash
-npm install -D jest-mcp-assert @blackwell-systems/mcp-assert
+npm install -D @blackwell-systems/jest-mcp-assert @blackwell-systems/mcp-assert
 ```
 
 ### Usage
@@ -145,14 +145,14 @@ npm install -D jest-mcp-assert @blackwell-systems/mcp-assert
 Auto-discover all YAML files:
 
 ```ts
-import { describeMcpSuite } from 'jest-mcp-assert'
+import { describeMcpSuite } from '@blackwell-systems/jest-mcp-assert'
 describeMcpSuite('mcp server', 'evals/')
 ```
 
 Or run individual assertions:
 
 ```ts
-import { runMcpAssert } from 'jest-mcp-assert'
+import { runMcpAssert } from '@blackwell-systems/jest-mcp-assert'
 test('echo tool', () => { runMcpAssert('evals/echo.yaml') })
 ```
 
@@ -163,13 +163,13 @@ Same YAML files as pytest and Vitest. See `jest-plugin/README.md` for all option
 ### Install
 
 ```bash
-bun add -d bun-mcp-assert @blackwell-systems/mcp-assert
+bun add -d @blackwell-systems/bun-mcp-assert @blackwell-systems/mcp-assert
 ```
 
 ### Usage
 
 ```ts
-import { describeMcpSuite } from "bun-mcp-assert"
+import { describeMcpSuite } from "@blackwell-systems/bun-mcp-assert"
 describeMcpSuite("mcp server", "evals/")
 ```
 
@@ -177,7 +177,7 @@ Or individually:
 
 ```ts
 import { test } from "bun:test"
-import { runMcpAssert } from "bun-mcp-assert"
+import { runMcpAssert } from "@blackwell-systems/bun-mcp-assert"
 test("echo tool", () => { runMcpAssert("evals/echo.yaml") })
 ```
 

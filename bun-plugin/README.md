@@ -1,4 +1,4 @@
-# bun-mcp-assert
+# @blackwell-systems/bun-mcp-assert
 
 Bun test integration for [mcp-assert](https://github.com/blackwell-systems/mcp-assert). Run MCP server assertion YAML files as Bun tests.
 
@@ -7,7 +7,7 @@ Same YAML files work across Bun, Jest, Vitest, pytest, and the CLI.
 ## Install
 
 ```bash
-bun add -d bun-mcp-assert @blackwell-systems/mcp-assert
+bun add -d @blackwell-systems/bun-mcp-assert @blackwell-systems/mcp-assert
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ bun add -d bun-mcp-assert @blackwell-systems/mcp-assert
 
 ```ts
 // mcp.test.ts
-import { describeMcpSuite } from "bun-mcp-assert"
+import { describeMcpSuite } from "@blackwell-systems/bun-mcp-assert"
 
 describeMcpSuite("my mcp server", "evals/")
 ```
@@ -27,7 +27,7 @@ Each YAML file in `evals/` becomes a Bun test case. Run with `bun test`.
 
 ```ts
 import { test } from "bun:test"
-import { runMcpAssert } from "bun-mcp-assert"
+import { runMcpAssert } from "@blackwell-systems/bun-mcp-assert"
 
 test("echo tool returns message", () => {
   runMcpAssert("evals/echo.yaml")
@@ -51,7 +51,7 @@ runMcpAssert("evals/echo.yaml", {
 
 ## How it works
 
-bun-mcp-assert is a thin bridge. It uses `Bun.spawnSync` to call the mcp-assert Go binary with `--json`, parses the result, and maps it to Bun test pass/fail outcomes.
+@blackwell-systems/bun-mcp-assert is a thin bridge. It uses `Bun.spawnSync` to call the mcp-assert Go binary with `--json`, parses the result, and maps it to Bun test pass/fail outcomes.
 
 Binary resolution (in order):
 1. Explicit `binary` option

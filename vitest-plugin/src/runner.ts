@@ -8,7 +8,7 @@ import type { McpAssertResult, RunOptions } from "./types.js";
  *
  * Usage:
  *   import { test } from 'vitest'
- *   import { runMcpAssert } from 'vitest-mcp-assert'
+ *   import { runMcpAssert } from '@blackwell-systems/vitest-mcp-assert'
  *
  *   test('echo returns message', () => runMcpAssert('evals/echo.yaml'))
  */

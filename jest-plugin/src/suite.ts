@@ -9,7 +9,7 @@ import type { McpSuiteOptions } from "./types";
  * as a Jest test case.
  *
  * Usage:
- *   import { describeMcpSuite } from 'jest-mcp-assert'
+ *   import { describeMcpSuite } from '@blackwell-systems/jest-mcp-assert'
  *   describeMcpSuite('my mcp server', 'evals/')
  */
 export function describeMcpSuite(

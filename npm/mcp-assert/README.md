@@ -59,11 +59,11 @@ mcp-assert lint --server "npx my-mcp-server" --strict
 ## Vitest Integration
 
 ```bash
-npm install -D vitest-mcp-assert
+npm install -D @blackwell-systems/vitest-mcp-assert
 ```
 
 ```ts
-import { describeMcpSuite } from 'vitest-mcp-assert'
+import { describeMcpSuite } from '@blackwell-systems/vitest-mcp-assert'
 describeMcpSuite('mcp server', 'evals/')
 ```
 
@@ -82,7 +82,7 @@ describeMcpSuite('mcp server', 'evals/')
 - [Error Reference](https://github.com/blackwell-systems/mcp-assert/blob/main/docs/ERROR_REFERENCE.md) (24 error codes)
 - [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/) (102 servers scanned, 4,794 issues found)
 - [GitHub Action](https://github.com/marketplace/actions/mcp-assert)
-- [Vitest plugin](https://www.npmjs.com/package/vitest-mcp-assert)
+- [Vitest plugin](https://www.npmjs.com/package/@blackwell-systems/vitest-mcp-assert)
 - [pytest plugin](https://pypi.org/project/pytest-mcp-assert/)
 
 ## License

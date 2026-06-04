@@ -96,26 +96,26 @@ Source: `pytest-plugin/` directory in this repo. Published to PyPI automatically
 
 ### Vitest Plugin
 ```bash
-npm install -D vitest-mcp-assert @blackwell-systems/mcp-assert
+npm install -D @blackwell-systems/vitest-mcp-assert @blackwell-systems/mcp-assert
 ```
 
 Two usage modes. Auto-discovery:
 ```ts
 // mcp.test.ts
-import { describeMcpSuite } from 'vitest-mcp-assert'
+import { describeMcpSuite } from '@blackwell-systems/vitest-mcp-assert'
 describeMcpSuite('mcp server', 'evals/')
 ```
 
 Or per-test control:
 ```ts
 import { test } from 'vitest'
-import { runMcpAssert } from 'vitest-mcp-assert'
+import { runMcpAssert } from '@blackwell-systems/vitest-mcp-assert'
 test('echo tool', () => runMcpAssert('evals/echo.yaml'))
 ```
 
 Each YAML assertion becomes a Vitest test with the same pass/fail semantics. Same YAML files work across all five test framework plugins and the CLI.
 
-Source: `vitest-plugin/` directory in this repo. Published to npm as `vitest-mcp-assert`.
+Source: `vitest-plugin/` directory in this repo. Published to npm as `@blackwell-systems/vitest-mcp-assert`.
 
 **Maintenance surface:** The plugin is a thin bridge (~150 lines across 5 TypeScript files). It calls the mcp-assert Go binary with `--json` and maps the JSON output to Vitest test outcomes. Same architecture as the pytest plugin. Breakage scenarios: (1) the `--json` output format changes in the Go binary, (2) the Go binary isn't found via the 3-tier resolution (explicit, PATH, npm package). The plugin has no runtime dependencies beyond vitest as a peer dependency.
 
@@ -136,42 +136,42 @@ Source: `go-plugin/` directory in this repo. Published as a Go module at `github
 
 ### Jest Plugin
 ```bash
-npm install -D jest-mcp-assert @blackwell-systems/mcp-assert
+npm install -D @blackwell-systems/jest-mcp-assert @blackwell-systems/mcp-assert
 ```
 
 Two usage modes. Auto-discovery:
 ```ts
 // mcp.test.ts
-import { describeMcpSuite } from 'jest-mcp-assert'
+import { describeMcpSuite } from '@blackwell-systems/jest-mcp-assert'
 describeMcpSuite('mcp server', 'evals/')
 ```
 
 Or per-test control:
 ```ts
-import { runMcpAssert } from 'jest-mcp-assert'
+import { runMcpAssert } from '@blackwell-systems/jest-mcp-assert'
 test('echo tool', () => { runMcpAssert('evals/echo.yaml') })
 ```
 
 Same YAML files work across all five test framework plugins and the CLI.
 
-Source: `jest-plugin/` directory in this repo. Published to npm as `jest-mcp-assert`.
+Source: `jest-plugin/` directory in this repo. Published to npm as `@blackwell-systems/jest-mcp-assert`.
 
 **Maintenance surface:** Same thin bridge architecture as the vitest and pytest plugins (~100 lines). Calls the mcp-assert Go binary with `--json` and maps the JSON output to Jest test outcomes. Uses CommonJS module format (Jest's default).
 
 ### Bun Plugin
 ```bash
-bun add -d bun-mcp-assert @blackwell-systems/mcp-assert
+bun add -d @blackwell-systems/bun-mcp-assert @blackwell-systems/mcp-assert
 ```
 
 ```ts
 // mcp.test.ts
-import { describeMcpSuite } from "bun-mcp-assert"
+import { describeMcpSuite } from "@blackwell-systems/bun-mcp-assert"
 describeMcpSuite("mcp server", "evals/")
 ```
 
 Same bridge architecture. Uses native Bun APIs (`Bun.spawnSync`, `Bun.which`). Ships as TypeScript source (no build step; Bun runs it directly).
 
-Source: `bun-plugin/` directory in this repo. Published to npm as `bun-mcp-assert`.
+Source: `bun-plugin/` directory in this repo. Published to npm as `@blackwell-systems/bun-mcp-assert`.
 
 ### PHPUnit Plugin
 ```bash
@@ -245,9 +245,9 @@ A single `git tag` triggers the entire pipeline. Every channel is automated.
    | `pypi-publish` | Runs `scripts/pypi-publish.sh`, builds platform wheels with Go binary inside, publishes to PyPI with twine | PyPI |
    | `pytest-plugin-publish` | Builds and publishes the `pytest-mcp-assert` plugin to PyPI with twine | PyPI (pytest plugin) |
    | `snap` | Builds snap package with snapcore/action-build, publishes to Snap Store | Snap Store |
-   | `jest-plugin-publish` | Builds and publishes the `jest-mcp-assert` plugin to npm | npm (jest plugin) |
-   | `bun-plugin-publish` | Publishes the `bun-mcp-assert` plugin to npm | npm (bun plugin) |
-   | `vitest-plugin-publish` | Builds and publishes the `vitest-mcp-assert` plugin to npm | npm (vitest plugin) |
+   | `jest-plugin-publish` | Builds and publishes the `@blackwell-systems/jest-mcp-assert` plugin to npm | npm (jest plugin) |
+   | `bun-plugin-publish` | Publishes the `@blackwell-systems/bun-mcp-assert` plugin to npm | npm (bun plugin) |
+   | `vitest-plugin-publish` | Builds and publishes the `@blackwell-systems/vitest-mcp-assert` plugin to npm | npm (vitest plugin) |
    | `winget` | Submits manifest PR to microsoft/winget-pkgs via winget-releaser | Winget |
 
 4. **Verify** (after CI completes, ~5-10 minutes):
@@ -260,9 +260,9 @@ A single `git tag` triggers the entire pipeline. Every channel is automated.
 
    # npm packages updated
    npm view @blackwell-systems/mcp-assert version
-   npm view vitest-mcp-assert version
-   npm view jest-mcp-assert version
-   npm view bun-mcp-assert version
+   npm view @blackwell-systems/vitest-mcp-assert version
+   npm view @blackwell-systems/jest-mcp-assert version
+   npm view @blackwell-systems/bun-mcp-assert version
 
    # PyPI updated
    pip index versions mcp-assert

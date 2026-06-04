@@ -7,7 +7,7 @@
  *
  *    ```ts
  *    // mcp.test.ts
- *    import { describeMcpSuite } from 'jest-mcp-assert'
+ *    import { describeMcpSuite } from '@blackwell-systems/jest-mcp-assert'
  *    describeMcpSuite('mcp server', 'evals/')
  *    ```
  *
@@ -15,7 +15,7 @@
  *
  *    ```ts
  *    // mcp.test.ts
- *    import { runMcpAssert } from 'jest-mcp-assert'
+ *    import { runMcpAssert } from '@blackwell-systems/jest-mcp-assert'
  *
  *    test('echo tool', () => { runMcpAssert('evals/echo.yaml') })
  *    test('greet tool', () => { runMcpAssert('evals/greet.yaml', { timeout: '60s' }) })

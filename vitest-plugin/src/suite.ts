@@ -9,7 +9,7 @@ import type { RunOptions } from "./types.js";
  * Vitest tests inside a describe() block.
  *
  * Usage:
- *   import { describeMcpSuite } from 'vitest-mcp-assert'
+ *   import { describeMcpSuite } from '@blackwell-systems/vitest-mcp-assert'
  *   describeMcpSuite('mcp assertions', 'evals/')
  *   describeMcpSuite('mcp assertions', 'evals/', { timeout: '60s' })
  */

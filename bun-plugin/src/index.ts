@@ -7,7 +7,7 @@
  *
  *    ```ts
  *    // mcp.test.ts
- *    import { describeMcpSuite } from "bun-mcp-assert"
+ *    import { describeMcpSuite } from "@blackwell-systems/bun-mcp-assert"
  *    describeMcpSuite("mcp server", "evals/")
  *    ```
  *
@@ -16,7 +16,7 @@
  *    ```ts
  *    // mcp.test.ts
  *    import { test } from "bun:test"
- *    import { runMcpAssert } from "bun-mcp-assert"
+ *    import { runMcpAssert } from "@blackwell-systems/bun-mcp-assert"
  *
  *    test("echo tool", () => { runMcpAssert("evals/echo.yaml") })
  *    ```

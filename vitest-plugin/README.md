@@ -1,11 +1,11 @@
-# vitest-mcp-assert
+# @blackwell-systems/vitest-mcp-assert
 
 Vitest integration for [mcp-assert](https://github.com/blackwell-systems/mcp-assert). Run MCP server assertion YAML files as Vitest tests.
 
 ## Install
 
 ```bash
-npm install -D vitest-mcp-assert @blackwell-systems/mcp-assert
+npm install -D @blackwell-systems/vitest-mcp-assert @blackwell-systems/mcp-assert
 ```
 
 The `@blackwell-systems/mcp-assert` package provides the mcp-assert binary. Alternatively, install it via Homebrew (`brew install blackwell-systems/tap/mcp-assert`) or Go (`go install github.com/blackwell-systems/mcp-assert@latest`).
@@ -18,7 +18,7 @@ Create a test file that auto-discovers all YAML assertions in a directory:
 
 ```ts
 // mcp.test.ts
-import { describeMcpSuite } from 'vitest-mcp-assert'
+import { describeMcpSuite } from '@blackwell-systems/vitest-mcp-assert'
 
 describeMcpSuite('mcp server assertions', 'evals/')
 ```
@@ -38,7 +38,7 @@ For more control, import `runMcpAssert` directly:
 ```ts
 // mcp.test.ts
 import { test } from 'vitest'
-import { runMcpAssert } from 'vitest-mcp-assert'
+import { runMcpAssert } from '@blackwell-systems/vitest-mcp-assert'
 
 test('echo tool', () => runMcpAssert('evals/echo.yaml'))
 test('greet tool', () => runMcpAssert('evals/greet.yaml', { timeout: '60s' }))

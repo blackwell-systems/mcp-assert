@@ -138,12 +138,12 @@ See the [Getting Started guide](https://blackwell-systems.github.io/mcp-assert/g
 
 ```bash
 # Vitest
-npm install -D vitest-mcp-assert
+npm install -D @blackwell-systems/vitest-mcp-assert
 ```
 
 ```ts
 // mcp.test.ts
-import { describeMcpSuite } from 'vitest-mcp-assert'
+import { describeMcpSuite } from '@blackwell-systems/vitest-mcp-assert'
 describeMcpSuite('mcp server', 'evals/')
 ```
 
@@ -288,14 +288,14 @@ Then just run `pytest`. See `pytest-plugin/README.md` for all options.
 Run mcp-assert assertions as Vitest tests:
 
 ```bash
-npm install -D vitest-mcp-assert
+npm install -D @blackwell-systems/vitest-mcp-assert
 ```
 
 Auto-discover all YAML files in a directory:
 
 ```ts
 // mcp.test.ts
-import { describeMcpSuite } from 'vitest-mcp-assert'
+import { describeMcpSuite } from '@blackwell-systems/vitest-mcp-assert'
 describeMcpSuite('mcp server', 'evals/')
 ```
 
@@ -303,7 +303,7 @@ Or run individual assertions:
 
 ```ts
 import { test } from 'vitest'
-import { runMcpAssert } from 'vitest-mcp-assert'
+import { runMcpAssert } from '@blackwell-systems/vitest-mcp-assert'
 test('echo tool', () => runMcpAssert('evals/echo.yaml'))
 ```
 

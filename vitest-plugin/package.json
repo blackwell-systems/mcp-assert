@@ -1,5 +1,5 @@
 {
-  "name": "vitest-mcp-assert",
+  "name": "@blackwell-systems/vitest-mcp-assert",
   "version": "0.1.0",
   "description": "Vitest integration for mcp-assert: run MCP server assertion YAML files as Vitest tests",
   "type": "module",

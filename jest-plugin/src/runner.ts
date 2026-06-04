@@ -7,7 +7,7 @@ import type { McpAssertResult, RunOptions } from "./types";
  * Throws on failure. Returns the result on success.
  *
  * Usage:
- *   import { runMcpAssert } from 'jest-mcp-assert'
+ *   import { runMcpAssert } from '@blackwell-systems/jest-mcp-assert'
  *
  *   test('echo returns message', () => {
  *     runMcpAssert('evals/echo.yaml')

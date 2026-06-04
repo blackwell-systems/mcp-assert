@@ -1,5 +1,5 @@
 {
-  "name": "jest-mcp-assert",
+  "name": "@blackwell-systems/jest-mcp-assert",
   "version": "0.7.2",
   "description": "Jest integration for mcp-assert: run MCP server assertion YAML files as Jest tests",
   "main": "dist/index.js",

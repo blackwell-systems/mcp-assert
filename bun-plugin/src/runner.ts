@@ -7,7 +7,7 @@ import type { McpAssertResult, RunOptions } from "./types";
  *
  * Usage:
  *   import { test } from "bun:test"
- *   import { runMcpAssert } from "bun-mcp-assert"
+ *   import { runMcpAssert } from "@blackwell-systems/bun-mcp-assert"
  *
  *   test("echo returns message", () => {
  *     runMcpAssert("evals/echo.yaml")
