@@ -15,6 +15,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -112,7 +113,7 @@ func inferDependencies(tools []mcp.Tool) []ToolDependency {
 	return deps
 }
 
-// commonParamNames are parameters so generic they don't indicate real data flow.
+// commonParamNames are exact parameter names too generic to indicate real data flow.
 var commonParamNames = map[string]bool{
 	"path": true, "file": true, "name": true, "type": true,
 	"id": true, "url": true, "dir": true, "directory": true,
@@ -121,7 +122,28 @@ var commonParamNames = map[string]bool{
 	"content": true, "pattern": true, "query": true, "text": true,
 	"encoding": true, "recursive": true, "limit": true, "offset": true,
 	"exclude": true, "include": true, "filter": true, "options": true,
-	"excludepatterns": true, "includepatterns": true,
+	"command": true, "language": true, "uri": true, "root": true,
+}
+
+// commonParamSuffixes are suffix patterns that indicate unconstrained-by-nature params.
+var commonParamSuffixes = []string{
+	"_path", "_file", "_dir", "_root", "_directory",
+	"_id", "_ids", "_uri", "_url",
+	"_name", "_command", "_language",
+}
+
+// isCommonParam returns true if the parameter name is too generic to indicate real data flow.
+func isCommonParam(name string) bool {
+	lower := strings.ToLower(name)
+	if commonParamNames[lower] {
+		return true
+	}
+	for _, suffix := range commonParamSuffixes {
+		if strings.HasSuffix(lower, suffix) {
+			return true
+		}
+	}
+	return false
 }
 
 // fieldMatchConfidence calculates how likely two fields represent the same data.
@@ -130,7 +152,7 @@ var commonParamNames = map[string]bool{
 // in documentation ("see also blast_radius") without implying data flow.
 func fieldMatchConfidence(from, to depFieldInfo, fromDesc, toDesc string) float64 {
 	// Skip common/generic params - they don't indicate real dependencies
-	if commonParamNames[strings.ToLower(from.name)] || commonParamNames[strings.ToLower(to.name)] {
+	if isCommonParam(from.name) || isCommonParam(to.name) {
 		return 0.0
 	}
 
@@ -378,25 +400,33 @@ func lintCircularDependency(tools []mcp.Tool) []LintFinding {
 		}
 	}
 
-	// Deduplicate cycles
+	// Deduplicate cycles: normalize by rotating to smallest element, then dedup on node set.
 	var findings []LintFinding
 	seen := make(map[string]bool)
 
 	for _, cycle := range cycles {
-		// Canonical key: sort a copy
-		sorted := make([]string, len(cycle))
-		copy(sorted, cycle)
+		if len(cycle) < 2 {
+			continue
+		}
+		// Remove the trailing repeated node (A→B→A becomes the set {A,B})
+		nodes := cycle[:len(cycle)-1]
+
+		// Canonical key: sorted set of participating nodes (not path order)
+		sorted := make([]string, len(nodes))
+		copy(sorted, nodes)
+		sort.Strings(sorted)
 		key := strings.Join(sorted, ",")
 		if seen[key] {
 			continue
 		}
 		seen[key] = true
 
+		// Report shortest representation
 		findings = append(findings, LintFinding{
-			Tool:     cycle[0],
+			Tool:     sorted[0],
 			Code:     report.E107,
-			Severity: report.SeverityError,
-			Message:  fmt.Sprintf("Circular dependency: %s. Agents may loop forever.", strings.Join(cycle, " → ")),
+			Severity: report.SeverityWarning,
+			Message:  fmt.Sprintf("Circular dependency between %s. Agents may loop.", strings.Join(sorted, ", ")),
 			Field:    "dependencies",
 		})
 	}

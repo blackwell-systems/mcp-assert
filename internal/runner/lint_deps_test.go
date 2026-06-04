@@ -8,23 +8,25 @@ import (
 )
 
 func TestInferDependencies_MatchingFields(t *testing.T) {
+	// Use domain-specific params (not generic IDs/paths) to test dependency inference
 	tools := []mcp.Tool{
 		{
-			Name:        "get_user",
-			Description: "Fetch user by ID",
+			Name:        "get_order",
+			Description: "Fetch order details",
 			InputSchema: mcp.ToolInputSchema{
 				Properties: map[string]interface{}{
-					"user_id": map[string]any{"type": "string"},
+					"customer_email": map[string]any{"type": "string"},
+					"order_number":   map[string]any{"type": "string"},
 				},
 			},
 		},
 		{
-			Name:        "update_user",
-			Description: "Update user profile",
+			Name:        "send_receipt",
+			Description: "Send receipt to customer",
 			InputSchema: mcp.ToolInputSchema{
 				Properties: map[string]interface{}{
-					"user_id": map[string]any{"type": "string"},
-					"name":    map[string]any{"type": "string"},
+					"customer_email": map[string]any{"type": "string"},
+					"amount":         map[string]any{"type": "number"},
 				},
 			},
 		},
@@ -32,13 +34,13 @@ func TestInferDependencies_MatchingFields(t *testing.T) {
 
 	deps := inferDependencies(tools)
 	if len(deps) == 0 {
-		t.Fatal("expected dependencies for matching user_id fields")
+		t.Fatal("expected dependencies for matching customer_email fields")
 	}
 
-	// Should find user_id -> user_id edge
+	// Should find customer_email -> customer_email edge
 	found := false
 	for _, d := range deps {
-		if d.FromField == "user_id" && d.ToField == "user_id" {
+		if d.FromField == "customer_email" && d.ToField == "customer_email" {
 			found = true
 			if d.Confidence < 0.6 {
 				t.Errorf("confidence too low: %f", d.Confidence)
@@ -46,7 +48,7 @@ func TestInferDependencies_MatchingFields(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Error("expected user_id -> user_id dependency")
+		t.Error("expected customer_email -> customer_email dependency")
 	}
 }
 
