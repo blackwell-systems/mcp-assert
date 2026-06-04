@@ -130,12 +130,30 @@ var commonParamSuffixes = []string{
 	"_path", "_file", "_dir", "_root", "_directory",
 	"_id", "_ids", "_uri", "_url",
 	"_name", "_command", "_language",
+	"_text", "_content", "_message", "_description",
+	"_query", "_pattern", "_filter", "_edit",
 }
 
-// isCommonParam returns true if the parameter name is too generic to indicate real data flow.
+// contentParamNames are params that carry free-text content by design (code, prose, queries).
+// These cannot meaningfully be constrained with enum/pattern.
+var contentParamNames = map[string]bool{
+	"new_text": true, "old_text": true, "text": true,
+	"scope": true, "filter": true, "query": true, "pattern": true,
+	"command": true, "connect": true, "message": true,
+	"description": true, "title": true, "content": true,
+	"workspace_edit": true, "body": true, "code": true,
+	"prompt": true, "instructions": true, "template": true,
+	"expression": true, "regex": true, "selector": true,
+}
+
+// isCommonParam returns true if the parameter name is too generic or content-shaped
+// to indicate real data flow between tools.
 func isCommonParam(name string) bool {
 	lower := strings.ToLower(name)
 	if commonParamNames[lower] {
+		return true
+	}
+	if contentParamNames[lower] {
 		return true
 	}
 	for _, suffix := range commonParamSuffixes {
