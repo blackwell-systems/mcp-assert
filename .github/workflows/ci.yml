@@ -150,10 +150,11 @@ jobs:
           name: sqlite-results
           path: sqlite-results.xml
 
-  # End-to-end: agent-lsp + gopls
+  # End-to-end: agent-lsp + gopls (non-blocking; depends on external server)
   e2e-agent-lsp:
     runs-on: ubuntu-latest
     needs: build-and-test
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
