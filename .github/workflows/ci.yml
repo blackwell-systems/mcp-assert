@@ -171,7 +171,7 @@ jobs:
 
       - name: Clone agent-lsp and build
         run: |
-          git clone --depth 1 https://github.com/blackwell-systems/agent-lsp.git /tmp/agent-lsp
+          git clone --depth 1 --branch v0.12.0 https://github.com/blackwell-systems/agent-lsp.git /tmp/agent-lsp
           cd /tmp/agent-lsp && go build -o /usr/local/bin/agent-lsp ./cmd/agent-lsp
 
       - name: Run agent-lsp assertions
