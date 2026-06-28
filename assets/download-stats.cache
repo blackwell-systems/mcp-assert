@@ -1,8 +1,8 @@
 pip=20647
 pytest=8120
-npm=2462
+npm=2479
 vitest=1382
-jest=1148
+jest=1155
 bun=849
 gh=3973
 packagist=0
