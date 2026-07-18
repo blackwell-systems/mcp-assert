@@ -1,9 +1,9 @@
-pip=22390
-pytest=8641
+pip=22501
+pytest=8669
 npm=2559
 vitest=1458
 jest=1223
 bun=916
-gh=4603
+gh=4657
 packagist=0
 docker=534
