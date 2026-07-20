@@ -1,9 +1,9 @@
 pip=22511
 pytest=8725
-npm=2560
-vitest=1464
-jest=1223
-bun=916
-gh=4691
+npm=2566
+vitest=1470
+jest=1228
+bun=920
+gh=4694
 packagist=0
-docker=551
+docker=552
