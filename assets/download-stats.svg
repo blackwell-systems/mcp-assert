@@ -23,9 +23,9 @@
 
   <!-- Stats rows -->
   <text x="24" y="74" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">pip (mcp-assert)</text>
-  <text x="296" y="74" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">22945</text>
+  <text x="296" y="74" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">22956</text>
   <text x="24" y="96" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">pip (pytest plugin)</text>
-  <text x="296" y="96" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">8888</text>
+  <text x="296" y="96" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">8920</text>
   <text x="24" y="118" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">npm (cli)</text>
   <text x="296" y="118" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">2596</text>
   <text x="24" y="140" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">npm (vitest plugin)</text>
@@ -35,14 +35,14 @@
   <text x="24" y="184" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">npm (bun plugin)</text>
   <text x="296" y="184" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">933</text>
   <text x="24" y="206" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">github releases</text>
-  <text x="296" y="206" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">5075</text>
+  <text x="296" y="206" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">5078</text>
   <text x="24" y="228" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">docker pulls</text>
-  <text x="296" y="228" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">601</text>
+  <text x="296" y="228" fill="#e2e8f0" font-family="ui-monospace,monospace" font-size="13" font-weight="600" text-anchor="end">602</text>
 
   <!-- Divider -->
   <line x1="24" y1="232" x2="296" y2="232" stroke="#334155" stroke-width="1"/>
 
   <!-- Total -->
-  <text x="24" y="260" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700">43771 total</text>
+  <text x="24" y="260" fill="url(#accent)" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700">43818 total</text>
   <text x="296" y="260" fill="#64748b" font-family="system-ui,-apple-system,sans-serif" font-size="10" text-anchor="end">cumulative downloads</text>
 </svg>
