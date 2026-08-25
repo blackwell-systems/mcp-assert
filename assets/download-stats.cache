@@ -1,5 +1,5 @@
-pip=24366
-pytest=9300
+pip=24486
+pytest=9331
 npm=2699
 vitest=1562
 jest=1300
