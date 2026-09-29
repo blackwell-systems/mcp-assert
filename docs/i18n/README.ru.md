@@ -1,13 +1,13 @@
 [English](../../README.md) · [简体中文](README.zh-CN.md) · **Русский** · [हिन्दी](README.hi.md) · [العربية](README.ar.md)
 
 <p align="center">
-  <img src="assets/social-preview.png" alt="mcp-assert" width="600">
+  <img src="../../assets/social-preview.png" alt="mcp-assert" width="600">
 </p>
 
 <p align="center">
   <a href="https://github.com/blackwell-systems"><img src="https://raw.githubusercontent.com/blackwell-systems/blackwell-docs-theme/main/badge-trademark.svg" alt="Blackwell Systems"></a>
   <a href="https://go.dev/"><img src="https://img.shields.io/badge/go-1.23+-blue.svg" alt="Go"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License: MIT"></a>
+  <a href="../../LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License: MIT"></a>
   <a href="https://github.com/blackwell-systems/mcp-assert"><img src="https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-passing.svg?v=3" alt="mcp-assert: passing" height="20"></a>
   <a href="https://github.com/blackwell-systems/mcp-assert"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/downloads-badge.json" alt="Downloads"></a>
 </p>
@@ -48,7 +48,7 @@ mcp-assert говорит на полном протоколе MCP: рукопо
 ```
 
 <p align="center">
-  <img src="assets/demo.gif" alt="mcp-assert demo" width="720">
+  <img src="../../assets/demo.gif" alt="mcp-assert demo" width="720">
 </p>
 
 > [!NOTE]
@@ -108,7 +108,7 @@ mcp-assert audit --server "npx my-mcp-server"
   3 tools tested, 2 healthy, 1 crashed
 ```
 
-Структурированные коды ошибок мгновенно классифицируют проблемы. Все 24 кода см. в [справочнике по ошибкам](docs/ERROR_REFERENCE.md).
+Структурированные коды ошибок мгновенно классифицируют проблемы. Все 24 кода см. в [справочнике по ошибкам](../../docs/ERROR_REFERENCE.md).
 
 > [!TIP]
 > Аудит подключается, обнаруживает каждый инструмент через `tools/list`, вызывает каждый из них со входными данными, сгенерированными по схеме, и сообщает, какие инструменты падают, а какие корректно обрабатывают ошибки. YAML не требуется. Чтобы копнуть глубже, сгенерируйте файлы утверждений и настройте их:
@@ -326,7 +326,7 @@ test('echo tool', () => runMcpAssert('evals/echo.yaml'))
 - [Оценочная таблица](https://blackwell-systems.github.io/mcp-assert/scorecard/): 32 бага найдены в 13 серверах, 9 фикс-PR отправлены, 58 серверов просканированы
 
 <p align="center">
-  <img src="assets/download-stats.svg?v=2" alt="Download stats" width="320">
+  <img src="../../assets/download-stats.svg?v=2" alt="Download stats" width="320">
 </p>
 
 <p align="center">
@@ -334,7 +334,7 @@ test('echo tool', () => runMcpAssert('evals/echo.yaml'))
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="assets/star-cta.png">
       <source media="(prefers-color-scheme: light)" srcset="assets/star-cta-light.png">
-      <img src="assets/star-cta-light.png" alt="Star mcp-assert on GitHub" width="600">
+      <img src="../../assets/star-cta-light.png" alt="Star mcp-assert on GitHub" width="600">
     </picture>
   </a>
 </p>

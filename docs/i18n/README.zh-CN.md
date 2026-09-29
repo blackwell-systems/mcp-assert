@@ -1,13 +1,13 @@
 [English](../../README.md) · **简体中文** · [Русский](README.ru.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md)
 
 <p align="center">
-  <img src="assets/social-preview.png" alt="mcp-assert" width="600">
+  <img src="../../assets/social-preview.png" alt="mcp-assert" width="600">
 </p>
 
 <p align="center">
   <a href="https://github.com/blackwell-systems"><img src="https://raw.githubusercontent.com/blackwell-systems/blackwell-docs-theme/main/badge-trademark.svg" alt="Blackwell Systems"></a>
   <a href="https://go.dev/"><img src="https://img.shields.io/badge/go-1.23+-blue.svg" alt="Go"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License: MIT"></a>
+  <a href="../../LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License: MIT"></a>
   <a href="https://github.com/blackwell-systems/mcp-assert"><img src="https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-passing.svg?v=3" alt="mcp-assert: passing" height="20"></a>
   <a href="https://github.com/blackwell-systems/mcp-assert"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/downloads-badge.json" alt="Downloads"></a>
 </p>
@@ -48,7 +48,7 @@ MCP 的测试标准，就如同 Python 之于 pytest、JavaScript 之于 Jest。
 ```
 
 <p align="center">
-  <img src="assets/demo.gif" alt="mcp-assert demo" width="720">
+  <img src="../../assets/demo.gif" alt="mcp-assert demo" width="720">
 </p>
 
 > [!NOTE]
@@ -108,7 +108,7 @@ mcp-assert audit --server "npx my-mcp-server"
   3 tools tested, 2 healthy, 1 crashed
 ```
 
-结构化的错误码可即时对问题进行分类。全部 24 个错误码参见[错误参考](docs/ERROR_REFERENCE.md)。
+结构化的错误码可即时对问题进行分类。全部 24 个错误码参见[错误参考](../../docs/ERROR_REFERENCE.md)。
 
 > [!TIP]
 > 审计会建立连接，通过 `tools/list` 发现每一个工具，用 schema 生成的输入调用每个工具，并报告哪些工具崩溃、哪些能妥善处理错误。无需 YAML。若要更深入，可生成断言文件并对其进行定制：
@@ -326,7 +326,7 @@ test('echo tool', () => runMcpAssert('evals/echo.yaml'))
 - [评分卡](https://blackwell-systems.github.io/mcp-assert/scorecard/)：在 13 个服务器中发现 32 个 bug，提交 9 个修复 PR，扫描 58 个服务器
 
 <p align="center">
-  <img src="assets/download-stats.svg?v=2" alt="Download stats" width="320">
+  <img src="../../assets/download-stats.svg?v=2" alt="Download stats" width="320">
 </p>
 
 <p align="center">
@@ -334,7 +334,7 @@ test('echo tool', () => runMcpAssert('evals/echo.yaml'))
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="assets/star-cta.png">
       <source media="(prefers-color-scheme: light)" srcset="assets/star-cta-light.png">
-      <img src="assets/star-cta-light.png" alt="Star mcp-assert on GitHub" width="600">
+      <img src="../../assets/star-cta-light.png" alt="Star mcp-assert on GitHub" width="600">
     </picture>
   </a>
 </p>

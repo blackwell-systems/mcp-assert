@@ -1,13 +1,13 @@
 [English](../../README.md) · [简体中文](README.zh-CN.md) · [Русский](README.ru.md) · **हिन्दी** · [العربية](README.ar.md)
 
 <p align="center">
-  <img src="assets/social-preview.png" alt="mcp-assert" width="600">
+  <img src="../../assets/social-preview.png" alt="mcp-assert" width="600">
 </p>
 
 <p align="center">
   <a href="https://github.com/blackwell-systems"><img src="https://raw.githubusercontent.com/blackwell-systems/blackwell-docs-theme/main/badge-trademark.svg" alt="Blackwell Systems"></a>
   <a href="https://go.dev/"><img src="https://img.shields.io/badge/go-1.23+-blue.svg" alt="Go"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License: MIT"></a>
+  <a href="../../LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License: MIT"></a>
   <a href="https://github.com/blackwell-systems/mcp-assert"><img src="https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-passing.svg?v=3" alt="mcp-assert: passing" height="20"></a>
   <a href="https://github.com/blackwell-systems/mcp-assert"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/downloads-badge.json" alt="Downloads"></a>
 </p>
@@ -48,7 +48,7 @@ MCP के लिए टेस्टिंग मानक, जैसे Python 
 ```
 
 <p align="center">
-  <img src="assets/demo.gif" alt="mcp-assert demo" width="720">
+  <img src="../../assets/demo.gif" alt="mcp-assert demo" width="720">
 </p>
 
 > [!NOTE]
@@ -108,7 +108,7 @@ mcp-assert audit --server "npx my-mcp-server"
   3 tools tested, 2 healthy, 1 crashed
 ```
 
-संरचित एरर कोड समस्याओं को तुरंत वर्गीकृत कर देते हैं। सभी 24 कोड के लिए देखें [Error Reference](docs/ERROR_REFERENCE.md)।
+संरचित एरर कोड समस्याओं को तुरंत वर्गीकृत कर देते हैं। सभी 24 कोड के लिए देखें [Error Reference](../../docs/ERROR_REFERENCE.md)।
 
 > [!TIP]
 > ऑडिट कनेक्ट होता है, `tools/list` के ज़रिए हर टूल की खोज करता है, schema से बने इनपुट के साथ हर टूल को कॉल करता है, और रिपोर्ट करता है कि कौन-से टूल क्रैश होते हैं बनाम कौन-से एरर को सही तरह से संभालते हैं। कोई YAML की ज़रूरत नहीं। और गहराई में जाने के लिए, assertion फ़ाइलें जेनरेट करें और उन्हें कस्टमाइज़ करें:
@@ -326,7 +326,7 @@ test('echo tool', () => runMcpAssert('evals/echo.yaml'))
 - [Scorecard](https://blackwell-systems.github.io/mcp-assert/scorecard/): 13 सर्वरों में 32 bug पाए गए, 9 fix PR सबमिट किए गए, 58 सर्वर स्कैन किए गए
 
 <p align="center">
-  <img src="assets/download-stats.svg?v=2" alt="Download stats" width="320">
+  <img src="../../assets/download-stats.svg?v=2" alt="Download stats" width="320">
 </p>
 
 <p align="center">
@@ -334,7 +334,7 @@ test('echo tool', () => runMcpAssert('evals/echo.yaml'))
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="assets/star-cta.png">
       <source media="(prefers-color-scheme: light)" srcset="assets/star-cta-light.png">
-      <img src="assets/star-cta-light.png" alt="Star mcp-assert on GitHub" width="600">
+      <img src="../../assets/star-cta-light.png" alt="Star mcp-assert on GitHub" width="600">
     </picture>
   </a>
 </p>
