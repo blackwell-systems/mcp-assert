@@ -32,10 +32,9 @@ Your YAML        ──→  mcp-assert  ──→  MCP Server
 
 ### مُعتمَد في بيئة الإنتاج
 
-- **[Wyre Technology](https://github.com/wyre-technology)**: تم اختبار 25 خادم MCP عبر سير عمل baseline مشترك باستخدام `mcp-assert-action`
-- **[Ant Group (AntV)](https://github.com/antvis/mcp-server-chart)**: تم دمجه في CI خلال 3 أيام من الإطلاق
+- **[WYRE](https://github.com/wyre-technology)**: يعمل في CI عبر 39 مستودعًا لخوادم MCP من خلال سير عمل baseline مشترك مبني على `mcp-assert-action`
 - **[Vera](https://github.com/aallan/vera)**: إطار الاختبار الموصى به في خارطة طريق المشروع ([#529](https://github.com/aallan/vera/issues/529))
-- **طلبات دمج (PR) للإصلاح تم دمجها**: Google وGrafana وLangChain و MCP SDKs الرسمية
+- **طلبات دمج (PR) للإصلاح تم دمجها**: Google وGrafana وLangChain وAnt Group و MCP SDKs الرسمية
 
 معيار الاختبار لـ MCP، مثل pytest لـ Python أو Jest لـ JavaScript.
 

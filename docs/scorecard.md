@@ -279,7 +279,7 @@ Servers tested by mcp-assert, bugs found, issues filed.
 - **Impact:** LLM agents receive cryptic Node.js stack traces they cannot recover from. The `generate_radar_chart` tool also crashes with populated data when field names don't match undocumented expectations.
 - **Issue:** [antvis/mcp-server-chart#291](https://github.com/antvis/mcp-server-chart/issues/291)
 - **Fix PR:** [#292](https://github.com/antvis/mcp-server-chart/pull/292) **merged** (2026-04-28)
-- **CI integration:** [#294](https://github.com/antvis/mcp-server-chart/pull/294) submitted. 25 assertion YAML files + GitHub Actions workflow using `mcp-assert-action@v1`. First external adoption.
+- **CI integration:** [#294](https://github.com/antvis/mcp-server-chart/pull/294) submitted at the maintainer's request: 25 assertion YAML files + GitHub Actions workflow using `mcp-assert-action@v1`. Closed unmerged on 2026-05-02.
 - **Status:** Fixed. CI integration pending review.
 
 ### Bug #5: grafana/mcp-grafana: get_assertions returns internal error on invalid input

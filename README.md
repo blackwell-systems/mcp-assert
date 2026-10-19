@@ -32,10 +32,9 @@ mcp-assert speaks the full MCP protocol: initialize handshake, `tools/list` disc
 
 ### Adopted in production
 
-- **[Wyre Technology](https://github.com/wyre-technology)**: 25 MCP servers tested via shared baseline workflow using `mcp-assert-action`
-- **[Ant Group (AntV)](https://github.com/antvis/mcp-server-chart)**: integrated into CI within 3 days of launch
+- **[WYRE](https://github.com/wyre-technology)**: runs in CI across 39 MCP server repos through a shared baseline workflow built on `mcp-assert-action`
 - **[Vera](https://github.com/aallan/vera)**: recommended test harness on project roadmap ([#529](https://github.com/aallan/vera/issues/529))
-- **Fix PRs merged**: Google, Grafana, LangChain, official MCP SDKs
+- **Fix PRs merged**: Google, Grafana, LangChain, Ant Group, official MCP SDKs
 
 The testing standard for MCP, like pytest for Python or Jest for JavaScript.
 

@@ -32,10 +32,9 @@ mcp-assert 讲的是完整的 MCP 协议：initialize 握手、`tools/list` 发�
 
 ### 已在生产环境中采用
 
-- **[Wyre Technology](https://github.com/wyre-technology)**：通过共享基线工作流，使用 `mcp-assert-action` 测试了 25 个 MCP 服务器
-- **[Ant Group (AntV)](https://github.com/antvis/mcp-server-chart)**：在发布后 3 天内集成进 CI
+- **[WYRE](https://github.com/wyre-technology)**：通过基于 `mcp-assert-action` 的共享基线工作流，在 39 个 MCP 服务器仓库的 CI 中运行
 - **[Vera](https://github.com/aallan/vera)**：项目路线图上推荐的测试框架（[#529](https://github.com/aallan/vera/issues/529)）
-- **已合并的修复 PR**：Google、Grafana、LangChain、官方 MCP SDK
+- **已合并的修复 PR**：Google、Grafana、LangChain、Ant Group、官方 MCP SDK
 
 MCP 的测试标准，就如同 Python 之于 pytest、JavaScript 之于 Jest。
 

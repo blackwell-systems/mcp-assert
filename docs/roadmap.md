@@ -138,7 +138,7 @@ Viability depends on MCP ecosystem growth. If MCP becomes the standard agent-to-
 | **Shared server flags + connectAndInitialize** | 0.9.0 | Internal refactoring: shared flags prevent drift, shared connection logic eliminates duplication across audit/fuzz/lint/generate. |
 | **`mcp-assert audit` command** | 0.6.0 | Zero-config quality audit. Connects, discovers tools, calls each with schema-generated inputs, reports quality score. |
 | **Blog post** | -- | "We Tested 55 MCP Servers. Here's What Breaks." Published, needs update to current numbers. |
-| **antvis CI integration** | -- | PR #292 merged. Follow-up #294 submitted (closed by maintainer). First external adoption. |
+| **antvis CI integration** | -- | PR #292 (crash fixes) merged. Follow-up #294 added CI at the maintainer's request; closed unmerged on 2026-05-02. |
 | **C# server suites** | 0.6.0 | 7th language. QuickstartWeatherServer. |
 | **`skip_unless_env` field** | 0.6.0 | Conditional assertion skipping based on env vars. Live-backend and no-auth assertions coexist in same suite. |
 | **Per-assertion Docker isolation** | 0.6.0 | `docker:` field in server YAML. Fresh container per assertion for safe write testing. |

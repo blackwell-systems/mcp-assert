@@ -32,10 +32,9 @@ mcp-assert पूरा MCP प्रोटोकॉल बोलता है: 
 
 ### उत्पादन में अपनाया गया
 
-- **[Wyre Technology](https://github.com/wyre-technology)**: `mcp-assert-action` का उपयोग करते हुए साझा baseline वर्कफ़्लो के ज़रिए 25 MCP सर्वर टेस्ट किए गए
-- **[Ant Group (AntV)](https://github.com/antvis/mcp-server-chart)**: लॉन्च के 3 दिनों के भीतर CI में एकीकृत
+- **[WYRE](https://github.com/wyre-technology)**: `mcp-assert-action` पर बने साझा baseline वर्कफ़्लो के ज़रिए 39 MCP सर्वर रिपॉज़िटरी के CI में चलता है
 - **[Vera](https://github.com/aallan/vera)**: प्रोजेक्ट रोडमैप पर अनुशंसित टेस्ट harness ([#529](https://github.com/aallan/vera/issues/529))
-- **मर्ज किए गए Fix PR**: Google, Grafana, LangChain, आधिकारिक MCP SDK
+- **मर्ज किए गए Fix PR**: Google, Grafana, LangChain, Ant Group, आधिकारिक MCP SDK
 
 MCP के लिए टेस्टिंग मानक, जैसे Python के लिए pytest या JavaScript के लिए Jest।
 

@@ -32,10 +32,9 @@ mcp-assert говорит на полном протоколе MCP: рукопо
 
 ### Применяется в продакшене
 
-- **[Wyre Technology](https://github.com/wyre-technology)**: 25 MCP-серверов протестированы через общий baseline-процесс с использованием `mcp-assert-action`
-- **[Ant Group (AntV)](https://github.com/antvis/mcp-server-chart)**: интегрирован в CI в течение 3 дней после запуска
+- **[WYRE](https://github.com/wyre-technology)**: работает в CI в 39 репозиториях MCP-серверов через общий baseline-процесс на основе `mcp-assert-action`
 - **[Vera](https://github.com/aallan/vera)**: рекомендованный тестовый харнесс в дорожной карте проекта ([#529](https://github.com/aallan/vera/issues/529))
-- **Смерженные фикс-PR**: Google, Grafana, LangChain, официальные MCP SDK
+- **Смерженные фикс-PR**: Google, Grafana, LangChain, Ant Group, официальные MCP SDK
 
 Стандарт тестирования для MCP, как pytest для Python или Jest для JavaScript.
 
